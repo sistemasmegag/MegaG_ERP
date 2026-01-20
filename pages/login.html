@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Importador Mega G</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* ========= Clean SaaS + Dark/Light ========= */
+        :root{
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --border: rgba(17,24,39,.10);
+            --text: #111827;
+            --muted: rgba(17,24,39,.60);
+            --muted2: rgba(17,24,39,.70);
+            --input-bg: #fbfdff;
+            --ring: rgba(13,110,253,.12);
+            --shadow: 0 12px 30px rgba(17,24,39,.08);
+            --shadow-soft: 0 10px 30px rgba(17,24,39,.06);
+            --soft-danger-bg: rgba(220,53,69,.08);
+            --soft-danger-border: rgba(220,53,69,.18);
+            --soft-danger-text: #b02a37;
+        }
+
+        /* Tema escuro */
+        [data-theme="dark"]{
+            --bg: #0b1220;
+            --card: rgba(255,255,255,.06);
+            --border: rgba(255,255,255,.10);
+            --text: rgba(255,255,255,.92);
+            --muted: rgba(255,255,255,.65);
+            --muted2: rgba(255,255,255,.72);
+            --input-bg: rgba(255,255,255,.06);
+            --ring: rgba(13,110,253,.20);
+            --shadow: 0 16px 40px rgba(0,0,0,.35);
+            --shadow-soft: 0 14px 40px rgba(0,0,0,.25);
+            --soft-danger-bg: rgba(220,53,69,.14);
+            --soft-danger-border: rgba(220,53,69,.28);
+            --soft-danger-text: rgba(255,255,255,.88);
+        }
+
+        body{
+            min-height:100vh;
+            margin:0;
+            background:
+                radial-gradient(1200px 600px at 15% 10%, rgba(13,110,253,.14), transparent 60%),
+                radial-gradient(1000px 500px at 85% 25%, rgba(25,135,84,.10), transparent 55%),
+                var(--bg);
+            color:var(--text);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:24px;
+        }
+
+        .auth-shell{
+            width:100%;
+            max-width: 980px;
+            display:grid;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 22px;
+            align-items: stretch;
+        }
+
+        /* Painel esquerdo (branding/info) */
+        .brand-panel{
+            border-radius: 18px;
+            padding: 28px;
+            background: linear-gradient(135deg, rgba(13,110,253,.10), rgba(13,110,253,.04));
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-soft);
+            display:flex;
+            flex-direction:column;
+            justify-content:space-between;
+            overflow:hidden;
+            position:relative;
+        }
+
+        [data-theme="dark"] .brand-panel{
+            background: linear-gradient(135deg, rgba(13,110,253,.14), rgba(255,255,255,.02));
+        }
+
+        .brand-panel:before{
+            content:"";
+            position:absolute;
+            inset:-120px -180px auto auto;
+            width: 340px;
+            height: 340px;
+            background: radial-gradient(circle at 30% 30%, rgba(13,110,253,.30), transparent 60%);
+            filter: blur(6px);
+            transform: rotate(10deg);
+            pointer-events:none;
+        }
+
+        .brand-title{
+            font-weight:800;
+            letter-spacing:-.02em;
+            margin: 0;
+            font-size: 28px;
+        }
+        .brand-sub{
+            margin: 8px 0 0;
+            color: var(--muted2);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .brand-badges{
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+            margin-top: 16px;
+        }
+        .badge-soft{
+            background: rgba(13,110,253,.10);
+            color:#0b5ed7;
+            border: 1px solid rgba(13,110,253,.15);
+            padding: 8px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        [data-theme="dark"] .badge-soft{
+            color: rgba(255,255,255,.90);
+            background: rgba(13,110,253,.18);
+            border-color: rgba(13,110,253,.22);
+        }
+
+        /* Card de login */
+        .login-card{
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 26px;
+            box-shadow: var(--shadow);
+            width:100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .top-actions{
+            display:flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .theme-toggle{
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            display:flex;
+            align-items:center;
+            gap:8px;
+        }
+        .theme-toggle:hover{
+            color: var(--text);
+            border-color: rgba(13,110,253,.35);
+        }
+
+        .logo-login{
+            max-width: 180px;
+            height:auto;
+            margin-bottom: .75rem;
+            filter: none;
+        }
+        [data-theme="dark"] .logo-login{
+            filter: drop-shadow(0 6px 16px rgba(0,0,0,.25));
+        }
+
+        .login-head h3{
+            margin: 0;
+            font-weight: 800;
+            letter-spacing:-.02em;
+            color: var(--text);
+        }
+        .login-head p{
+            margin: .35rem 0 0;
+            color: var(--muted);
+        }
+
+        .form-label{
+            font-weight: 700;
+            color: var(--muted2);
+            font-size: 13px;
+        }
+
+        .form-control{
+            border-radius: 12px;
+            padding: 12px 12px;
+            border: 1px solid rgba(17,24,39,.14);
+            background: var(--input-bg);
+            color: var(--text);
+        }
+        [data-theme="dark"] .form-control{
+            border-color: rgba(255,255,255,.14);
+        }
+
+        .form-control::placeholder{
+            color: rgba(17,24,39,.40);
+        }
+        [data-theme="dark"] .form-control::placeholder{
+            color: rgba(255,255,255,.40);
+        }
+
+        .form-control:focus{
+            border-color: rgba(13,110,253,.55);
+            box-shadow: 0 0 0 .22rem var(--ring);
+            background: var(--card);
+        }
+
+        .btn-primary{
+            width:100%;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-weight: 800;
+            letter-spacing:.02em;
+            box-shadow: 0 10px 18px rgba(13,110,253,.18);
+        }
+
+        .help-row{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .link-clean{
+            color: rgba(13,110,253,.95);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .link-clean:hover{ text-decoration: underline; }
+
+        /* Input senha com botão olho */
+        .password-wrap{
+            position: relative;
+        }
+        .btn-eye{
+            position:absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: var(--muted);
+            padding: 6px 8px;
+            border-radius: 10px;
+            font-weight: 800;
+        }
+        .btn-eye:hover{
+            color: var(--text);
+            background: rgba(13,110,253,.08);
+        }
+
+        #msgErro{
+            background: var(--soft-danger-bg);
+            border: 1px solid var(--soft-danger-border);
+            color: var(--soft-danger-text);
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        .footnote{
+            margin-top: 18px;
+            font-size: 12px;
+            color: var(--muted);
+            text-align:center;
+        }
+
+        /* Responsivo */
+        @media (max-width: 900px){
+            .auth-shell{
+                grid-template-columns: 1fr;
+            }
+            .brand-panel{
+                display:none;
+            }
+            .top-actions{
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="auth-shell">
+
+    <!-- Painel de marca (Clean SaaS) -->
+    <div class="brand-panel">
+        <div>
+            <h1 class="brand-title">Conferência de Produtos</h1>
+            <p class="brand-sub">
+                Acesso ao ambiente do Importador Mega G para conferência e rastreabilidade.
+                Entre com seu usuário do Consinco para continuar.
+            </p>
+
+            <div class="brand-badges">
+                <span class="badge-soft">Rápido</span>
+                <span class="badge-soft">Seguro</span>
+                <span class="badge-soft">Operação</span>
+            </div>
+        </div>
+
+        <div class="brand-sub">
+            <strong>Dica:</strong> mantenha seu usuário em maiúsculas (ex.: CONSINCO).
+        </div>
+    </div>
+
+    <!-- Card do login -->
+    <div class="login-card">
+
+        <!-- Toggle tema (não interfere no login) -->
+        <div class="top-actions">
+            <button type="button" id="btnTema" class="theme-toggle" aria-label="Alternar tema">
+                <span id="themeIcon">🌙</span>
+                <span id="themeText">Dark</span>
+            </button>
+        </div>
+
+        <div class="text-center mb-4 login-head">
+            <img src="../assets/images/logo.png" alt="Logo Mega G" class="logo-login">
+            <h3>Importador Mega G</h3>
+            <p>Acesso restrito</p>
+        </div>
+
+        <form id="formLogin">
+            <div class="mb-3">
+                <label class="form-label">Usuário</label>
+                <input type="text" id="usuario" class="form-control" placeholder="Ex: CONSINCO" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Senha</label>
+
+                <div class="password-wrap">
+                    <input type="password" id="senha" class="form-control pe-5" placeholder="••••••" required>
+                    <button type="button" id="btnToggleSenha" class="btn-eye" aria-label="Mostrar senha">
+                        👁
+                    </button>
+                </div>
+
+                <div class="help-row">
+                    <span>Use seu acesso operacional</span>
+                    <a class="link-clean" href="mailto:suporte@megag.com.br?subject=Recupera%C3%A7%C3%A3o%20de%20senha%20-%20Importador%20Mega%20G">
+                        Esqueci a senha
+                    </a>
+                </div>
+            </div>
+
+            <button type="submit" id="btnEntrar" class="btn btn-primary">ENTRAR</button>
+        </form>
+
+        <div id="msgErro" class="mt-3 text-center small" style="display:none"></div>
+
+        <div class="footnote">
+            © Importador Mega G — Ambiente Operacional
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ======== Tema (auto + toggle) ========
+    (function () {
+        const root = document.documentElement;
+        const btnTema = document.getElementById('btnTema');
+        const icon = document.getElementById('themeIcon');
+        const text = document.getElementById('themeText');
+
+        function applyTheme(theme){
+            root.setAttribute('data-theme', theme);
+            const isDark = theme === 'dark';
+            icon.textContent = isDark ? '☀️' : '🌙';
+            text.textContent = isDark ? 'Light' : 'Dark';
+        }
+
+        // prioridade: localStorage -> preferência do sistema
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark' || saved === 'light') {
+            applyTheme(saved);
+        } else {
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            applyTheme(prefersDark ? 'dark' : 'light');
+        }
+
+        btnTema.addEventListener('click', function(){
+            const current = root.getAttribute('data-theme') || 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', next);
+            applyTheme(next);
+        });
+    })();
+
+    // ======== Mostrar/ocultar senha ========
+    (function () {
+        const input = document.getElementById('senha');
+        const btn = document.getElementById('btnToggleSenha');
+
+        btn.addEventListener('click', function(){
+            const isPassword = input.getAttribute('type') === 'password';
+            input.setAttribute('type', isPassword ? 'text' : 'password');
+            btn.textContent = isPassword ? '🙈' : '👁';
+            btn.setAttribute('aria-label', isPassword ? 'Ocultar senha' : 'Mostrar senha');
+        });
+    })();
+
+    // ======== Seu login (INALTERADO no funcionamento) ========
+    document.getElementById('formLogin').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btnEntrar');
+        const msg = document.getElementById('msgErro');
+        const usuario = document.getElementById('usuario').value;
+        const senha = document.getElementById('senha').value;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Validando...';
+        msg.style.display = 'none';
+
+        try {
+            // Caminho ajustado para voltar pra raiz (../)
+            const resp = await fetch('../login_action.php', {
+                credentials: 'same-origin',
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario, senha })
+            });
+            
+            let json;
+            const textResp = await resp.text();
+            try {
+                json = JSON.parse(textResp);
+            } catch (err) {
+                console.error("Resposta inválida:", textResp);
+                throw new Error("Erro no servidor. Verifique o console.");
+            }
+
+            if (json.sucesso) {
+                // Redireciona para home.php na mesma pasta
+                window.location.href = '../index.php'; 
+            } else {
+                msg.innerText = json.erro || 'Erro ao fazer login';
+                msg.style.display = 'block';
+                btn.disabled = false;
+                btn.innerHTML = 'ENTRAR';
+            }
+        } catch (error) {
+            msg.innerText = 'Erro de conexão com o servidor.';
+            msg.style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = 'ENTRAR';
+        }
+    });
+</script>
+
+</body>
+</html>

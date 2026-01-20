@@ -1,0 +1,3084 @@
+INICIANDO SCRIPT
+CONECTANDO ORACLE...
+INICIANDO SCRIPT
+CONECTANDO ORACLE...
+INICIANDO SCRIPT
+CONECTANDO ORACLE...
+INICIANDO SCRIPT
+CONECTANDO ORACLE...
+INICIANDO SCRIPT
+CONECTANDO ORACLE...
+ERRO UPLOAD
+ERRO UPLOAD
+UPLOAD OK
+LENDO EXCEL...
+UPLOAD OK
+LENDO EXCEL...
+/uploads/20251204_131151_98216ae6.xlsxERRO EXCEL: File "/uploads/20251204_131151_98216ae6.xlsx" does not exist.
+UPLOAD OK
+LENDO EXCEL...
+\uploads\20251204_131446_a25b96e4.xlsxERRO EXCEL: File "\uploads\20251204_131446_a25b96e4.xlsx" does not exist.
+UPLOAD OK
+LENDO EXCEL...
+\uploads\20251204_131920_6a172ebf.xlsxUPLOAD OK
+LENDO EXCEL...
+/uploads/20251204_132020_43894d0d.xlsxUPLOAD OK
+LENDO EXCEL...
+C:\xampp\htdocs\importador\uploads\20251204_132251_6d5f8b48.xlsxEXCEL LIDO OK
+UPLOAD OK
+LENDO EXCEL...
+C:/xampp/htdocs\uploads\20251204_132547_d7ae6669.xlsxUPLOAD OK
+LENDO EXCEL...
+C:/xampp/htdocs\uploads\20251204_132816_cb6942ae.xlsxUPLOAD OK
+LENDO EXCEL...
+C:/xampp/htdocs\uploads\20251204_132911_2a8a932d.xlsxUPLOAD OK
+LENDO EXCEL...
+C:\xampp\htdocs\importador\uploads\20251204_133030_45dabbc4.xlsxEXCEL LIDO OK
+UPLOAD OK
+LENDO EXCEL...
+C:\xampp\htdocs\importador\uploads\20251204_135505_b9d2dc1f.xlsxEXCEL LIDO OK
+ULTIMA LINHA: 1048576
+PROCESSANDO LINHA 1
+UPLOAD OK
+LENDO EXCEL...
+C:\xampp\htdocs\importador\uploads\20251204_135602_7aabe62e.xlsxEXCEL LIDO OK
+ULTIMA LINHA: 1048576
+PROCESSANDO LINHA 2
+UPLOAD OK
+LENDO EXCEL...
+C:\xampp\htdocs\importador\uploads\20251204_135616_768bf54d.xlsxEXCEL LIDO OK
+ULTIMA LINHA: 1048576
+PROCESSANDO LINHA 2
+INICIANDO SCRIPT PARA ARQUIVO: 20251204_140610_4602d669.xlsx
+LENDO EXCEL...
+CAMINHO: C:\xampp\htdocs\importador\uploads\20251204_140610_4602d669.xlsx
+EXCEL LIDO COM SUCESSO
+ULTIMA LINHA DETECTADA: 1048576
+PROCESSANDO LINHA 2
+ERRO INSERT LINHA 2: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 3
+ERRO INSERT LINHA 3: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 4
+ERRO INSERT LINHA 4: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 5
+ERRO INSERT LINHA 5: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 6
+ERRO INSERT LINHA 6: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 7
+ERRO INSERT LINHA 7: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 8
+ERRO INSERT LINHA 8: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 9
+ERRO INSERT LINHA 9: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 10
+ERRO INSERT LINHA 10: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 11
+ERRO INSERT LINHA 11: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 12
+ERRO INSERT LINHA 12: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 13
+ERRO INSERT LINHA 13: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 14
+ERRO INSERT LINHA 14: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 15
+ERRO INSERT LINHA 15: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 16
+ERRO INSERT LINHA 16: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 17
+ERRO INSERT LINHA 17: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 18
+ERRO INSERT LINHA 18: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 19
+ERRO INSERT LINHA 19: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 20
+ERRO INSERT LINHA 20: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 21
+ERRO INSERT LINHA 21: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 22
+ERRO INSERT LINHA 22: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 23
+ERRO INSERT LINHA 23: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 24
+ERRO INSERT LINHA 24: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 25
+ERRO INSERT LINHA 25: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 26
+ERRO INSERT LINHA 26: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 27
+ERRO INSERT LINHA 27: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 28
+ERRO INSERT LINHA 28: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 29
+ERRO INSERT LINHA 29: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 30
+ERRO INSERT LINHA 30: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 31
+ERRO INSERT LINHA 31: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 32
+ERRO INSERT LINHA 32: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 33
+ERRO INSERT LINHA 33: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 34
+ERRO INSERT LINHA 34: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 35
+ERRO INSERT LINHA 35: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 36
+ERRO INSERT LINHA 36: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 37
+ERRO INSERT LINHA 37: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 38
+ERRO INSERT LINHA 38: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 39
+ERRO INSERT LINHA 39: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 40
+ERRO INSERT LINHA 40: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 41
+ERRO INSERT LINHA 41: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 42
+ERRO INSERT LINHA 42: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 43
+ERRO INSERT LINHA 43: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 44
+ERRO INSERT LINHA 44: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 45
+ERRO INSERT LINHA 45: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 46
+ERRO INSERT LINHA 46: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 47
+ERRO INSERT LINHA 47: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 48
+ERRO INSERT LINHA 48: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 49
+ERRO INSERT LINHA 49: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 50
+ERRO INSERT LINHA 50: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 51
+ERRO INSERT LINHA 51: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 52
+ERRO INSERT LINHA 52: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 53
+ERRO INSERT LINHA 53: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 54
+ERRO INSERT LINHA 54: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 55
+ERRO INSERT LINHA 55: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 56
+ERRO INSERT LINHA 56: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 57
+ERRO INSERT LINHA 57: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 58
+ERRO INSERT LINHA 58: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 59
+ERRO INSERT LINHA 59: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 60
+ERRO INSERT LINHA 60: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 61
+ERRO INSERT LINHA 61: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 62
+ERRO INSERT LINHA 62: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 63
+ERRO INSERT LINHA 63: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 64
+ERRO INSERT LINHA 64: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 65
+ERRO INSERT LINHA 65: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 66
+ERRO INSERT LINHA 66: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 67
+ERRO INSERT LINHA 67: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 68
+ERRO INSERT LINHA 68: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 69
+ERRO INSERT LINHA 69: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 70
+ERRO INSERT LINHA 70: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 71
+ERRO INSERT LINHA 71: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 72
+ERRO INSERT LINHA 72: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 73
+ERRO INSERT LINHA 73: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 74
+ERRO INSERT LINHA 74: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 75
+ERRO INSERT LINHA 75: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 76
+ERRO INSERT LINHA 76: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 77
+ERRO INSERT LINHA 77: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 78
+ERRO INSERT LINHA 78: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 79
+ERRO INSERT LINHA 79: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 80
+ERRO INSERT LINHA 80: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 81
+ERRO INSERT LINHA 81: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 82
+ERRO INSERT LINHA 82: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 83
+ERRO INSERT LINHA 83: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 84
+ERRO INSERT LINHA 84: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 85
+ERRO INSERT LINHA 85: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 86
+ERRO INSERT LINHA 86: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 87
+ERRO INSERT LINHA 87: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 88
+ERRO INSERT LINHA 88: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 89
+ERRO INSERT LINHA 89: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 90
+ERRO INSERT LINHA 90: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 91
+ERRO INSERT LINHA 91: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 92
+ERRO INSERT LINHA 92: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 93
+ERRO INSERT LINHA 93: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 94
+ERRO INSERT LINHA 94: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 95
+ERRO INSERT LINHA 95: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 96
+ERRO INSERT LINHA 96: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 97
+ERRO INSERT LINHA 97: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 98
+ERRO INSERT LINHA 98: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 99
+ERRO INSERT LINHA 99: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 100
+ERRO INSERT LINHA 100: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 101
+ERRO INSERT LINHA 101: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 102
+ERRO INSERT LINHA 102: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 103
+ERRO INSERT LINHA 103: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 104
+ERRO INSERT LINHA 104: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 105
+ERRO INSERT LINHA 105: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 106
+ERRO INSERT LINHA 106: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 107
+ERRO INSERT LINHA 107: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 108
+ERRO INSERT LINHA 108: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 109
+ERRO INSERT LINHA 109: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 110
+ERRO INSERT LINHA 110: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 111
+ERRO INSERT LINHA 111: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 112
+ERRO INSERT LINHA 112: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 113
+ERRO INSERT LINHA 113: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 114
+ERRO INSERT LINHA 114: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 115
+ERRO INSERT LINHA 115: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 116
+ERRO INSERT LINHA 116: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 117
+ERRO INSERT LINHA 117: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 118
+ERRO INSERT LINHA 118: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 119
+ERRO INSERT LINHA 119: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 120
+ERRO INSERT LINHA 120: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 121
+ERRO INSERT LINHA 121: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 122
+ERRO INSERT LINHA 122: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 123
+ERRO INSERT LINHA 123: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 124
+ERRO INSERT LINHA 124: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 125
+ERRO INSERT LINHA 125: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 126
+ERRO INSERT LINHA 126: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 127
+ERRO INSERT LINHA 127: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 128
+ERRO INSERT LINHA 128: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 129
+ERRO INSERT LINHA 129: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 130
+ERRO INSERT LINHA 130: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 131
+ERRO INSERT LINHA 131: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 132
+ERRO INSERT LINHA 132: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 133
+ERRO INSERT LINHA 133: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 134
+ERRO INSERT LINHA 134: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 135
+ERRO INSERT LINHA 135: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 136
+ERRO INSERT LINHA 136: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 137
+ERRO INSERT LINHA 137: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 138
+ERRO INSERT LINHA 138: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 139
+ERRO INSERT LINHA 139: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 140
+ERRO INSERT LINHA 140: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 141
+ERRO INSERT LINHA 141: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 142
+ERRO INSERT LINHA 142: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 143
+ERRO INSERT LINHA 143: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 144
+ERRO INSERT LINHA 144: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 145
+ERRO INSERT LINHA 145: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 146
+ERRO INSERT LINHA 146: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 147
+ERRO INSERT LINHA 147: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 148
+ERRO INSERT LINHA 148: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 149
+ERRO INSERT LINHA 149: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 150
+ERRO INSERT LINHA 150: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 151
+ERRO INSERT LINHA 151: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 152
+ERRO INSERT LINHA 152: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 153
+ERRO INSERT LINHA 153: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 154
+ERRO INSERT LINHA 154: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 155
+ERRO INSERT LINHA 155: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 156
+ERRO INSERT LINHA 156: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 157
+ERRO INSERT LINHA 157: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 158
+ERRO INSERT LINHA 158: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 159
+ERRO INSERT LINHA 159: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 160
+ERRO INSERT LINHA 160: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 161
+ERRO INSERT LINHA 161: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 162
+ERRO INSERT LINHA 162: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 163
+ERRO INSERT LINHA 163: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 164
+ERRO INSERT LINHA 164: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 165
+ERRO INSERT LINHA 165: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 166
+ERRO INSERT LINHA 166: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 167
+ERRO INSERT LINHA 167: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 168
+ERRO INSERT LINHA 168: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 169
+ERRO INSERT LINHA 169: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 170
+ERRO INSERT LINHA 170: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 171
+ERRO INSERT LINHA 171: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 172
+ERRO INSERT LINHA 172: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 173
+ERRO INSERT LINHA 173: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 174
+ERRO INSERT LINHA 174: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 175
+ERRO INSERT LINHA 175: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 176
+ERRO INSERT LINHA 176: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 177
+ERRO INSERT LINHA 177: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 178
+ERRO INSERT LINHA 178: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 179
+ERRO INSERT LINHA 179: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 180
+ERRO INSERT LINHA 180: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 181
+ERRO INSERT LINHA 181: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 182
+ERRO INSERT LINHA 182: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 183
+ERRO INSERT LINHA 183: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 184
+ERRO INSERT LINHA 184: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 185
+ERRO INSERT LINHA 185: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 186
+ERRO INSERT LINHA 186: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 187
+ERRO INSERT LINHA 187: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+IMPORTACAO FINALIZADA. TOTAL: 0
+INICIANDO SCRIPT PARA ARQUIVO: 20251204_141237_a745c2de.xlsx
+LENDO EXCEL...
+CAMINHO: C:\xampp\htdocs\importador\uploads\20251204_141237_a745c2de.xlsx
+EXCEL LIDO COM SUCESSO
+ULTIMA LINHA DETECTADA: 1048576
+PROCESSANDO LINHA 2
+ERRO INSERT LINHA 2: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 3
+ERRO INSERT LINHA 3: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 4
+ERRO INSERT LINHA 4: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 5
+ERRO INSERT LINHA 5: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 6
+ERRO INSERT LINHA 6: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 7
+ERRO INSERT LINHA 7: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 8
+ERRO INSERT LINHA 8: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 9
+ERRO INSERT LINHA 9: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 10
+ERRO INSERT LINHA 10: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 11
+ERRO INSERT LINHA 11: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 12
+ERRO INSERT LINHA 12: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 13
+ERRO INSERT LINHA 13: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 14
+ERRO INSERT LINHA 14: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 15
+ERRO INSERT LINHA 15: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 16
+ERRO INSERT LINHA 16: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 17
+ERRO INSERT LINHA 17: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 18
+ERRO INSERT LINHA 18: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 19
+ERRO INSERT LINHA 19: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 20
+ERRO INSERT LINHA 20: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 21
+ERRO INSERT LINHA 21: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 22
+ERRO INSERT LINHA 22: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 23
+ERRO INSERT LINHA 23: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 24
+ERRO INSERT LINHA 24: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 25
+ERRO INSERT LINHA 25: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 26
+ERRO INSERT LINHA 26: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 27
+ERRO INSERT LINHA 27: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 28
+ERRO INSERT LINHA 28: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 29
+ERRO INSERT LINHA 29: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 30
+ERRO INSERT LINHA 30: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 31
+ERRO INSERT LINHA 31: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 32
+ERRO INSERT LINHA 32: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 33
+ERRO INSERT LINHA 33: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 34
+ERRO INSERT LINHA 34: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 35
+ERRO INSERT LINHA 35: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 36
+ERRO INSERT LINHA 36: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 37
+ERRO INSERT LINHA 37: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 38
+ERRO INSERT LINHA 38: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 39
+ERRO INSERT LINHA 39: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 40
+ERRO INSERT LINHA 40: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 41
+ERRO INSERT LINHA 41: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 42
+ERRO INSERT LINHA 42: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 43
+ERRO INSERT LINHA 43: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 44
+ERRO INSERT LINHA 44: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 45
+ERRO INSERT LINHA 45: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 46
+ERRO INSERT LINHA 46: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 47
+ERRO INSERT LINHA 47: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 48
+ERRO INSERT LINHA 48: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 49
+ERRO INSERT LINHA 49: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 50
+ERRO INSERT LINHA 50: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 51
+ERRO INSERT LINHA 51: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 52
+ERRO INSERT LINHA 52: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 53
+ERRO INSERT LINHA 53: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 54
+ERRO INSERT LINHA 54: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 55
+ERRO INSERT LINHA 55: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 56
+ERRO INSERT LINHA 56: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 57
+ERRO INSERT LINHA 57: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 58
+ERRO INSERT LINHA 58: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 59
+ERRO INSERT LINHA 59: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 60
+ERRO INSERT LINHA 60: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 61
+ERRO INSERT LINHA 61: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 62
+ERRO INSERT LINHA 62: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 63
+ERRO INSERT LINHA 63: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 64
+ERRO INSERT LINHA 64: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 65
+ERRO INSERT LINHA 65: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 66
+ERRO INSERT LINHA 66: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 67
+ERRO INSERT LINHA 67: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 68
+ERRO INSERT LINHA 68: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 69
+ERRO INSERT LINHA 69: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 70
+ERRO INSERT LINHA 70: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 71
+ERRO INSERT LINHA 71: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 72
+ERRO INSERT LINHA 72: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 73
+ERRO INSERT LINHA 73: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 74
+ERRO INSERT LINHA 74: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 75
+ERRO INSERT LINHA 75: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 76
+ERRO INSERT LINHA 76: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 77
+ERRO INSERT LINHA 77: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 78
+ERRO INSERT LINHA 78: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 79
+ERRO INSERT LINHA 79: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 80
+ERRO INSERT LINHA 80: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 81
+ERRO INSERT LINHA 81: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 82
+ERRO INSERT LINHA 82: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 83
+ERRO INSERT LINHA 83: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 84
+ERRO INSERT LINHA 84: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 85
+ERRO INSERT LINHA 85: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 86
+ERRO INSERT LINHA 86: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 87
+ERRO INSERT LINHA 87: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 88
+ERRO INSERT LINHA 88: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 89
+ERRO INSERT LINHA 89: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 90
+ERRO INSERT LINHA 90: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 91
+ERRO INSERT LINHA 91: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 92
+ERRO INSERT LINHA 92: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 93
+ERRO INSERT LINHA 93: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 94
+ERRO INSERT LINHA 94: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 95
+ERRO INSERT LINHA 95: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 96
+ERRO INSERT LINHA 96: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 97
+ERRO INSERT LINHA 97: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 98
+ERRO INSERT LINHA 98: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 99
+ERRO INSERT LINHA 99: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 100
+ERRO INSERT LINHA 100: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 101
+ERRO INSERT LINHA 101: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 102
+ERRO INSERT LINHA 102: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 103
+ERRO INSERT LINHA 103: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 104
+ERRO INSERT LINHA 104: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 105
+ERRO INSERT LINHA 105: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 106
+ERRO INSERT LINHA 106: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 107
+ERRO INSERT LINHA 107: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 108
+ERRO INSERT LINHA 108: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 109
+ERRO INSERT LINHA 109: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 110
+ERRO INSERT LINHA 110: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 111
+ERRO INSERT LINHA 111: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 112
+ERRO INSERT LINHA 112: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 113
+ERRO INSERT LINHA 113: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 114
+ERRO INSERT LINHA 114: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 115
+ERRO INSERT LINHA 115: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 116
+ERRO INSERT LINHA 116: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 117
+ERRO INSERT LINHA 117: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 118
+ERRO INSERT LINHA 118: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 119
+ERRO INSERT LINHA 119: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 120
+ERRO INSERT LINHA 120: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 121
+ERRO INSERT LINHA 121: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 122
+ERRO INSERT LINHA 122: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 123
+ERRO INSERT LINHA 123: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 124
+ERRO INSERT LINHA 124: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 125
+ERRO INSERT LINHA 125: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 126
+ERRO INSERT LINHA 126: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 127
+ERRO INSERT LINHA 127: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 128
+ERRO INSERT LINHA 128: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 129
+ERRO INSERT LINHA 129: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 130
+ERRO INSERT LINHA 130: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 131
+ERRO INSERT LINHA 131: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 132
+ERRO INSERT LINHA 132: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 133
+ERRO INSERT LINHA 133: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 134
+ERRO INSERT LINHA 134: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 135
+ERRO INSERT LINHA 135: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 136
+ERRO INSERT LINHA 136: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 137
+ERRO INSERT LINHA 137: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 138
+ERRO INSERT LINHA 138: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 139
+ERRO INSERT LINHA 139: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 140
+ERRO INSERT LINHA 140: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 141
+ERRO INSERT LINHA 141: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 142
+ERRO INSERT LINHA 142: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 143
+ERRO INSERT LINHA 143: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 144
+ERRO INSERT LINHA 144: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 145
+ERRO INSERT LINHA 145: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 146
+ERRO INSERT LINHA 146: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 147
+ERRO INSERT LINHA 147: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 148
+ERRO INSERT LINHA 148: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 149
+ERRO INSERT LINHA 149: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 150
+ERRO INSERT LINHA 150: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 151
+ERRO INSERT LINHA 151: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 152
+ERRO INSERT LINHA 152: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 153
+ERRO INSERT LINHA 153: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 154
+ERRO INSERT LINHA 154: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 155
+ERRO INSERT LINHA 155: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 156
+ERRO INSERT LINHA 156: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 157
+ERRO INSERT LINHA 157: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 158
+ERRO INSERT LINHA 158: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 159
+ERRO INSERT LINHA 159: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 160
+ERRO INSERT LINHA 160: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 161
+ERRO INSERT LINHA 161: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 162
+ERRO INSERT LINHA 162: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 163
+ERRO INSERT LINHA 163: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 164
+ERRO INSERT LINHA 164: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 165
+ERRO INSERT LINHA 165: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 166
+ERRO INSERT LINHA 166: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 167
+ERRO INSERT LINHA 167: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 168
+ERRO INSERT LINHA 168: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 169
+ERRO INSERT LINHA 169: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 170
+ERRO INSERT LINHA 170: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 171
+ERRO INSERT LINHA 171: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 172
+ERRO INSERT LINHA 172: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 173
+ERRO INSERT LINHA 173: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 174
+ERRO INSERT LINHA 174: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 175
+ERRO INSERT LINHA 175: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 176
+ERRO INSERT LINHA 176: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 177
+ERRO INSERT LINHA 177: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 178
+ERRO INSERT LINHA 178: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 179
+ERRO INSERT LINHA 179: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 180
+ERRO INSERT LINHA 180: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 181
+ERRO INSERT LINHA 181: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 182
+ERRO INSERT LINHA 182: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 183
+ERRO INSERT LINHA 183: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 184
+ERRO INSERT LINHA 184: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 185
+ERRO INSERT LINHA 185: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 186
+ERRO INSERT LINHA 186: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 187
+ERRO INSERT LINHA 187: SQLSTATE[HY000]: General error: 942 OCIStmtExecute: ORA-00942: a tabela ou view não existe
+ (ext\pdo_oci\oci_statement.c:155)
+IMPORTACAO FINALIZADA. TOTAL: 0
+INICIANDO SCRIPT PARA ARQUIVO: 20251204_141850_82cb155e.xlsx
+LENDO EXCEL...
+CAMINHO: C:\xampp\htdocs\importador\uploads\20251204_141850_82cb155e.xlsx
+EXCEL LIDO COM SUCESSO
+ULTIMA LINHA DETECTADA: 1048576
+PROCESSANDO LINHA 2
+ERRO INSERT LINHA 2: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 3
+ERRO INSERT LINHA 3: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 4
+ERRO INSERT LINHA 4: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 5
+ERRO INSERT LINHA 5: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 6
+ERRO INSERT LINHA 6: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 7
+ERRO INSERT LINHA 7: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 8
+ERRO INSERT LINHA 8: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 9
+ERRO INSERT LINHA 9: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 10
+ERRO INSERT LINHA 10: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 11
+ERRO INSERT LINHA 11: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 12
+ERRO INSERT LINHA 12: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 13
+ERRO INSERT LINHA 13: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 14
+ERRO INSERT LINHA 14: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 15
+ERRO INSERT LINHA 15: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 16
+ERRO INSERT LINHA 16: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 17
+ERRO INSERT LINHA 17: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 18
+ERRO INSERT LINHA 18: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 19
+ERRO INSERT LINHA 19: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 20
+ERRO INSERT LINHA 20: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 21
+ERRO INSERT LINHA 21: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 22
+ERRO INSERT LINHA 22: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 23
+ERRO INSERT LINHA 23: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 24
+ERRO INSERT LINHA 24: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 25
+ERRO INSERT LINHA 25: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 26
+ERRO INSERT LINHA 26: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 27
+ERRO INSERT LINHA 27: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 28
+ERRO INSERT LINHA 28: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 29
+ERRO INSERT LINHA 29: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 30
+ERRO INSERT LINHA 30: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 31
+ERRO INSERT LINHA 31: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 32
+ERRO INSERT LINHA 32: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 33
+ERRO INSERT LINHA 33: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 34
+ERRO INSERT LINHA 34: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 35
+ERRO INSERT LINHA 35: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 36
+ERRO INSERT LINHA 36: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 37
+ERRO INSERT LINHA 37: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 38
+ERRO INSERT LINHA 38: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 39
+ERRO INSERT LINHA 39: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 40
+ERRO INSERT LINHA 40: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 41
+ERRO INSERT LINHA 41: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 42
+ERRO INSERT LINHA 42: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 43
+ERRO INSERT LINHA 43: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 44
+ERRO INSERT LINHA 44: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 45
+ERRO INSERT LINHA 45: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 46
+ERRO INSERT LINHA 46: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 47
+ERRO INSERT LINHA 47: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 48
+ERRO INSERT LINHA 48: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 49
+ERRO INSERT LINHA 49: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 50
+ERRO INSERT LINHA 50: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 51
+ERRO INSERT LINHA 51: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 52
+ERRO INSERT LINHA 52: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 53
+ERRO INSERT LINHA 53: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 54
+ERRO INSERT LINHA 54: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 55
+ERRO INSERT LINHA 55: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 56
+ERRO INSERT LINHA 56: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 57
+ERRO INSERT LINHA 57: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 58
+ERRO INSERT LINHA 58: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 59
+ERRO INSERT LINHA 59: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 60
+ERRO INSERT LINHA 60: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 61
+ERRO INSERT LINHA 61: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 62
+ERRO INSERT LINHA 62: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 63
+ERRO INSERT LINHA 63: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 64
+ERRO INSERT LINHA 64: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 65
+ERRO INSERT LINHA 65: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 66
+ERRO INSERT LINHA 66: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 67
+ERRO INSERT LINHA 67: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 68
+ERRO INSERT LINHA 68: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 69
+ERRO INSERT LINHA 69: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 70
+ERRO INSERT LINHA 70: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 71
+ERRO INSERT LINHA 71: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 72
+ERRO INSERT LINHA 72: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 73
+ERRO INSERT LINHA 73: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 74
+ERRO INSERT LINHA 74: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 75
+ERRO INSERT LINHA 75: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 76
+ERRO INSERT LINHA 76: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 77
+ERRO INSERT LINHA 77: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 78
+ERRO INSERT LINHA 78: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 79
+ERRO INSERT LINHA 79: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 80
+ERRO INSERT LINHA 80: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 81
+ERRO INSERT LINHA 81: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 82
+ERRO INSERT LINHA 82: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 83
+ERRO INSERT LINHA 83: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 84
+ERRO INSERT LINHA 84: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 85
+ERRO INSERT LINHA 85: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 86
+ERRO INSERT LINHA 86: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 87
+ERRO INSERT LINHA 87: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 88
+ERRO INSERT LINHA 88: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 89
+ERRO INSERT LINHA 89: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 90
+ERRO INSERT LINHA 90: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 91
+ERRO INSERT LINHA 91: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 92
+ERRO INSERT LINHA 92: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 93
+ERRO INSERT LINHA 93: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 94
+ERRO INSERT LINHA 94: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 95
+ERRO INSERT LINHA 95: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 96
+ERRO INSERT LINHA 96: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 97
+ERRO INSERT LINHA 97: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 98
+ERRO INSERT LINHA 98: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 99
+ERRO INSERT LINHA 99: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 100
+ERRO INSERT LINHA 100: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 101
+ERRO INSERT LINHA 101: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 102
+ERRO INSERT LINHA 102: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 103
+ERRO INSERT LINHA 103: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 104
+ERRO INSERT LINHA 104: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 105
+ERRO INSERT LINHA 105: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 106
+ERRO INSERT LINHA 106: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 107
+ERRO INSERT LINHA 107: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 108
+ERRO INSERT LINHA 108: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 109
+ERRO INSERT LINHA 109: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 110
+ERRO INSERT LINHA 110: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 111
+ERRO INSERT LINHA 111: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 112
+ERRO INSERT LINHA 112: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 113
+ERRO INSERT LINHA 113: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 114
+ERRO INSERT LINHA 114: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 115
+ERRO INSERT LINHA 115: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 116
+ERRO INSERT LINHA 116: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 117
+ERRO INSERT LINHA 117: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 118
+ERRO INSERT LINHA 118: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 119
+ERRO INSERT LINHA 119: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 120
+ERRO INSERT LINHA 120: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 121
+ERRO INSERT LINHA 121: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 122
+ERRO INSERT LINHA 122: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 123
+ERRO INSERT LINHA 123: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 124
+ERRO INSERT LINHA 124: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 125
+ERRO INSERT LINHA 125: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 126
+ERRO INSERT LINHA 126: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 127
+ERRO INSERT LINHA 127: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 128
+ERRO INSERT LINHA 128: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 129
+ERRO INSERT LINHA 129: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 130
+ERRO INSERT LINHA 130: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 131
+ERRO INSERT LINHA 131: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 132
+ERRO INSERT LINHA 132: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 133
+ERRO INSERT LINHA 133: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 134
+ERRO INSERT LINHA 134: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 135
+ERRO INSERT LINHA 135: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 136
+ERRO INSERT LINHA 136: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 137
+ERRO INSERT LINHA 137: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 138
+ERRO INSERT LINHA 138: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 139
+ERRO INSERT LINHA 139: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 140
+ERRO INSERT LINHA 140: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 141
+ERRO INSERT LINHA 141: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 142
+ERRO INSERT LINHA 142: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 143
+ERRO INSERT LINHA 143: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 144
+ERRO INSERT LINHA 144: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 145
+ERRO INSERT LINHA 145: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 146
+ERRO INSERT LINHA 146: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 147
+ERRO INSERT LINHA 147: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 148
+ERRO INSERT LINHA 148: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 149
+ERRO INSERT LINHA 149: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 150
+ERRO INSERT LINHA 150: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 151
+ERRO INSERT LINHA 151: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 152
+ERRO INSERT LINHA 152: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 153
+ERRO INSERT LINHA 153: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 154
+ERRO INSERT LINHA 154: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 155
+ERRO INSERT LINHA 155: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 156
+ERRO INSERT LINHA 156: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 157
+ERRO INSERT LINHA 157: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 158
+ERRO INSERT LINHA 158: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 159
+ERRO INSERT LINHA 159: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 160
+ERRO INSERT LINHA 160: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 161
+ERRO INSERT LINHA 161: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 162
+ERRO INSERT LINHA 162: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 163
+ERRO INSERT LINHA 163: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 164
+ERRO INSERT LINHA 164: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 165
+ERRO INSERT LINHA 165: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 166
+ERRO INSERT LINHA 166: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 167
+ERRO INSERT LINHA 167: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 168
+ERRO INSERT LINHA 168: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 169
+ERRO INSERT LINHA 169: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 170
+ERRO INSERT LINHA 170: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 171
+ERRO INSERT LINHA 171: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 172
+ERRO INSERT LINHA 172: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 173
+ERRO INSERT LINHA 173: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 174
+ERRO INSERT LINHA 174: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 175
+ERRO INSERT LINHA 175: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 176
+ERRO INSERT LINHA 176: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 177
+ERRO INSERT LINHA 177: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 178
+ERRO INSERT LINHA 178: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 179
+ERRO INSERT LINHA 179: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 180
+ERRO INSERT LINHA 180: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 181
+ERRO INSERT LINHA 181: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 182
+ERRO INSERT LINHA 182: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 183
+ERRO INSERT LINHA 183: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 184
+ERRO INSERT LINHA 184: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 185
+ERRO INSERT LINHA 185: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 186
+ERRO INSERT LINHA 186: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 187
+ERRO INSERT LINHA 187: SQLSTATE[HY000]: General error: 904 OCIStmtExecute: ORA-00904: "USUINCLUSAO": identificador inválido
+ (ext\pdo_oci\oci_statement.c:155)
+IMPORTACAO FINALIZADA. TOTAL: 0
+INICIANDO SCRIPT PARA ARQUIVO: 20251204_142341_4ee6e269.xlsx
+LENDO EXCEL...
+CAMINHO: C:\xampp\htdocs\importador\uploads\20251204_142341_4ee6e269.xlsx
+EXCEL LIDO COM SUCESSO
+ULTIMA LINHA DETECTADA: 1048576
+PROCESSANDO LINHA 2
+ERRO INSERT LINHA 2: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 3
+ERRO INSERT LINHA 3: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 4
+ERRO INSERT LINHA 4: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 5
+ERRO INSERT LINHA 5: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 6
+ERRO INSERT LINHA 6: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 7
+ERRO INSERT LINHA 7: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 8
+ERRO INSERT LINHA 8: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 9
+ERRO INSERT LINHA 9: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 10
+ERRO INSERT LINHA 10: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 11
+ERRO INSERT LINHA 11: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 12
+ERRO INSERT LINHA 12: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 13
+ERRO INSERT LINHA 13: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 14
+ERRO INSERT LINHA 14: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 15
+ERRO INSERT LINHA 15: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 16
+ERRO INSERT LINHA 16: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 17
+ERRO INSERT LINHA 17: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 18
+ERRO INSERT LINHA 18: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 19
+ERRO INSERT LINHA 19: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 20
+ERRO INSERT LINHA 20: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 21
+ERRO INSERT LINHA 21: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 22
+ERRO INSERT LINHA 22: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 23
+ERRO INSERT LINHA 23: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 24
+ERRO INSERT LINHA 24: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 25
+ERRO INSERT LINHA 25: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 26
+ERRO INSERT LINHA 26: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 27
+ERRO INSERT LINHA 27: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 28
+ERRO INSERT LINHA 28: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 29
+ERRO INSERT LINHA 29: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 30
+ERRO INSERT LINHA 30: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 31
+ERRO INSERT LINHA 31: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 32
+PROCESSANDO LINHA 33
+PROCESSANDO LINHA 34
+PROCESSANDO LINHA 35
+ERRO INSERT LINHA 35: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 36
+ERRO INSERT LINHA 36: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 37
+PROCESSANDO LINHA 38
+PROCESSANDO LINHA 39
+PROCESSANDO LINHA 40
+PROCESSANDO LINHA 41
+PROCESSANDO LINHA 42
+PROCESSANDO LINHA 43
+PROCESSANDO LINHA 44
+ERRO INSERT LINHA 44: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 45
+ERRO INSERT LINHA 45: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 46
+ERRO INSERT LINHA 46: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 47
+ERRO INSERT LINHA 47: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 48
+ERRO INSERT LINHA 48: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 49
+ERRO INSERT LINHA 49: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 50
+ERRO INSERT LINHA 50: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 51
+ERRO INSERT LINHA 51: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 52
+ERRO INSERT LINHA 52: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 53
+ERRO INSERT LINHA 53: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 54
+ERRO INSERT LINHA 54: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 55
+ERRO INSERT LINHA 55: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 56
+ERRO INSERT LINHA 56: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 57
+ERRO INSERT LINHA 57: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 58
+ERRO INSERT LINHA 58: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 59
+ERRO INSERT LINHA 59: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 60
+ERRO INSERT LINHA 60: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 61
+ERRO INSERT LINHA 61: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 62
+ERRO INSERT LINHA 62: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 63
+ERRO INSERT LINHA 63: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 64
+ERRO INSERT LINHA 64: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 65
+ERRO INSERT LINHA 65: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 66
+ERRO INSERT LINHA 66: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 67
+ERRO INSERT LINHA 67: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 68
+ERRO INSERT LINHA 68: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 69
+ERRO INSERT LINHA 69: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 70
+ERRO INSERT LINHA 70: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 71
+ERRO INSERT LINHA 71: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 72
+ERRO INSERT LINHA 72: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 73
+ERRO INSERT LINHA 73: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 74
+ERRO INSERT LINHA 74: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 75
+PROCESSANDO LINHA 76
+PROCESSANDO LINHA 77
+ERRO INSERT LINHA 77: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 78
+ERRO INSERT LINHA 78: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 79
+PROCESSANDO LINHA 80
+PROCESSANDO LINHA 81
+PROCESSANDO LINHA 82
+PROCESSANDO LINHA 83
+PROCESSANDO LINHA 84
+PROCESSANDO LINHA 85
+PROCESSANDO LINHA 86
+ERRO INSERT LINHA 86: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 87
+ERRO INSERT LINHA 87: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 88
+ERRO INSERT LINHA 88: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 89
+ERRO INSERT LINHA 89: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 90
+ERRO INSERT LINHA 90: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 91
+ERRO INSERT LINHA 91: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 92
+ERRO INSERT LINHA 92: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 93
+ERRO INSERT LINHA 93: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 94
+ERRO INSERT LINHA 94: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 95
+ERRO INSERT LINHA 95: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 96
+ERRO INSERT LINHA 96: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 97
+ERRO INSERT LINHA 97: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 98
+ERRO INSERT LINHA 98: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 99
+ERRO INSERT LINHA 99: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 100
+ERRO INSERT LINHA 100: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 101
+ERRO INSERT LINHA 101: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 102
+ERRO INSERT LINHA 102: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 103
+ERRO INSERT LINHA 103: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 104
+ERRO INSERT LINHA 104: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 105
+ERRO INSERT LINHA 105: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 106
+ERRO INSERT LINHA 106: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 107
+ERRO INSERT LINHA 107: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 108
+ERRO INSERT LINHA 108: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 109
+ERRO INSERT LINHA 109: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 110
+ERRO INSERT LINHA 110: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 111
+ERRO INSERT LINHA 111: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 112
+ERRO INSERT LINHA 112: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 113
+ERRO INSERT LINHA 113: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 114
+ERRO INSERT LINHA 114: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 115
+ERRO INSERT LINHA 115: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 116
+ERRO INSERT LINHA 116: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 117
+PROCESSANDO LINHA 118
+ERRO INSERT LINHA 118: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 119
+ERRO INSERT LINHA 119: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 120
+ERRO INSERT LINHA 120: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 121
+PROCESSANDO LINHA 122
+PROCESSANDO LINHA 123
+PROCESSANDO LINHA 124
+PROCESSANDO LINHA 125
+PROCESSANDO LINHA 126
+PROCESSANDO LINHA 127
+PROCESSANDO LINHA 128
+ERRO INSERT LINHA 128: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 129
+ERRO INSERT LINHA 129: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 130
+ERRO INSERT LINHA 130: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 131
+ERRO INSERT LINHA 131: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 132
+ERRO INSERT LINHA 132: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 133
+ERRO INSERT LINHA 133: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 134
+ERRO INSERT LINHA 134: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 135
+ERRO INSERT LINHA 135: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 136
+ERRO INSERT LINHA 136: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 137
+ERRO INSERT LINHA 137: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 138
+ERRO INSERT LINHA 138: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 139
+ERRO INSERT LINHA 139: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 140
+ERRO INSERT LINHA 140: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 141
+ERRO INSERT LINHA 141: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 142
+ERRO INSERT LINHA 142: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 143
+ERRO INSERT LINHA 143: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 144
+ERRO INSERT LINHA 144: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 145
+PROCESSANDO LINHA 146
+PROCESSANDO LINHA 147
+PROCESSANDO LINHA 148
+PROCESSANDO LINHA 149
+PROCESSANDO LINHA 150
+PROCESSANDO LINHA 151
+PROCESSANDO LINHA 152
+ERRO INSERT LINHA 152: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 153
+ERRO INSERT LINHA 153: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 154
+ERRO INSERT LINHA 154: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 155
+ERRO INSERT LINHA 155: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 156
+ERRO INSERT LINHA 156: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 157
+ERRO INSERT LINHA 157: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 158
+ERRO INSERT LINHA 158: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 159
+PROCESSANDO LINHA 160
+ERRO INSERT LINHA 160: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 161
+ERRO INSERT LINHA 161: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 162
+ERRO INSERT LINHA 162: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 163
+PROCESSANDO LINHA 164
+PROCESSANDO LINHA 165
+PROCESSANDO LINHA 166
+PROCESSANDO LINHA 167
+PROCESSANDO LINHA 168
+PROCESSANDO LINHA 169
+PROCESSANDO LINHA 170
+ERRO INSERT LINHA 170: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 171
+ERRO INSERT LINHA 171: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 172
+ERRO INSERT LINHA 172: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 173
+ERRO INSERT LINHA 173: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 174
+ERRO INSERT LINHA 174: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 175
+ERRO INSERT LINHA 175: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 176
+ERRO INSERT LINHA 176: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 177
+ERRO INSERT LINHA 177: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 178
+ERRO INSERT LINHA 178: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 179
+ERRO INSERT LINHA 179: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 180
+ERRO INSERT LINHA 180: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 181
+ERRO INSERT LINHA 181: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 182
+ERRO INSERT LINHA 182: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 183
+ERRO INSERT LINHA 183: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 184
+ERRO INSERT LINHA 184: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 185
+ERRO INSERT LINHA 185: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 186
+ERRO INSERT LINHA 186: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 187
+IMPORTACAO FINALIZADA. TOTAL: 43
+INICIANDO IMPORTAÇÃO...
+INICIANDO SCRIPT PARA ARQUIVO: 20251204_160858_6433279b.xlsx
+LENDO EXCEL...
+CAMINHO: C:\xampp\htdocs\importador\uploads\20251204_160858_6433279b.xlsx
+EXCEL LIDO COM SUCESSO
+ULTIMA LINHA DETECTADA: 1048576
+PROCESSANDO LINHA 2
+ERRO INSERT LINHA 2: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 3
+ERRO INSERT LINHA 3: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 4
+ERRO INSERT LINHA 4: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 5
+ERRO INSERT LINHA 5: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 6
+ERRO INSERT LINHA 6: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 7
+ERRO INSERT LINHA 7: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 8
+ERRO INSERT LINHA 8: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 9
+ERRO INSERT LINHA 9: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 10
+ERRO INSERT LINHA 10: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 11
+ERRO INSERT LINHA 11: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 12
+ERRO INSERT LINHA 12: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 13
+ERRO INSERT LINHA 13: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 14
+ERRO INSERT LINHA 14: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 15
+ERRO INSERT LINHA 15: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 16
+ERRO INSERT LINHA 16: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 17
+ERRO INSERT LINHA 17: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 18
+ERRO INSERT LINHA 18: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 19
+ERRO INSERT LINHA 19: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 20
+ERRO INSERT LINHA 20: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 21
+ERRO INSERT LINHA 21: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 22
+ERRO INSERT LINHA 22: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 23
+ERRO INSERT LINHA 23: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 24
+ERRO INSERT LINHA 24: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 25
+ERRO INSERT LINHA 25: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 26
+ERRO INSERT LINHA 26: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 27
+ERRO INSERT LINHA 27: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 28
+ERRO INSERT LINHA 28: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 29
+ERRO INSERT LINHA 29: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 30
+ERRO INSERT LINHA 30: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 31
+ERRO INSERT LINHA 31: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 32
+PROCESSANDO LINHA 33
+PROCESSANDO LINHA 34
+PROCESSANDO LINHA 35
+ERRO INSERT LINHA 35: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 36
+ERRO INSERT LINHA 36: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 37
+PROCESSANDO LINHA 38
+PROCESSANDO LINHA 39
+PROCESSANDO LINHA 40
+PROCESSANDO LINHA 41
+PROCESSANDO LINHA 42
+PROCESSANDO LINHA 43
+PROCESSANDO LINHA 44
+ERRO INSERT LINHA 44: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 45
+ERRO INSERT LINHA 45: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 46
+ERRO INSERT LINHA 46: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 47
+ERRO INSERT LINHA 47: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 48
+ERRO INSERT LINHA 48: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 49
+ERRO INSERT LINHA 49: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 50
+ERRO INSERT LINHA 50: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 51
+ERRO INSERT LINHA 51: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 52
+ERRO INSERT LINHA 52: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 53
+ERRO INSERT LINHA 53: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 54
+ERRO INSERT LINHA 54: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 55
+ERRO INSERT LINHA 55: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 56
+ERRO INSERT LINHA 56: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 57
+ERRO INSERT LINHA 57: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 58
+ERRO INSERT LINHA 58: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 59
+ERRO INSERT LINHA 59: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 60
+ERRO INSERT LINHA 60: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 61
+ERRO INSERT LINHA 61: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 62
+ERRO INSERT LINHA 62: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 63
+ERRO INSERT LINHA 63: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 64
+ERRO INSERT LINHA 64: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 65
+ERRO INSERT LINHA 65: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 66
+ERRO INSERT LINHA 66: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 67
+ERRO INSERT LINHA 67: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 68
+ERRO INSERT LINHA 68: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 69
+ERRO INSERT LINHA 69: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 70
+ERRO INSERT LINHA 70: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 71
+ERRO INSERT LINHA 71: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 72
+ERRO INSERT LINHA 72: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 73
+ERRO INSERT LINHA 73: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 74
+ERRO INSERT LINHA 74: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 75
+PROCESSANDO LINHA 76
+PROCESSANDO LINHA 77
+ERRO INSERT LINHA 77: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 78
+ERRO INSERT LINHA 78: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 79
+PROCESSANDO LINHA 80
+PROCESSANDO LINHA 81
+PROCESSANDO LINHA 82
+PROCESSANDO LINHA 83
+PROCESSANDO LINHA 84
+PROCESSANDO LINHA 85
+PROCESSANDO LINHA 86
+ERRO INSERT LINHA 86: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 87
+ERRO INSERT LINHA 87: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 88
+ERRO INSERT LINHA 88: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 89
+ERRO INSERT LINHA 89: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 90
+ERRO INSERT LINHA 90: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 91
+ERRO INSERT LINHA 91: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 92
+ERRO INSERT LINHA 92: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 93
+ERRO INSERT LINHA 93: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 94
+ERRO INSERT LINHA 94: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 95
+ERRO INSERT LINHA 95: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 96
+ERRO INSERT LINHA 96: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 97
+ERRO INSERT LINHA 97: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 98
+ERRO INSERT LINHA 98: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 99
+ERRO INSERT LINHA 99: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 100
+ERRO INSERT LINHA 100: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 101
+ERRO INSERT LINHA 101: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 102
+ERRO INSERT LINHA 102: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 103
+ERRO INSERT LINHA 103: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 104
+ERRO INSERT LINHA 104: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 105
+ERRO INSERT LINHA 105: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 106
+ERRO INSERT LINHA 106: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 107
+ERRO INSERT LINHA 107: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 108
+ERRO INSERT LINHA 108: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 109
+ERRO INSERT LINHA 109: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 110
+ERRO INSERT LINHA 110: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 111
+ERRO INSERT LINHA 111: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 112
+ERRO INSERT LINHA 112: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 113
+ERRO INSERT LINHA 113: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 114
+ERRO INSERT LINHA 114: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 115
+ERRO INSERT LINHA 115: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 116
+ERRO INSERT LINHA 116: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 117
+PROCESSANDO LINHA 118
+ERRO INSERT LINHA 118: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 119
+ERRO INSERT LINHA 119: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 120
+ERRO INSERT LINHA 120: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 121
+PROCESSANDO LINHA 122
+PROCESSANDO LINHA 123
+PROCESSANDO LINHA 124
+PROCESSANDO LINHA 125
+PROCESSANDO LINHA 126
+PROCESSANDO LINHA 127
+PROCESSANDO LINHA 128
+ERRO INSERT LINHA 128: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 129
+ERRO INSERT LINHA 129: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 130
+ERRO INSERT LINHA 130: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 131
+ERRO INSERT LINHA 131: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 132
+ERRO INSERT LINHA 132: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 133
+ERRO INSERT LINHA 133: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 134
+ERRO INSERT LINHA 134: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 135
+ERRO INSERT LINHA 135: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 136
+ERRO INSERT LINHA 136: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 137
+ERRO INSERT LINHA 137: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 138
+ERRO INSERT LINHA 138: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 139
+ERRO INSERT LINHA 139: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 140
+ERRO INSERT LINHA 140: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 141
+ERRO INSERT LINHA 141: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 142
+ERRO INSERT LINHA 142: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 143
+ERRO INSERT LINHA 143: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 144
+ERRO INSERT LINHA 144: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 145
+PROCESSANDO LINHA 146
+PROCESSANDO LINHA 147
+PROCESSANDO LINHA 148
+PROCESSANDO LINHA 149
+PROCESSANDO LINHA 150
+PROCESSANDO LINHA 151
+PROCESSANDO LINHA 152
+ERRO INSERT LINHA 152: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 153
+ERRO INSERT LINHA 153: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 154
+ERRO INSERT LINHA 154: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 155
+ERRO INSERT LINHA 155: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 156
+ERRO INSERT LINHA 156: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 157
+ERRO INSERT LINHA 157: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 158
+ERRO INSERT LINHA 158: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 159
+PROCESSANDO LINHA 160
+ERRO INSERT LINHA 160: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 161
+ERRO INSERT LINHA 161: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 162
+ERRO INSERT LINHA 162: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 163
+PROCESSANDO LINHA 164
+PROCESSANDO LINHA 165
+PROCESSANDO LINHA 166
+PROCESSANDO LINHA 167
+PROCESSANDO LINHA 168
+PROCESSANDO LINHA 169
+PROCESSANDO LINHA 170
+ERRO INSERT LINHA 170: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 171
+ERRO INSERT LINHA 171: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 172
+ERRO INSERT LINHA 172: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 173
+ERRO INSERT LINHA 173: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 174
+ERRO INSERT LINHA 174: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 175
+ERRO INSERT LINHA 175: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 176
+ERRO INSERT LINHA 176: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 177
+ERRO INSERT LINHA 177: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 178
+ERRO INSERT LINHA 178: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 179
+ERRO INSERT LINHA 179: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 180
+ERRO INSERT LINHA 180: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 181
+ERRO INSERT LINHA 181: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 182
+ERRO INSERT LINHA 182: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 183
+ERRO INSERT LINHA 183: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 184
+ERRO INSERT LINHA 184: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 185
+ERRO INSERT LINHA 185: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 186
+ERRO INSERT LINHA 186: SQLSTATE[HY000]: General error: 1722 OCIStmtExecute: ORA-01722: número inválido
+ (ext\pdo_oci\oci_statement.c:155)
+PROCESSANDO LINHA 187
+IMPORTACAO FINALIZADA. TOTAL: 43
+INICIANDO SCRIPT PARA ARQUIVO: 20251204_181221_143515fc.xlsx
+LENDO EXCEL...
+CAMINHO: C:\xampp\htdocs\importador\uploads\20251204_181221_143515fc.xlsx
+EXCEL LIDO COM SUCESSO
+ULTIMA LINHA DETECTADA: 1048576
+PROCESSANDO LINHA 2
+PROCESSANDO LINHA 3
+PROCESSANDO LINHA 4
+PROCESSANDO LINHA 5
+PROCESSANDO LINHA 6
+PROCESSANDO LINHA 7
+PROCESSANDO LINHA 8
+PROCESSANDO LINHA 9
+PROCESSANDO LINHA 10
+PROCESSANDO LINHA 11
+PROCESSANDO LINHA 12
+PROCESSANDO LINHA 13
+PROCESSANDO LINHA 14
+PROCESSANDO LINHA 15
+PROCESSANDO LINHA 16
+PROCESSANDO LINHA 17
+PROCESSANDO LINHA 18
+PROCESSANDO LINHA 19
+PROCESSANDO LINHA 20
+PROCESSANDO LINHA 21
+PROCESSANDO LINHA 22
+PROCESSANDO LINHA 23
+PROCESSANDO LINHA 24
+PROCESSANDO LINHA 25
+PROCESSANDO LINHA 26
+PROCESSANDO LINHA 27
+PROCESSANDO LINHA 28
+PROCESSANDO LINHA 29
+PROCESSANDO LINHA 30
+PROCESSANDO LINHA 31
+PROCESSANDO LINHA 32
+PROCESSANDO LINHA 33
+PROCESSANDO LINHA 34
+PROCESSANDO LINHA 35
+PROCESSANDO LINHA 36
+PROCESSANDO LINHA 37
+PROCESSANDO LINHA 38
+PROCESSANDO LINHA 39
+PROCESSANDO LINHA 40
+PROCESSANDO LINHA 41
+PROCESSANDO LINHA 42
+PROCESSANDO LINHA 43
+PROCESSANDO LINHA 44
+PROCESSANDO LINHA 45
+PROCESSANDO LINHA 46
+PROCESSANDO LINHA 47
+PROCESSANDO LINHA 48
+PROCESSANDO LINHA 49
+PROCESSANDO LINHA 50
+PROCESSANDO LINHA 51
+PROCESSANDO LINHA 52
+PROCESSANDO LINHA 53
+PROCESSANDO LINHA 54
+PROCESSANDO LINHA 55
+PROCESSANDO LINHA 56
+PROCESSANDO LINHA 57
+PROCESSANDO LINHA 58
+PROCESSANDO LINHA 59
+PROCESSANDO LINHA 60
+PROCESSANDO LINHA 61
+PROCESSANDO LINHA 62
+PROCESSANDO LINHA 63
+PROCESSANDO LINHA 64
+PROCESSANDO LINHA 65
+PROCESSANDO LINHA 66
+PROCESSANDO LINHA 67
+PROCESSANDO LINHA 68
+PROCESSANDO LINHA 69
+PROCESSANDO LINHA 70
+PROCESSANDO LINHA 71
+PROCESSANDO LINHA 72
+PROCESSANDO LINHA 73
+PROCESSANDO LINHA 74
+PROCESSANDO LINHA 75
+PROCESSANDO LINHA 76
+PROCESSANDO LINHA 77
+PROCESSANDO LINHA 78
+PROCESSANDO LINHA 79
+PROCESSANDO LINHA 80
+PROCESSANDO LINHA 81
+PROCESSANDO LINHA 82
+PROCESSANDO LINHA 83
+PROCESSANDO LINHA 84
+PROCESSANDO LINHA 85
+PROCESSANDO LINHA 86
+PROCESSANDO LINHA 87
+PROCESSANDO LINHA 88
+PROCESSANDO LINHA 89
+PROCESSANDO LINHA 90
+PROCESSANDO LINHA 91
+PROCESSANDO LINHA 92
+PROCESSANDO LINHA 93
+PROCESSANDO LINHA 94
+PROCESSANDO LINHA 95
+PROCESSANDO LINHA 96
+PROCESSANDO LINHA 97
+PROCESSANDO LINHA 98
+PROCESSANDO LINHA 99
+PROCESSANDO LINHA 100
+PROCESSANDO LINHA 101
+PROCESSANDO LINHA 102
+PROCESSANDO LINHA 103
+PROCESSANDO LINHA 104
+PROCESSANDO LINHA 105
+PROCESSANDO LINHA 106
+PROCESSANDO LINHA 107
+PROCESSANDO LINHA 108
+PROCESSANDO LINHA 109
+PROCESSANDO LINHA 110
+PROCESSANDO LINHA 111
+PROCESSANDO LINHA 112
+PROCESSANDO LINHA 113
+PROCESSANDO LINHA 114
+PROCESSANDO LINHA 115
+PROCESSANDO LINHA 116
+PROCESSANDO LINHA 117
+PROCESSANDO LINHA 118
+PROCESSANDO LINHA 119
+PROCESSANDO LINHA 120
+PROCESSANDO LINHA 121
+PROCESSANDO LINHA 122
+PROCESSANDO LINHA 123
+PROCESSANDO LINHA 124
+PROCESSANDO LINHA 125
+PROCESSANDO LINHA 126
+PROCESSANDO LINHA 127
+PROCESSANDO LINHA 128
+PROCESSANDO LINHA 129
+PROCESSANDO LINHA 130
+PROCESSANDO LINHA 131
+PROCESSANDO LINHA 132
+PROCESSANDO LINHA 133
+PROCESSANDO LINHA 134
+PROCESSANDO LINHA 135
+PROCESSANDO LINHA 136
+PROCESSANDO LINHA 137
+PROCESSANDO LINHA 138
+PROCESSANDO LINHA 139
+PROCESSANDO LINHA 140
+PROCESSANDO LINHA 141
+PROCESSANDO LINHA 142
+PROCESSANDO LINHA 143
+PROCESSANDO LINHA 144
+PROCESSANDO LINHA 145
+PROCESSANDO LINHA 146
+PROCESSANDO LINHA 147
+PROCESSANDO LINHA 148
+PROCESSANDO LINHA 149
+PROCESSANDO LINHA 150
+PROCESSANDO LINHA 151
+PROCESSANDO LINHA 152
+PROCESSANDO LINHA 153
+PROCESSANDO LINHA 154
+PROCESSANDO LINHA 155
+PROCESSANDO LINHA 156
+PROCESSANDO LINHA 157
+PROCESSANDO LINHA 158
+PROCESSANDO LINHA 159
+PROCESSANDO LINHA 160
+PROCESSANDO LINHA 161
+PROCESSANDO LINHA 162
+PROCESSANDO LINHA 163
+PROCESSANDO LINHA 164
+PROCESSANDO LINHA 165
+PROCESSANDO LINHA 166
+PROCESSANDO LINHA 167
+PROCESSANDO LINHA 168
+PROCESSANDO LINHA 169
+PROCESSANDO LINHA 170
+PROCESSANDO LINHA 171
+PROCESSANDO LINHA 172
+PROCESSANDO LINHA 173
+PROCESSANDO LINHA 174
+PROCESSANDO LINHA 175
+PROCESSANDO LINHA 176
+PROCESSANDO LINHA 177
+PROCESSANDO LINHA 178
+PROCESSANDO LINHA 179
+PROCESSANDO LINHA 180
+PROCESSANDO LINHA 181
+PROCESSANDO LINHA 182
+PROCESSANDO LINHA 183
+PROCESSANDO LINHA 184
+PROCESSANDO LINHA 185
+PROCESSANDO LINHA 186
+PROCESSANDO LINHA 187
+IMPORTACAO FINALIZADA. TOTAL: 186
+INICIANDO SCRIPT PARA ARQUIVO: 20251216_173446_a84173c6.xlsx
+LENDO EXCEL...
+CAMINHO: C:\xampp\htdocs\importador\uploads\20251216_173446_a84173c6.xlsx
+EXCEL LIDO COM SUCESSO
+ULTIMA LINHA DETECTADA: 1048576
+PROCESSANDO LINHA 2
+PROCESSANDO LINHA 3
+PROCESSANDO LINHA 4
+PROCESSANDO LINHA 5
+PROCESSANDO LINHA 6
+PROCESSANDO LINHA 7
+PROCESSANDO LINHA 8
+PROCESSANDO LINHA 9
+PROCESSANDO LINHA 10
+PROCESSANDO LINHA 11
+PROCESSANDO LINHA 12
+PROCESSANDO LINHA 13
+PROCESSANDO LINHA 14
+PROCESSANDO LINHA 15
+PROCESSANDO LINHA 16
+PROCESSANDO LINHA 17
+PROCESSANDO LINHA 18
+PROCESSANDO LINHA 19
+PROCESSANDO LINHA 20
+PROCESSANDO LINHA 21
+PROCESSANDO LINHA 22
+PROCESSANDO LINHA 23
+PROCESSANDO LINHA 24
+PROCESSANDO LINHA 25
+PROCESSANDO LINHA 26
+PROCESSANDO LINHA 27
+PROCESSANDO LINHA 28
+PROCESSANDO LINHA 29
+PROCESSANDO LINHA 30
+PROCESSANDO LINHA 31
+PROCESSANDO LINHA 32
+PROCESSANDO LINHA 33
+PROCESSANDO LINHA 34
+PROCESSANDO LINHA 35
+PROCESSANDO LINHA 36
+PROCESSANDO LINHA 37
+PROCESSANDO LINHA 38
+PROCESSANDO LINHA 39
+PROCESSANDO LINHA 40
+PROCESSANDO LINHA 41
+PROCESSANDO LINHA 42
+PROCESSANDO LINHA 43
+PROCESSANDO LINHA 44
+PROCESSANDO LINHA 45
+PROCESSANDO LINHA 46
+PROCESSANDO LINHA 47
+PROCESSANDO LINHA 48
+PROCESSANDO LINHA 49
+PROCESSANDO LINHA 50
+PROCESSANDO LINHA 51
+PROCESSANDO LINHA 52
+PROCESSANDO LINHA 53
+PROCESSANDO LINHA 54
+PROCESSANDO LINHA 55
+PROCESSANDO LINHA 56
+PROCESSANDO LINHA 57
+PROCESSANDO LINHA 58
+PROCESSANDO LINHA 59
+PROCESSANDO LINHA 60
+PROCESSANDO LINHA 61
+PROCESSANDO LINHA 62
+PROCESSANDO LINHA 63
+PROCESSANDO LINHA 64
+PROCESSANDO LINHA 65
+PROCESSANDO LINHA 66
+PROCESSANDO LINHA 67
+PROCESSANDO LINHA 68
+PROCESSANDO LINHA 69
+PROCESSANDO LINHA 70
+PROCESSANDO LINHA 71
+PROCESSANDO LINHA 72
+PROCESSANDO LINHA 73
+PROCESSANDO LINHA 74
+PROCESSANDO LINHA 75
+PROCESSANDO LINHA 76
+PROCESSANDO LINHA 77
+PROCESSANDO LINHA 78
+PROCESSANDO LINHA 79
+PROCESSANDO LINHA 80
+PROCESSANDO LINHA 81
+PROCESSANDO LINHA 82
+PROCESSANDO LINHA 83
+PROCESSANDO LINHA 84
+PROCESSANDO LINHA 85
+PROCESSANDO LINHA 86
+PROCESSANDO LINHA 87
+PROCESSANDO LINHA 88
+PROCESSANDO LINHA 89
+PROCESSANDO LINHA 90
+PROCESSANDO LINHA 91
+PROCESSANDO LINHA 92
+PROCESSANDO LINHA 93
+PROCESSANDO LINHA 94
+PROCESSANDO LINHA 95
+PROCESSANDO LINHA 96
+PROCESSANDO LINHA 97
+PROCESSANDO LINHA 98
+PROCESSANDO LINHA 99
+PROCESSANDO LINHA 100
+PROCESSANDO LINHA 101
+PROCESSANDO LINHA 102
+PROCESSANDO LINHA 103
+PROCESSANDO LINHA 104
+PROCESSANDO LINHA 105
+PROCESSANDO LINHA 106
+PROCESSANDO LINHA 107
+PROCESSANDO LINHA 108
+PROCESSANDO LINHA 109
+PROCESSANDO LINHA 110
+PROCESSANDO LINHA 111
+PROCESSANDO LINHA 112
+PROCESSANDO LINHA 113
+PROCESSANDO LINHA 114
+PROCESSANDO LINHA 115
+PROCESSANDO LINHA 116
+PROCESSANDO LINHA 117
+PROCESSANDO LINHA 118
+PROCESSANDO LINHA 119
+PROCESSANDO LINHA 120
+PROCESSANDO LINHA 121
+PROCESSANDO LINHA 122
+PROCESSANDO LINHA 123
+PROCESSANDO LINHA 124
+PROCESSANDO LINHA 125
+PROCESSANDO LINHA 126
+PROCESSANDO LINHA 127
+PROCESSANDO LINHA 128
+PROCESSANDO LINHA 129
+PROCESSANDO LINHA 130
+PROCESSANDO LINHA 131
+PROCESSANDO LINHA 132
+PROCESSANDO LINHA 133
+PROCESSANDO LINHA 134
+PROCESSANDO LINHA 135
+PROCESSANDO LINHA 136
+PROCESSANDO LINHA 137
+PROCESSANDO LINHA 138
+PROCESSANDO LINHA 139
+PROCESSANDO LINHA 140
+PROCESSANDO LINHA 141
+PROCESSANDO LINHA 142
+PROCESSANDO LINHA 143
+PROCESSANDO LINHA 144
+PROCESSANDO LINHA 145
+PROCESSANDO LINHA 146
+PROCESSANDO LINHA 147
+PROCESSANDO LINHA 148
+PROCESSANDO LINHA 149
+PROCESSANDO LINHA 150
+PROCESSANDO LINHA 151
+PROCESSANDO LINHA 152
+PROCESSANDO LINHA 153
+PROCESSANDO LINHA 154
+PROCESSANDO LINHA 155
+PROCESSANDO LINHA 156
+PROCESSANDO LINHA 157
+PROCESSANDO LINHA 158
+PROCESSANDO LINHA 159
+PROCESSANDO LINHA 160
+PROCESSANDO LINHA 161
+PROCESSANDO LINHA 162
+PROCESSANDO LINHA 163
+PROCESSANDO LINHA 164
+PROCESSANDO LINHA 165
+PROCESSANDO LINHA 166
+PROCESSANDO LINHA 167
+PROCESSANDO LINHA 168
+PROCESSANDO LINHA 169
+PROCESSANDO LINHA 170
+PROCESSANDO LINHA 171
+PROCESSANDO LINHA 172
+PROCESSANDO LINHA 173
+PROCESSANDO LINHA 174
+PROCESSANDO LINHA 175
+PROCESSANDO LINHA 176
+PROCESSANDO LINHA 177
+PROCESSANDO LINHA 178
+PROCESSANDO LINHA 179
+PROCESSANDO LINHA 180
+PROCESSANDO LINHA 181
+PROCESSANDO LINHA 182
+PROCESSANDO LINHA 183
+PROCESSANDO LINHA 184
+PROCESSANDO LINHA 185
+PROCESSANDO LINHA 186
+PROCESSANDO LINHA 187
+IMPORTACAO FINALIZADA. TOTAL: 186
