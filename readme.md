@@ -1,4 +1,4 @@
-# Importador Mega G 🚀
+# Mega G - ERP 🚀
 
 Sistema web desenvolvido em **PHP** para automação e importação de planilhas Excel diretamente para o **Oracle (ERP Consinco)**.  
 Atualmente suporta **Cargas/Metas**, **Comissões**, **Custo de Comercialização (Tabela de Venda por Raio)** e o conjunto completo de **importações de Metas (BI e Vendas)**, com **processamento em tempo real via SSE**, **dashboards**, **monitor avançado de dados**, **controle de permissões** e **UI Clean SaaS**.
