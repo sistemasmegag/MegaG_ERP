@@ -46,6 +46,20 @@ $labelsModulo = [
 ];
 
 // ============================
+// 2.1) Helper de compatibilidade (evita quebrar em PHP < 8)
+// ============================
+if (!function_exists('ends_with_ci')) {
+    function ends_with_ci($haystack, $needle) {
+        $haystack = (string)$haystack;
+        $needle   = (string)$needle;
+        if ($needle === '') return true;
+        $len = strlen($needle);
+        if ($len > strlen($haystack)) return false;
+        return strtolower(substr($haystack, -$len)) === strtolower($needle);
+    }
+}
+
+// ============================
 // 3) Helper para ícone (por enquanto fixo/fallback)
 //    (Como a view não traz ICO, usamos um fallback por módulo)
 // ============================
@@ -67,8 +81,8 @@ function renderMenuIconFromModulo($codModulo) {
 function normalizeLinkMenu($linkMenu) {
     $linkMenu = trim((string)$linkMenu);
 
-    // remove extensão .php se vier
-    if ($linkMenu !== '' && str_ends_with(strtolower($linkMenu), '.php')) {
+    // remove extensão .php se vier (compatível com PHP < 8)
+    if ($linkMenu !== '' && ends_with_ci($linkMenu, '.php')) {
         $linkMenu = substr($linkMenu, 0, -4);
     }
 
@@ -82,22 +96,153 @@ function normalizeLinkMenu($linkMenu) {
 }
 ?>
 
+<style>
+/* =========================
+   Sidebar – tamanho + recolher/expandir + busca
+   ========================= */
+
+:root{
+  --sidebar-expanded: 300px;
+  --sidebar-collapsed: 88px;
+}
+
+/* LARGURA DO SIDEBAR */
+.modern-sidebar{
+  width: var(--sidebar-expanded);
+  min-width: var(--sidebar-expanded);
+  font-size: 15px;
+  transition: width .18s ease, min-width .18s ease, transform .18s ease;
+}
+
+/* colapsado */
+.modern-sidebar.is-collapsed{
+  width: var(--sidebar-collapsed);
+  min-width: var(--sidebar-collapsed);
+}
+
+/* esconder textos no modo recolhido (mantém ícones/estrutura) */
+.modern-sidebar.is-collapsed .brand-text,
+.modern-sidebar.is-collapsed .menu-header,
+.modern-sidebar.is-collapsed .nav-link span .nav-text,
+.modern-sidebar.is-collapsed .sidebar-search,
+.modern-sidebar.is-collapsed .user-info,
+.modern-sidebar.is-collapsed .logout-btn{
+  display: none !important;
+}
+
+/* ainda permite ver o “logo” (ícone verde) e avatar no recolhido */
+.modern-sidebar.is-collapsed .brand{
+  justify-content: center;
+}
+.modern-sidebar.is-collapsed .brand .brand-icon{
+  margin-right: 0 !important;
+}
+
+/* itens centralizados no recolhido */
+.modern-sidebar.is-collapsed .nav-link{
+  justify-content: center;
+  padding: 12px 0;
+}
+
+/* links e ícones */
+.modern-sidebar .nav-link{
+  font-size: 0.98rem;
+  padding: 11px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+}
+.modern-sidebar .nav-link i{
+  font-size: 1.10rem;
+}
+.modern-sidebar .nav-link.active{
+  padding-left: 18px;
+}
+
+/* headers clicáveis dos módulos */
+.modern-sidebar .menu-header{
+  font-size: 0.78rem;
+  letter-spacing: .08em;
+  padding-top: 12px;
+  padding-bottom: 6px;
+  opacity: .85;
+}
+
+/* botão recolher */
+.sidebar-toggle-btn{
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+.sidebar-toggle-btn:hover{
+  background: rgba(255,255,255,.08);
+}
+
+/* busca */
+.modern-sidebar .sidebar-search .form-control{
+  font-size: 0.95rem;
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+
+/* perfil */
+.modern-sidebar .user-profile h6{ font-size: .95rem; }
+.modern-sidebar .user-profile small{ font-size: .80rem; }
+
+/* =========================================================
+   AJUSTE DO "CONTEÚDO" (pra não ficar aquele espaço estranho)
+   - muita gente fixa margin-left no conteúdo
+   - a gente tenta acompanhar via CSS (quando possível)
+   ========================================================= */
+
+/* tenta ajustar containers comuns (se existirem) */
+.app-shell .main,
+.app-shell .main-content,
+.app-shell .content,
+.app-shell .content-wrapper,
+.app-shell .page-content,
+.app-shell .main-inner{
+  transition: margin-left .18s ease;
+}
+
+/* quando o sidebar estiver colapsado, o JS também ajusta inline,
+   mas esse fallback ajuda quando o layout não usa inline */
+body.sidebar-collapsed .app-shell .main,
+body.sidebar-collapsed .app-shell .main-content,
+body.sidebar-collapsed .app-shell .content,
+body.sidebar-collapsed .app-shell .content-wrapper,
+body.sidebar-collapsed .app-shell .page-content,
+body.sidebar-collapsed .app-shell .main-inner{
+  margin-left: var(--sidebar-collapsed) !important;
+}
+</style>
+
 <div class="modern-sidebar flex-shrink-0" id="sidebarMenu">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="index.php?page=home" class="brand mb-0">
-            <div class="bg-success bg-gradient rounded-3 d-flex justify-content-center align-items-center me-2" style="width: 36px; height: 36px;">
-                 <i class="bi bi-patch-check-fill fs-5 text-white"></i>
+        <a href="index.php?page=home" class="brand mb-0 d-flex align-items-center">
+            <div class="bg-success bg-gradient rounded-3 d-flex justify-content-center align-items-center me-2 brand-icon" style="width: 36px; height: 36px;">
+                <i class="bi bi-patch-check-fill fs-5 text-white"></i>
             </div>
-            Importador Mega G
+            <span class="brand-text">Importador Mega G</span>
         </a>
 
-        <button class="btn-close btn-close-white d-md-none" onclick="toggleMenu()"></button>
+        <div class="d-flex align-items-center gap-2">
+            <!-- botão recolher/expandir (desktop) -->
+            <button type="button" class="sidebar-toggle-btn d-none d-md-inline-flex" id="btnSidebarToggle" title="Recolher/Expandir">
+                <i class="bi bi-layout-sidebar-inset"></i>
+            </button>
+
+            <!-- botão fechar (mobile) -->
+            <button class="btn-close btn-close-white d-md-none" onclick="toggleMenu()"></button>
+        </div>
     </div>
 
     <div class="position-relative sidebar-search mb-4">
         <i class="bi bi-search"></i>
-        <input type="text" class="form-control py-2" placeholder="Buscar...">
+        <input type="text" class="form-control py-2" placeholder="Buscar..." id="sidebarSearchInput" autocomplete="off">
     </div>
 
     <div style="overflow-y: auto; flex-grow: 1;" class="mb-3">
@@ -105,66 +250,110 @@ function normalizeLinkMenu($linkMenu) {
         <!-- ===== Menu Principal (fixo) ===== -->
         <div class="menu-header">Menu Principal</div>
         <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item">
+            <li class="nav-item" data-menu-item="1" data-menu-text="dashboard" data-menu-group="principal">
                 <a href="index.php?page=home" class="nav-link <?php echo ($paginaAtual == 'home') ? 'active' : ''; ?>">
-                    <span><i class="bi bi-grid-fill me-2"></i> Dashboard</span>
+                    <span>
+                        <i class="bi bi-grid-fill me-2"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </span>
                 </a>
             </li>
         </ul>
 
         <!-- ===== Menus dinâmicos (da VIEW via sessão) ===== -->
         <?php foreach ($grupos as $codModulo => $itens): ?>
-            <?php $tituloModulo = $labelsModulo[$codModulo] ?? $codModulo; ?>
+            <?php
+                $tituloModulo = $labelsModulo[$codModulo] ?? $codModulo;
 
-            <div class="menu-header mt-3"><?php echo htmlspecialchars($tituloModulo, ENT_QUOTES, 'UTF-8'); ?></div>
+                // ID seguro (evita quebrar HTML/JS com espaços e caracteres especiais)
+                $safeId = preg_replace('/[^a-zA-Z0-9_-]/', '_', (string)$codModulo);
+                $collapseId = 'menu_modulo_' . $safeId;
 
-            <ul class="nav nav-pills flex-column">
-                <?php foreach ($itens as $app): ?>
-                    <?php
-                        $codApp   = (string)($app['CODAPLICACAO'] ?? '');
-                        $nomeApp  = (string)($app['APLIACACAO'] ?? $codApp);
+                // Detecta se algum item está ativo para abrir a "pastinha" automaticamente
+                $hasActive = false;
+                foreach ($itens as $appTmp) {
+                    $tmpLink = normalizeLinkMenu((string)($appTmp['LINKMENU'] ?? ''));
+                    if ($paginaAtual === $tmpLink) {
+                        $hasActive = true;
+                        break;
+                    }
+                }
 
-                        // pega o link cru da view
-                        $linkMenuRaw = (string)($app['LINKMENU'] ?? '');
+                $moduleText = strtolower((string)$tituloModulo);
+            ?>
 
-                        // normaliza para bater com suas pages (imp_*)
-                        $linkMenu = normalizeLinkMenu($linkMenuRaw);
+            <!-- Cabeçalho do módulo (clicável / pastinha) -->
+            <div class="menu-header mt-3"
+                 role="button"
+                 data-bs-toggle="collapse"
+                 data-bs-target="#<?php echo $collapseId; ?>"
+                 aria-expanded="<?php echo $hasActive ? 'true' : 'false'; ?>"
+                 style="cursor:pointer; user-select:none;">
+                <?php echo renderMenuIconFromModulo($codModulo); ?>
+                <?php echo htmlspecialchars($tituloModulo, ENT_QUOTES, 'UTF-8'); ?>
+            </div>
 
-                        // LINKMENU deve ser o slug da page (sem .php)
-                        $href = 'index.php?page=' . urlencode($linkMenu);
+            <!-- Conteúdo colapsável do módulo -->
+            <div class="collapse <?php echo $hasActive ? 'show' : ''; ?>"
+                 id="<?php echo $collapseId; ?>"
+                 data-menu-collapse="1"
+                 data-menu-module="<?php echo htmlspecialchars($moduleText, ENT_QUOTES, 'UTF-8'); ?>">
 
-                        // Permissão simples: existe na sessão?
-                        $temAcesso = temPermissao($codApp);
+                <ul class="nav nav-pills flex-column mt-1">
+                    <?php foreach ($itens as $app): ?>
+                        <?php
+                            $codApp   = (string)($app['CODAPLICACAO'] ?? '');
+                            $nomeApp  = (string)($app['APLIACACAO'] ?? $codApp);
 
-                        // Active
-                        $isActive = ($paginaAtual === $linkMenu);
+                            // pega o link cru da view
+                            $linkMenuRaw = (string)($app['LINKMENU'] ?? '');
 
-                        // Ícone (fallback por módulo)
-                        $icoHtml = renderMenuIconFromModulo($codModulo);
+                            // normaliza para bater com suas pages (imp_*)
+                            $linkMenu = normalizeLinkMenu($linkMenuRaw);
 
-                        $classes = 'nav-link';
-                        if ($isActive) $classes .= ' active';
-                        if (!$temAcesso) $classes .= ' js-no-permission';
-                    ?>
+                            // LINKMENU deve ser o slug da page (sem .php)
+                            $href = 'index.php?page=' . urlencode($linkMenu);
 
-                    <li>
-                        <a
-                            href="<?php echo $temAcesso ? $href : '#'; ?>"
-                            class="<?php echo $classes; ?>"
-                            <?php if (!$temAcesso): ?>
-                                aria-disabled="true"
-                                data-app="<?php echo htmlspecialchars($nomeApp, ENT_QUOTES, 'UTF-8'); ?>"
-                            <?php endif; ?>
-                        >
-                            <span>
-                                <?php echo $icoHtml; ?>
-                                <?php echo htmlspecialchars($nomeApp, ENT_QUOTES, 'UTF-8'); ?>
-                            </span>
-                        </a>
-                    </li>
+                            // Permissão simples: existe na sessão?
+                            $temAcesso = temPermissao($codApp);
 
-                <?php endforeach; ?>
-            </ul>
+                            // Active
+                            $isActive = ($paginaAtual === $linkMenu);
+
+                            // Ícone (fallback por módulo)
+                            $icoHtml = renderMenuIconFromModulo($codModulo);
+
+                            $classes = 'nav-link';
+                            if ($isActive) $classes .= ' active';
+                            if (!$temAcesso) $classes .= ' js-no-permission';
+
+                            // texto para busca (mantém simples; o JS remove acento)
+                            $searchText = strtolower($nomeApp . ' ' . $tituloModulo . ' ' . $codModulo);
+                        ?>
+
+                        <li class="nav-item"
+                            data-menu-item="1"
+                            data-menu-text="<?php echo htmlspecialchars($searchText, ENT_QUOTES, 'UTF-8'); ?>"
+                            data-menu-group="<?php echo htmlspecialchars(strtolower((string)$codModulo), ENT_QUOTES, 'UTF-8'); ?>">
+                            <a
+                                href="<?php echo $temAcesso ? $href : '#'; ?>"
+                                class="<?php echo $classes; ?>"
+                                <?php if (!$temAcesso): ?>
+                                    aria-disabled="true"
+                                    data-app="<?php echo htmlspecialchars($nomeApp, ENT_QUOTES, 'UTF-8'); ?>"
+                                <?php endif; ?>
+                            >
+                                <span>
+                                    <?php echo $icoHtml; ?>
+                                    <span class="nav-text"><?php echo htmlspecialchars($nomeApp, ENT_QUOTES, 'UTF-8'); ?></span>
+                                </span>
+                            </a>
+                        </li>
+
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+
         <?php endforeach; ?>
 
     </div>
@@ -216,7 +405,9 @@ function normalizeLinkMenu($linkMenu) {
 
 <script>
 (function(){
-    // Intercepta clique nos itens sem permissão e abre modal
+    // ============================
+    // 1) Modal Sem Permissão
+    // ============================
     document.addEventListener('click', function(e){
         const a = e.target.closest('.js-no-permission');
         if (!a) return;
@@ -232,6 +423,149 @@ function normalizeLinkMenu($linkMenu) {
 
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
+    });
+
+    // ============================
+    // 2) Recolher/Expandir (com persistência + ajusta conteúdo)
+    // ============================
+    const sidebar = document.getElementById('sidebarMenu');
+    const btnToggle = document.getElementById('btnSidebarToggle');
+
+    function currentSidebarWidthPx() {
+        if (!sidebar) return 0;
+        return sidebar.classList.contains('is-collapsed')
+            ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-collapsed')) || 88
+            : parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-expanded')) || 300;
+    }
+
+    function adjustAppLayout() {
+        // muitos layouts fixam margin-left no conteúdo; tentamos acompanhar.
+        const w = currentSidebarWidthPx() + 'px';
+        const shell = document.querySelector('.app-shell');
+
+        // marca no body (fallback CSS)
+        document.body.classList.toggle('sidebar-collapsed', !!(sidebar && sidebar.classList.contains('is-collapsed')));
+
+        if (!shell) return;
+
+        // tenta ajustar filhos diretos do app-shell que não são o sidebar
+        Array.prototype.forEach.call(shell.children, function(child){
+            if (!child || child.id === 'sidebarMenu') return;
+
+            // se tiver um margin-left relevante, ajusta
+            const ml = parseFloat(getComputedStyle(child).marginLeft) || 0;
+            if (ml >= 60) {
+                child.style.marginLeft = w;
+            }
+        });
+
+        // tenta ajustar wrappers comuns dentro do shell
+        const common = shell.querySelectorAll('.main, .main-content, .content, .content-wrapper, .page-content, .main-inner');
+        common.forEach(function(el){
+            const ml = parseFloat(getComputedStyle(el).marginLeft) || 0;
+            if (ml >= 60) el.style.marginLeft = w;
+        });
+
+        // ajusta também elementos com inline margin-left grandes (ex.: flashes)
+        const inlineCandidates = document.querySelectorAll('[style*="margin-left"]');
+        inlineCandidates.forEach(function(el){
+            // evita mexer no próprio sidebar e em elementos fora do app-shell, se existir
+            if (el.id === 'sidebarMenu') return;
+            if (shell && !shell.contains(el)) return;
+
+            const ml = parseFloat(getComputedStyle(el).marginLeft) || 0;
+            if (ml >= 60) el.style.marginLeft = w;
+        });
+    }
+
+    function setCollapsed(state){
+        if (!sidebar) return;
+        sidebar.classList.toggle('is-collapsed', !!state);
+        try { localStorage.setItem('sidebar_collapsed', state ? '1' : '0'); } catch(e){}
+        adjustAppLayout();
+    }
+
+    // carrega estado salvo
+    try {
+        const saved = localStorage.getItem('sidebar_collapsed');
+        if (saved === '1') {
+            setCollapsed(true);
+        } else {
+            adjustAppLayout();
+        }
+    } catch(e){
+        adjustAppLayout();
+    }
+
+    if (btnToggle) {
+        btnToggle.addEventListener('click', function(){
+            const isCollapsed = sidebar && sidebar.classList.contains('is-collapsed');
+            setCollapsed(!isCollapsed);
+        });
+    }
+
+    // ============================
+    // 3) Busca: filtra itens e abre pastinhas com match
+    // ============================
+    const input = document.getElementById('sidebarSearchInput');
+
+    function normalizeText(s){
+        return (s || '')
+          .toString()
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, ''); // remove acentos
+    }
+
+    function applySearch(term){
+        const q = normalizeText(term);
+
+        const items = sidebar ? sidebar.querySelectorAll('[data-menu-item="1"]') : [];
+        const collapses = sidebar ? sidebar.querySelectorAll('[data-menu-collapse="1"]') : [];
+
+        // sem termo: mostra tudo e mantém pastinhas como estavam
+        if (!q) {
+            items.forEach(li => { li.style.display = ''; });
+            return;
+        }
+
+        // filtra itens
+        const matchedCollapseIds = new Set();
+
+        items.forEach(li => {
+            const text = normalizeText(li.getAttribute('data-menu-text') || li.textContent);
+            const ok = text.includes(q);
+            li.style.display = ok ? '' : 'none';
+
+            if (ok) {
+                const collapse = li.closest('.collapse');
+                if (collapse && collapse.id) matchedCollapseIds.add(collapse.id);
+            }
+        });
+
+        // abre somente pastinhas que têm match
+        collapses.forEach(col => {
+            if (!col.id) return;
+            const hasMatch = matchedCollapseIds.has(col.id);
+
+            // não quebra se bootstrap não existir
+            if (typeof bootstrap === 'undefined' || !bootstrap.Collapse) return;
+
+            const inst = bootstrap.Collapse.getOrCreateInstance(col, { toggle: false });
+            if (hasMatch) inst.show();
+            else inst.hide();
+        });
+    }
+
+    if (input) {
+        input.addEventListener('input', function(){
+            applySearch(input.value || '');
+        });
+    }
+
+    // se o sidebar recolher/expandir enquanto busca, só garante layout
+    window.addEventListener('resize', function(){
+        adjustAppLayout();
     });
 })();
 </script>

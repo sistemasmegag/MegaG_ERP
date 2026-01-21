@@ -54,7 +54,17 @@ try {
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $owner = 'CONSINCO';
-    $table = "{$owner}.MEGAG_IMP_METAS_GAP";
+
+    // ============================================================
+    // TABELA BASE (sem owner) - usada para:
+    // 1) validar colunas no ALL_TAB_COLUMNS
+    // 2) executar a função megag_fn_tabs_importacao_sqlexec('<tabela>')
+    // ============================================================
+    $importTableBase = 'MEGAG_IMP_METAS_GAP';
+
+    // Tabela completa com owner (como estava no seu código)
+    $table = "{$owner}.{$importTableBase}";
+
     $usuario = $_SESSION['usuario'] ?? 'SYSTEM';
 
     sse_send("Abrindo planilha: {$arquivo}", 'sistema');
@@ -110,7 +120,7 @@ try {
     ");
     $stmtCols->execute([
         ':own' => $owner,
-        ':tab' => 'MEGAG_IMP_METAS_GAP'
+        ':tab' => $importTableBase
     ]);
     $dbCols = array_map('strtoupper', $stmtCols->fetchAll(PDO::FETCH_COLUMN));
     $has = fn($c) => in_array(strtoupper($c), $dbCols, true);
@@ -246,6 +256,48 @@ try {
             $fail++;
             sse_send("Linha {$r}: erro ao gravar -> " . $e->getMessage(), 'erro');
         }
+    }
+
+    // ============================================================
+    // PÓS-IMPORTAÇÃO: EXECUTA FUNÇÃO APÓS FINALIZAR AS GRAVAÇÕES
+    // select megag_fn_tabs_importacao_sqlexec('megag_imp_metas_gap') from dual;
+    // ============================================================
+
+    try {
+        sse_send("Executando rotina pós-importação: megag_fn_tabs_importacao_sqlexec...", 'sistema');
+
+        // Sanitiza apenas para evitar qualquer caractere fora do padrão
+        $importTableFn = preg_replace('/[^A-Z0-9_]/', '', strtoupper($importTableBase));
+
+        // A função (como você mostrou) recebe o nome em minúsculo.
+        // Se no seu Oracle ela for case-insensitive, tanto faz.
+        // Aqui vou mandar em minúsculo conforme seu exemplo.
+        $importTableFnLower = strtolower($importTableFn);
+
+        $stmtFn = $conn->prepare("SELECT megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual");
+        $stmtFn->execute([':p_table' => $importTableFnLower]);
+
+        $ret = $stmtFn->fetch(PDO::FETCH_ASSOC);
+        $retMsg = '';
+
+        if (is_array($ret)) {
+            if (isset($ret['RET'])) $retMsg = (string)$ret['RET'];
+            elseif (isset($ret['ret'])) $retMsg = (string)$ret['ret'];
+            else {
+                $first = array_values($ret);
+                $retMsg = isset($first[0]) ? (string)$first[0] : '';
+            }
+        }
+
+        if ($retMsg !== '') {
+            sse_send("Rotina pós-importação finalizada. Retorno: {$retMsg}", 'sucesso');
+        } else {
+            sse_send("Rotina pós-importação finalizada com sucesso.", 'sucesso');
+        }
+
+    } catch (Exception $e) {
+        // Não interrompe tudo, mas avisa
+        sse_send("Falha na rotina pós-importação: " . $e->getMessage(), 'erro');
     }
 
     sse_send("Finalizado. Sucesso: {$ok} | Falhas: {$fail}", $fail ? 'aviso' : 'sucesso');

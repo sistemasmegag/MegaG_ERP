@@ -291,7 +291,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
                 <div>
                     <h3 class="saas-title">Monitor de Importação</h3>
                     <p class="saas-subtitle">
-                        Filtre e acompanhe as cargas/metas e comissões importadas, com status e logs detalhados.
+                        Filtre e acompanhe as importações, com status e logs detalhados.
                     </p>
                 </div>
 
@@ -314,6 +314,9 @@ html[data-theme="dark"] .saas-detail-link .icon{
                 </div>
                 <div class="saas-chip" data-status="P">
                     <i class="bi bi-hourglass-split"></i> Pendente
+                </div>
+                <div class="saas-chip" data-status="C">
+                    <i class="bi bi-x-circle"></i> Cancelado
                 </div>
             </div>
 
@@ -352,77 +355,51 @@ html[data-theme="dark"] .saas-detail-link .icon{
                         <div class="fw-bold text-dark" style="letter-spacing:-.01em;">Pesquisa de Registros</div>
                     </div>
                 </div>
-                <div class="text-muted small">Refine por tipo, data e status</div>
+                <div class="text-muted small">Refine por tipo, usuário, data e status</div>
             </div>
 
             <div class="card-body saas-form">
                 <div class="row g-2 align-items-end">
 
+                    <!-- FIXO: Tipo de dado (vem da MEGAG_TABS_IMPORTACAO) -->
+                    <div class="col-md-4">
+                        <label class="form-label">Tipo de Dado</label>
+                        <select id="filtroTipo" class="form-select">
+                            <option value="">Carregando...</option>
+                        </select>
+                        <div class="text-muted small mt-1" id="tipoHint"></div>
+                    </div>
+
+                    <!-- FIXO: Usuário inclusão -->
                     <div class="col-md-3">
-                        <label class="form-label">Tipo de Dados</label>
-                        <select id="filtroTipo" class="form-select" onchange="mudarModoVisualizacao()">
-                            <option value="PADRAO">📊 Cargas e Metas</option>
-                            <option value="COMISSAO">💰 Comissões</option>
-                            <option value="TABVDAPRODRAIO">🎯 Custo Comercialização</option>
-
-                            <!-- NOVOS TIPOS (para trazer "todos os dados") -->
-                            <option value="IMP_BI_METAS">📈 BI Metas (Importação)</option>
-                            <option value="BI_METAS_PERSPECT">🧩 BI Metas Perspect</option>
-
-                            <option value="IMP_METAS">🎯 Metas (Importação)</option>
-                            <option value="IMP_METAS_FAIXA">🧱 Metas Faixas</option>
-                            <option value="IMP_METAS_PERSPEC">🧭 Metas Perspect (Importação)</option>
-                            <option value="IMP_METAS_GAP">📉 Metas GAP</option>
-                        </select>
+                        <label class="form-label">Usuário de Inclusão</label>
+                        <input type="text" id="filtroUsuario" class="form-control" placeholder="Ex: ADMIN">
                     </div>
 
-                    <div class="col-md-2">
-                        <label class="form-label">Data Referência</label>
-                        <input type="date" id="filtroData" class="form-control">
+                    <!-- FIXO: Data inclusão -->
+                    <div class="col-md-3">
+                        <label class="form-label">Data de Inclusão</label>
+                        <input type="date" id="filtroDataInclusao" class="form-control">
                     </div>
 
-                    <div class="col-md-2 grupo-metas">
-                        <label class="form-label">Setor</label>
-                        <input type="number" id="filtroSetor" class="form-control" placeholder="Cód.">
-                    </div>
-
-                    <div class="col-md-2 grupo-metas">
-                        <label class="form-label">Turno</label>
-                        <select id="filtroTurno" class="form-select">
-                            <option value="">Todos</option>
-                            <option value="DIA">DIA</option>
-                            <option value="NOITE">NOITE</option>
-                        </select>
-                    </div>
-
+                    <!-- FIXO: Status -->
                     <div class="col-md-2">
                         <label class="form-label">Status</label>
                         <select id="filtroStatus" class="form-select">
                             <option value="">Todos</option>
-                            <option value="S">Sucesso</option>
-                            <option value="E">Erro</option>
-                            <option value="P">Pendente</option>
+                            <option value="S">Sucesso (S)</option>
+                            <option value="E">Erro (E)</option>
+                            <option value="C">Cancelado (C)</option>
+                            <option value="P">Pendente (P)</option>
                         </select>
                     </div>
 
-                    <div class="col-md-2 grupo-raio" style="display:none;">
-                        <label class="form-label">Nro Tab. Venda</label>
-                        <input type="number" id="filtroNroTabVenda" class="form-control" placeholder="Ex: 1">
-                    </div>
-
-                    <div class="col-md-2 grupo-raio" style="display:none;">
-                        <label class="form-label">Seq. Produto</label>
-                        <input type="number" id="filtroSeqProduto" class="form-control" placeholder="Ex: 401">
-                    </div>
-
-                    <div class="col-md-2 grupo-raio" style="display:none;">
-                        <label class="form-label">Raio</label>
-                        <input type="number" id="filtroRaio" class="form-control" placeholder="Ex: 50">
-                    </div>
-
-                    <div class="col-md-1 d-flex gap-2">
-                        <button onclick="carregarDados()" class="btn btn-primary w-100 saas-search-btn" title="Pesquisar">
-                            <i class="bi bi-search"></i>
+                    <div class="col-md-12 d-flex gap-2 mt-2">
+                        <button onclick="carregarDados()" class="btn btn-primary saas-search-btn px-4" title="Pesquisar">
+                            <i class="bi bi-search me-1"></i> Buscar
+                        </button>
+                        <button onclick="limparFiltros()" class="btn btn-outline-secondary saas-search-btn px-4" title="Limpar">
+                            <i class="bi bi-eraser me-1"></i> Limpar
                         </button>
                     </div>
 
@@ -438,7 +415,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
                 </table>
             </div>
 
-            <div id="loading" class="text-center p-5 text-muted saas-state">
+            <div id="loading" class="text-center p-5 text-muted saas-state" style="display:none;">
                 <div class="spinner-border text-primary mb-2" role="status"></div>
                 <p class="mb-0">Buscando dados no Oracle...</p>
             </div>
@@ -502,8 +479,9 @@ html[data-theme="dark"] .saas-detail-link .icon{
     const renderStatus = (status) => {
         if(status === 'S') return '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Sucesso</span>';
         if(status === 'E') return '<span class="badge bg-danger"><i class="bi bi-exclamation-circle me-1"></i>Erro</span>';
-        if(status === 'P') return '<span class="badge bg-warning text-dark">Pendente</span>';
-        return status;
+        if(status === 'P') return '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pendente</span>';
+        if(status === 'C') return '<span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Cancelado</span>';
+        return escapeHtml(status);
     };
 
     (function initChips(){
@@ -568,7 +546,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
         });
     })();
 
-    /* ========= NOVO: helpers para renderização dinâmica (trazer todos os dados/colunas) ========= */
+    /* ========= helpers para renderização dinâmica ========= */
     const upper = (s) => String(s ?? '').toUpperCase();
 
     const isDateKey = (k) => {
@@ -583,7 +561,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
 
     const isLongTextKey = (k) => {
         const key = upper(k);
-        return key.includes('MSG_LOG') || key.includes('OBSERVACAO') || key.includes('OBSERVAÇÃO') || key.includes('LOG');
+        return key.includes('MSG_LOG') || key.includes('OBSERVACAO') || key.includes('OBSERVAÇÃO') || key.includes('LOG') || key.includes('RESULT') || key.includes('RES');
     };
 
     const normalizeNumber = (v) => {
@@ -591,7 +569,6 @@ html[data-theme="dark"] .saas-detail-link .icon{
         if (typeof v === 'number') return v;
         const s = String(v).trim();
         if (!s) return null;
-        // tenta converter pt-BR: 1.234,56 -> 1234.56
         const t = s.replace(/\./g, '').replace(',', '.');
         if (!isNaN(t)) return Number(t);
         if (!isNaN(s)) return Number(s);
@@ -648,7 +625,6 @@ html[data-theme="dark"] .saas-detail-link .icon{
             return escapeHtml(formatNumber(n));
         }
 
-        // string padrão
         return escapeHtml(String(val));
     }
 
@@ -683,39 +659,16 @@ html[data-theme="dark"] .saas-detail-link .icon{
         return tds;
     }
 
-    function mudarModoVisualizacao() {
-        const tipo = document.getElementById('filtroTipo').value;
-
-        const camposMetas = document.querySelectorAll('.grupo-metas');
-        const camposRaio  = document.querySelectorAll('.grupo-raio');
-
-        // default: esconde tudo específico
-        camposMetas.forEach(el => el.style.display = 'none');
-        camposRaio.forEach(el => el.style.display = 'none');
-
-        // mostra somente filtros que fazem sentido
-        if (tipo === 'PADRAO') {
-            camposMetas.forEach(el => el.style.display = 'block');
-        } else if (tipo === 'TABVDAPRODRAIO') {
-            camposRaio.forEach(el => el.style.display = 'block');
-        }
-
-        // agora o cabeçalho é dinâmico (será definido após o fetch)
-        document.getElementById('tabelaHead').innerHTML = '';
-        document.getElementById('tabelaCorpo').innerHTML = '';
-
-        syncChipActive();
-        carregarDados();
-    }
-
     function updateMetrics(dados){
         const total = dados.length;
-        let s=0,e=0,p=0;
+        let s=0,e=0,p=0,c=0;
 
         dados.forEach(r => {
-            if (r.STATUS === 'S') s++;
-            else if (r.STATUS === 'E') e++;
-            else if (r.STATUS === 'P') p++;
+            const st = r?.STATUS;
+            if (st === 'S') s++;
+            else if (st === 'E') e++;
+            else if (st === 'P') p++;
+            else if (st === 'C') c++;
         });
 
         const mTotal = document.getElementById('mTotal');
@@ -727,17 +680,75 @@ html[data-theme="dark"] .saas-detail-link .icon{
         if (mS) mS.textContent = s;
         if (mE) mE.textContent = e;
         if (mP) mP.textContent = p;
+
+        // (opcional) se você quiser um card 5º de cancelado, eu adiciono depois — por ora mantém 4 cards como está no layout.
+    }
+
+    async function carregarTipos() {
+        const sel = document.getElementById('filtroTipo');
+        const hint = document.getElementById('tipoHint');
+
+        try {
+            const resp = await fetch(`api/api_dados.php?action=list_tipos`);
+            if (!resp.ok) {
+                const txt = await resp.text();
+                throw new Error(`HTTP ${resp.status} - ${txt.substring(0,200)}`);
+            }
+            const json = await resp.json();
+
+            if (!json.sucesso) {
+                throw new Error(json.erro || 'Erro desconhecido ao listar tipos');
+            }
+
+            const itens = json.tipos || [];
+            sel.innerHTML = '';
+
+            if (itens.length === 0) {
+                sel.innerHTML = `<option value="">(Nenhum tipo encontrado)</option>`;
+                if (hint) hint.textContent = '';
+                return;
+            }
+
+            itens.forEach(it => {
+                const opt = document.createElement('option');
+                opt.value = it.value;
+                opt.textContent = it.label;
+                sel.appendChild(opt);
+            });
+
+            if (hint) hint.textContent = 'Lista carregada da MEGAG_TABS_IMPORTACAO';
+
+        } catch (e) {
+            console.error(e);
+            sel.innerHTML = `<option value="">(Erro ao carregar)</option>`;
+            if (hint) hint.textContent = '';
+            alert('Erro na API: ' + e.message);
+        }
+    }
+
+    function limparFiltros(){
+        const u = document.getElementById('filtroUsuario');
+        const d = document.getElementById('filtroDataInclusao');
+        const s = document.getElementById('filtroStatus');
+        if (u) u.value = '';
+        if (d) d.value = '';
+        if (s) s.value = '';
+
+        const chipsWrap = document.getElementById('quickChips');
+        if (chipsWrap) {
+            chipsWrap.querySelectorAll('.saas-chip').forEach(c => c.classList.remove('active'));
+            const first = chipsWrap.querySelector('.saas-chip[data-status=""]');
+            if (first) first.classList.add('active');
+        }
+
+        carregarDados();
     }
 
     async function carregarDados() {
         const tipo = document.getElementById('filtroTipo').value;
-        const data = document.getElementById('filtroData').value;
-        const setor = document.getElementById('filtroSetor').value;
-        const turno = document.getElementById('filtroTurno').value;
+        const usuario = document.getElementById('filtroUsuario').value;
+        const dataInclusao = document.getElementById('filtroDataInclusao').value;
         const status = document.getElementById('filtroStatus').value;
-        const nroTabVenda = document.getElementById('filtroNroTabVenda')?.value || '';
-        const seqProduto  = document.getElementById('filtroSeqProduto')?.value || '';
-        const raio        = document.getElementById('filtroRaio')?.value || '';
 
         const tbody = document.getElementById('tabelaCorpo');
         const thead = document.getElementById('tabelaHead');
@@ -752,15 +763,14 @@ html[data-theme="dark"] .saas-detail-link .icon{
         empty.style.display = 'none';
 
         try {
-            const params = new URLSearchParams({ tipo, data, setor, turno, status, nroTabVenda, seqProduto, raio });
+            const params = new URLSearchParams({ tipo, usuario, dataInclusao, status });
             const resp = await fetch(`api/api_dados.php?${params.toString()}`);
             if (!resp.ok) {
-                const txt = await resp.text(); // ajuda debug (vem HTML/erro)
+                const txt = await resp.text();
                 throw new Error(`HTTP ${resp.status} - ${txt.substring(0, 200)}`);
             }
-            
-            const json = await resp.json();
 
+            const json = await resp.json();
             loading.style.display = 'none';
 
             if (!json.sucesso) {
@@ -778,15 +788,13 @@ html[data-theme="dark"] .saas-detail-link .icon{
 
             updateMetrics(json.dados);
 
-            // ===== Render dinâmico: pega a união de chaves de todos os registros =====
+            // Render dinâmico: união de chaves
             const keySet = new Set();
             json.dados.forEach(r => Object.keys(r || {}).forEach(k => keySet.add(k)));
             const keys = Array.from(keySet);
 
-            // monta o cabeçalho
             thead.innerHTML = buildDynamicHeader(keys);
 
-            // monta o corpo
             json.dados.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = buildDynamicRow(keys, row);
@@ -796,11 +804,13 @@ html[data-theme="dark"] .saas-detail-link .icon{
         } catch (error) {
             console.error(error);
             loading.style.display = 'none';
-            alert('Erro de conexão com o servidor.');
+            alert('Erro de conexão com o servidor: ' + error.message);
         }
     }
 
-    window.onload = () => {
-        mudarModoVisualizacao();
+    window.onload = async () => {
+        await carregarTipos();
+        // Depois que carregar os tipos, já busca dados do primeiro item (se existir)
+        carregarDados();
     };
 </script>

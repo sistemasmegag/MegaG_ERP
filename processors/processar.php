@@ -69,6 +69,13 @@ if (!isset($_GET['arquivo'])) {
 file_put_contents("log_processar.txt", "INICIANDO SCRIPT PARA ARQUIVO: " . $_GET['arquivo'] . "\n", FILE_APPEND);
 
 // ======================================================================
+// 2.1) DEFINIÇÃO DA TABELA (IMPORTANTE PARA CHAMAR A FUNÇÃO AO FINAL)
+//     -> aqui você define qual tabela este processador alimenta.
+//     -> nos outros "processa_*" você vai mudar só esse valor.
+// ======================================================================
+$importTable = 'megag_imp_setormetacapac'; // <--- TABELA DE DESTINO DESTE PROCESSO
+
+// ======================================================================
 // 3) CARREGA EXCEL
 // ======================================================================
 
@@ -104,7 +111,7 @@ file_put_contents("log_processar.txt", "EXCEL LIDO COM SUCESSO\n", FILE_APPEND);
 // ======================================================================
 
 // Utilizando a constante DB_SCHEMA conforme seu padrão
-$sql = "INSERT INTO ".DB_SCHEMA.".megag_imp_setormetacapac (
+$sql = "INSERT INTO ".DB_SCHEMA.".$importTable (
             seqsetor,
             turno,
             dta,
@@ -216,14 +223,76 @@ for ($row = $linhaInicial; $row <= $ultimaLinha; $row++) {
     }
 }
 
-// Confirma as alterações no banco
-$conn->commit();
+// ======================================================================
+// 7) COMMIT + EXECUÇÃO DA FUNÇÃO PÓS-IMPORTAÇÃO
+// ======================================================================
 
-file_put_contents("log_processar.txt", "IMPORTACAO FINALIZADA. TOTAL: $registros\n", FILE_APPEND);
+try {
+    // Confirma as alterações no banco
+    $conn->commit();
 
-enviarLog("----------------------------------", "info");
-enviarLog("IMPORTAÇÃO FINALIZADA!", "sucesso");
-enviarLog("Sucessos: $registros | Falhas: $erros", ($erros > 0 ? "aviso" : "sucesso"));
+    file_put_contents("log_processar.txt", "IMPORTACAO FINALIZADA. TOTAL: $registros\n", FILE_APPEND);
+
+    enviarLog("----------------------------------", "info");
+    enviarLog("IMPORTAÇÃO FINALIZADA!", "sucesso");
+    enviarLog("Sucessos: $registros | Falhas: $erros", ($erros > 0 ? "aviso" : "sucesso"));
+
+    // ============================
+    // EXECUTA FUNÇÃO APÓS IMPORTAR
+    // select megag_fn_tabs_importacao_sqlexec('megag_imp_setormetacapac') from dual;
+    // ============================
+
+    enviarLog("Executando rotina pós-importação (megag_fn_tabs_importacao_sqlexec)...", "sistema");
+
+    // Segurança: garante nome de tabela "limpo" para evitar qualquer injection acidental
+    $importTableClean = preg_replace('/[^a-zA-Z0-9_]/', '', $importTable);
+
+    $sqlFn = "SELECT megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual";
+    $stmtFn = $conn->prepare($sqlFn);
+    $stmtFn->execute([':p_table' => $importTableClean]);
+
+    // Tenta ler retorno (se a função retornar algo)
+    $ret = $stmtFn->fetch(PDO::FETCH_ASSOC);
+    $retMsg = '';
+
+    if (is_array($ret)) {
+        // pode vir como RET, ou índice 0, depende do driver/config
+        if (isset($ret['RET'])) $retMsg = (string)$ret['RET'];
+        elseif (isset($ret['ret'])) $retMsg = (string)$ret['ret'];
+        else {
+            $first = array_values($ret);
+            $retMsg = isset($first[0]) ? (string)$first[0] : '';
+        }
+    }
+
+    file_put_contents("log_processar.txt", "POS-IMPORT FUNCAO OK: ".$importTableClean." RET: ".$retMsg."\n", FILE_APPEND);
+
+    if ($retMsg !== '') {
+        enviarLog("Rotina pós-importação finalizada. Retorno: ".$retMsg, "sucesso");
+    } else {
+        enviarLog("Rotina pós-importação finalizada com sucesso.", "sucesso");
+    }
+
+} catch (Exception $e) {
+
+    // Se qualquer coisa falhar aqui, tenta rollback (se ainda houver transação ativa)
+    try {
+        if ($conn && $conn->inTransaction()) {
+            $conn->rollBack();
+        }
+    } catch (Exception $e2) {
+        // não interrompe; só loga
+        file_put_contents("log_processar.txt", "ERRO ROLLBACK: ".$e2->getMessage()."\n", FILE_APPEND);
+    }
+
+    $msg = "ERRO POS-IMPORT / COMMIT: ".$e->getMessage();
+    file_put_contents("log_processar.txt", $msg."\n", FILE_APPEND);
+    enviarLog($msg, "erro");
+}
+
+// ======================================================================
+// 8) FECHA SSE
+// ======================================================================
 
 // Manda comando pro JS fechar a conexão (SSE)
 echo "event: close\n";

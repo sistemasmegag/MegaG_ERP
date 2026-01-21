@@ -5,7 +5,7 @@
 // 1) CONFIGURAÇÕES DE STREAMING E CABEÇALHOS
 // ======================================================================
 
-set_time_limit(0); 
+set_time_limit(0);
 ini_set('display_errors', 0);
 
 header('Content-Type: text/event-stream');
@@ -40,7 +40,7 @@ try {
     }
 
     if (!file_exists($pathConexao)) throw new Exception("Arquivo db_connect não encontrado.");
-    
+
     require_once($pathConexao);
 
     if (!isset($conn) || !$conn) throw new Exception("Falha na conexão com banco.");
@@ -93,10 +93,16 @@ try {
 // 4) PREPARAÇÃO DO SQL (CORRIGIDO)
 // ======================================================================
 
-$owner = "CONSINCO"; 
+$owner = "CONSINCO";
+
+// ============================================================
+// TABELA BASE (sem owner) - usada para executar a função
+// megag_fn_tabs_importacao_sqlexec('<tabela>')
+// ============================================================
+$importTableBase = "MEGAG_IMP_REPCCOMISSAO";
 
 // Correção: Removidas vírgulas extras e adicionado bind do USUINCLUSAO
-$sql = "INSERT INTO {$owner}.MEGAG_IMP_REPCCOMISSAO (
+$sql = "INSERT INTO {$owner}.{$importTableBase} (
             CODEVENTO,
             SEQPESSOA,
             DTAHREMISSAO,
@@ -132,8 +138,8 @@ enviarLog("Processando $ultimaLinha linhas...", "info");
 function limparDinheiro($val) {
     if (empty($val)) return 0;
     // Se vier R$ 1.200,50 -> tira o ponto, troca virgula por ponto
-    $val = str_replace('.', '', $val); 
-    $val = str_replace(',', '.', $val); 
+    $val = str_replace('.', '', $val);
+    $val = str_replace(',', '.', $val);
     return preg_replace('/[^0-9.-]/', '', $val);
 }
 
@@ -141,9 +147,9 @@ for ($row = $linhaInicial; $row <= $ultimaLinha; $row++) {
 
     // --- LEITURA DAS COLUNAS ---
     // A: CODEVENTO | B: SEQPESSOA | C: DATA | D: OBSERVAÇÃO | E: VALOR
-    
+
     $raw_evento  = $worksheet->getCell("A{$row}")->getValue();
-    
+
     // Se não tiver evento, para o loop
     if (empty($raw_evento)) break;
 
@@ -154,7 +160,7 @@ for ($row = $linhaInicial; $row <= $ultimaLinha; $row++) {
     // 2. Tratamento da DATA (Coluna C)
     $raw_data = $worksheet->getCell("C{$row}")->getValue();
     $v_DTAHREMISSAO = null;
-    
+
     if (!empty($raw_data)) {
         if (Date::isDateTime($worksheet->getCell("C{$row}"))) {
             // Se o Excel reconhecer como data numérica
@@ -176,7 +182,7 @@ for ($row = $linhaInicial; $row <= $ultimaLinha; $row++) {
     // 3. Tratamento da OBSERVAÇÃO (Coluna D) - Texto livre, NÃO usar limparDinheiro aqui
     $v_OBSERVACAO = trim((string)$worksheet->getCell("D{$row}")->getValue());
     // Remove aspas simples para evitar erro SQL se não usar bind corretamente (o PDO já protege, mas é bom limpar espaços)
-    
+
     // 4. Tratamento do VALOR (Coluna E)
     $raw_valor = $worksheet->getCell("E{$row}")->getValue();
     $v_VLRTOTAL = limparDinheiro((string)$raw_valor);
@@ -199,9 +205,9 @@ for ($row = $linhaInicial; $row <= $ultimaLinha; $row++) {
             ':v_OBSERVACAO'   => substr($v_OBSERVACAO, 0, 400), // Protege estouro de campo texto (VARCHAR)
             ':v_VLRTOTAL'     => $v_VLRTOTAL
         ]);
-        
+
         $registros++;
-        
+
         if ($registros % 50 == 0) {
             enviarLog("Linha $row processada...", "info");
         }
@@ -210,6 +216,46 @@ for ($row = $linhaInicial; $row <= $ultimaLinha; $row++) {
         $erros++;
         enviarLog("ERRO Linha $row: " . $e->getMessage(), "erro");
     }
+}
+
+// ======================================================================
+// 6) PÓS-IMPORTAÇÃO: EXECUTA FUNÇÃO APÓS FINALIZAR AS GRAVAÇÕES
+// select megag_fn_tabs_importacao_sqlexec('megag_imp_repccimissao') from dual;
+// (ajusta para o nome correto: 'megag_imp_repccimissao' vs 'megag_imp_repccOMISSAO')
+// Aqui usaremos exatamente a tabela base: megag_imp_repccimissao -> megag_imp_repccOMISSAO
+// ============================================================
+
+try {
+    enviarLog("Executando rotina pós-importação: megag_fn_tabs_importacao_sqlexec...", "sistema");
+
+    // sanitiza e envia em minúsculo (conforme seu padrão)
+    $importTableFn = preg_replace('/[^A-Z0-9_]/', '', strtoupper($importTableBase));
+    $importTableFnLower = strtolower($importTableFn);
+
+    $stmtFn = $conn->prepare("SELECT megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual");
+    $stmtFn->execute([':p_table' => $importTableFnLower]);
+
+    $ret = $stmtFn->fetch(PDO::FETCH_ASSOC);
+    $retMsg = '';
+
+    if (is_array($ret)) {
+        if (isset($ret['RET'])) $retMsg = (string)$ret['RET'];
+        elseif (isset($ret['ret'])) $retMsg = (string)$ret['ret'];
+        else {
+            $first = array_values($ret);
+            $retMsg = isset($first[0]) ? (string)$first[0] : '';
+        }
+    }
+
+    if ($retMsg !== '') {
+        enviarLog("Rotina pós-importação finalizada. Retorno: {$retMsg}", "sucesso");
+    } else {
+        enviarLog("Rotina pós-importação finalizada com sucesso.", "sucesso");
+    }
+
+} catch (Exception $e) {
+    // Não trava a importação, só informa
+    enviarLog("Falha na rotina pós-importação: " . $e->getMessage(), "erro");
 }
 
 enviarLog("----------------------------------", "sistema");

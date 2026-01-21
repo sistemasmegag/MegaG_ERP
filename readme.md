@@ -1,4 +1,4 @@
-# Importador Mega G 🚀
+# Mega G ERP 🚀
 
 Sistema web desenvolvido em **PHP** para automação e importação de planilhas Excel diretamente para o **Oracle (ERP Consinco)**.  
 Atualmente suporta **Cargas/Metas**, **Comissões**, **Custo de Comercialização (Tabela de Venda por Raio)** e o conjunto completo de **importações de Metas (BI e Vendas)**, com **processamento em tempo real via SSE**, **dashboards**, **monitor avançado de dados**, **controle de permissões** e **UI Clean SaaS**.
@@ -70,7 +70,7 @@ Processador:
 - Upload de planilhas `.xls` / `.xlsx`
 - Processamento financeiro em tempo real (SSE)
 - Persistência em:
-  - `MEGAG_IMP_REPCCOMISSAO`
+  - `MEGAG_IMP_REPCCOMISSAO` *(ou tabela equivalente no ambiente Consinco)*
 - Interface dedicada e integrada ao monitor
 
 Processador:
@@ -208,52 +208,47 @@ Processador:
 
 ---
 
-## 🔎 Visualização de Dados (Monitor de Importação)
+## 🔎 Visualização de Dados (Monitor de Importação) — **Atualizado (Novo Padrão do Gestor)**
 
-Consulta **unificada e inteligente** para todos os módulos.
+Consulta **unificada e inteligente** para **qualquer tabela de importação** cadastrada no Oracle.
 
 Página:
-- `dados_visualizar.php`
+- `dados_visualizar.php` *(visualizar_dados.php / dados_visualizar.php conforme roteamento do seu projeto)*
 
 API:
 - `api/api_dados.php`
 
-### Tipos suportados (select / modos):
-- 📊 Cargas/Metas (Operacional)
-- 💰 Comissões
-- 🎯 Custo de Comercialização (Tab. Venda por Raio)
-- 📈 BI Metas (Importação)
-- 🧩 BI Metas Perspect
-- 🎯 Metas (Importação)
-- 🧱 Metas Faixas
-- 🧭 Metas Perspec (Importação)
-- 📉 Metas GAP
+### ✅ Mudanças implementadas (conforme orientação)
+- **Filtros fixos (sempre visíveis)**
+  - **Tipo de dado** *(carregado do Oracle via `CONSINCO.MEGAG_TABS_IMPORTACAO`)*
+  - **Usuário de inclusão**
+  - **Data de inclusão**
+  - **Status** *(somente 4 possibilidades: `S`, `E`, `C`, `P`)*
+- **Tipo de dado dinâmico**
+  - O `<select>` é preenchido pela tabela `MEGAG_TABS_IMPORTACAO` (ex.: `CODTABELA` + `DESCRICAO`)
+  - A API possui endpoint:
+    - `GET api/api_dados.php?action=list_tipos`
+- **Grid com a tabela completa**
+  - A consulta retorna `t.*` (todas as colunas)
+  - Inclui também colunas padrão quando existirem:
+    - `USULANCTO` / `USUINCLUSAO` (usuário inclusão)
+    - `DTAINCLUSAO` (data inclusão)
+    - `MSG_LOG` / `LOG` / `OBS` / `RESULTADO` (resultado/log)
+    - `STATUS`
+- **Renderização dinâmica de colunas**
+  - Cabeçalho e colunas geradas automaticamente conforme retorno
+  - Tratamento especial:
+    - `STATUS` → badge (Sucesso/Erro/Cancelado/Pendente)
+    - logs/observações longas → modal de detalhe (sem truncar)
 
-### Filtros dinâmicos:
-- Tipo de dados
-- Data de referência
-- Status
-- Setor / Turno (modo operacional de metas)
-- Nº Tabela Venda / Produto / Raio (custo comercialização)
+### Status (legendas oficiais)
+- `S` = Sucesso  
+- `E` = Erro  
+- `C` = Cancelado  
+- `P` = Pendente  
 
-### Recursos avançados:
-- Chips rápidos:
-  - Todos
-  - Sucesso
-  - Erro
-  - Pendente
-- Contadores dinâmicos:
-  - Total
-  - Sucesso
-  - Erro
-  - Pendente
-- Modal de detalhe:
-  - Visualização completa de logs
-  - Observações sem truncamento
-  - UX consistente com SaaS
-- Renderização dinâmica:
-  - Cabeçalho e colunas geradas conforme os dados retornados pela API
-  - Mantém comportamento especial para `STATUS`, `MSG_LOG`, `OBSERVACAO`
+> Observação: A API aplica os filtros apenas se as colunas existirem na tabela selecionada (detecção via `ALL_TAB_COLUMNS`).  
+> Isso mantém compatibilidade com tabelas antigas e novas sem quebrar o monitor.
 
 ---
 
@@ -330,7 +325,7 @@ Scripts (exemplos):
   - `imp_metas.php` (Metas - danger)
   - `imp_metas_perspec.php` (Metas Perspec - danger)
   - `imp_metas_gap.php` (Metas GAP - danger)
-  - `dados_visualizar.php` (monitor unificado)
+  - `dados_visualizar.php` / `visualizar_dados.php` (monitor unificado)
   - `tarefas.php` (kanban)
   - `usuarios.php` (admin)
 - `processors/`
@@ -351,7 +346,7 @@ Scripts (exemplos):
 - `assets/`
   - `images/logo.png`
 - `api/`
-  - `api_dados.php`
+  - `api_dados.php` *(inclui `action=list_tipos` e consulta dinâmica por tabela)*
   - `api_tarefas.php`
   - `api_usuarios.php`
 - `upload.php`
