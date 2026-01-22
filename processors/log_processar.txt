@@ -1,0 +1,1 @@
+ERRO CONEXÃO: Arquivo de configuração de banco não encontrado.

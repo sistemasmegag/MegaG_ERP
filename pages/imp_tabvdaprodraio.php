@@ -188,82 +188,100 @@ html[data-theme="dark"] .saas-console .card-body{ background: #070c16; }
 </main>
 
 <script>
-const term = document.getElementById('consoleLog');
-const btn = document.getElementById('btnGo');
-const fileInput = document.getElementById('arquivoInput');
+    const term = document.getElementById('consoleLog');
+    const btn = document.getElementById('btnGo');
+    const fileInput = document.getElementById('arquivoInput');
 
-function log(msg, tipo) {
-  if (term.innerText.includes('Aguardando arquivo...')) term.innerHTML = '';
-  const d = document.createElement('div');
-  d.className = 'mb-1';
+    // Função para escrever na tela preta
+    function log(msg, tipo) {
+        if(term.innerText.includes('Aguardando arquivo...')) term.innerHTML = '';
+        
+        const d = document.createElement('div');
+        d.className = 'mb-1';
+        
+        let color = 'text-light';
+        let icon = '<i class="bi bi-caret-right me-2 text-secondary"></i>';
 
-  let color = 'text-light';
-  let icon = '<i class="bi bi-caret-right me-2 text-secondary"></i>';
+        if(tipo === 'erro') { color = 'text-danger fw-bold'; icon = '<i class="bi bi-x-circle-fill me-2 text-danger"></i>'; }
+        else if(tipo === 'sucesso') { color = 'text-success fw-bold'; icon = '<i class="bi bi-check-circle-fill me-2 text-success"></i>'; }
+        else if(tipo === 'aviso') { color = 'text-warning'; icon = '<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i>'; }
+        else if(tipo === 'sistema') { color = 'text-info'; icon = '<i class="bi bi-cpu-fill me-2 text-info"></i>'; }
 
-  if (tipo === 'erro') { color = 'text-danger fw-bold'; icon = '<i class="bi bi-x-circle-fill me-2 text-danger"></i>'; }
-  else if (tipo === 'sucesso') { color = 'text-success fw-bold'; icon = '<i class="bi bi-check-circle-fill me-2 text-success"></i>'; }
-  else if (tipo === 'aviso') { color = 'text-warning'; icon = '<i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i>'; }
-  else if (tipo === 'sistema') { color = 'text-info'; icon = '<i class="bi bi-cpu-fill me-2 text-info"></i>'; }
-
-  d.innerHTML = `${icon} <span class="${color}">${msg}</span>`;
-  term.appendChild(d);
-  term.scrollTop = term.scrollHeight;
-}
-
-async function iniciar() {
-  if (!fileInput.files.length) return alert('Selecione um arquivo!');
-
-  btn.disabled = true;
-  const originalText = btn.innerHTML;
-  btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Processando...`;
-  term.innerHTML = '';
-  log('Iniciando upload do arquivo...', 'sistema');
-
-  const fd = new FormData();
-  fd.append('arquivo', fileInput.files[0]);
-
-  try {
-    // upload.php está na raiz do projeto
-    const resp = await fetch('upload.php', { method: 'POST', body: fd });
-    const json = await resp.json();
-
-    if (!json.sucesso) throw new Error(json.erro || 'Erro no upload');
-
-    log(`Arquivo salvo: ${json.arquivo}`, 'sistema');
-    log(`Conectando ao Oracle e iniciando leitura...`, 'sistema');
-
-    // SSE do processador específico
-    const evt = new EventSource(`processors/processa_tabvdaprodraio.php?arquivo=${encodeURIComponent(json.arquivo)}`);
-
-    evt.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      log(data.msg, data.tipo);
-    };
-
-    evt.addEventListener('close', () => {
-      log('Processo finalizado pelo servidor.', 'sucesso');
-      evt.close();
-      resetBtn();
-    });
-
-    evt.onerror = () => {
-      if (evt.readyState !== EventSource.CLOSED) {
-        log('Conexão encerrada ou erro de rede.', 'aviso');
-      }
-      evt.close();
-      resetBtn();
-    };
-
-    function resetBtn() {
-      btn.disabled = false;
-      btn.innerHTML = originalText;
-      fileInput.value = '';
+        d.innerHTML = `${icon} <span class="${color}">${msg}</span>`;
+        term.appendChild(d);
+        term.scrollTop = term.scrollHeight; // Rola para baixo automaticamente
     }
 
-  } catch (e) {
-    log('ERRO CRÍTICO: ' + e.message, 'erro');
-    btn.disabled = false;
-    btn.innerHTML = originalText;
-  }
-}
+    async function iniciar() {
+        if(!fileInput.files.length) return alert('Selecione um arquivo!');
+
+        // Trava botão
+        btn.disabled = true;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Processando...`;
+        term.innerHTML = ''; // Limpa terminal
+        log('Iniciando upload do arquivo...', 'sistema');
+
+        const fd = new FormData();
+        fd.append('arquivo', fileInput.files[0]);
+
+        try {
+            // 1. Faz Upload do arquivo físico
+            // Ajuste o caminho se seu upload.php estiver em outro lugar
+            const resp = await fetch('upload.php', { method: 'POST', body: fd });
+
+            const text = await resp.text(); // lê como texto primeiro
+            let json;
+
+            try {
+                json = JSON.parse(text); // tenta converter para JSON
+            } catch {
+                throw new Error(`Upload não retornou JSON (HTTP ${resp.status}). Início: ${text.substring(0, 120)}`);
+            }
+
+            if (!resp.ok) {
+                throw new Error(json?.errp || `Falha HTTP ${resp.status}`);    
+            }
+
+            if(!json.sucesso) throw new Error(json.erro || 'Erro no upload');
+
+            log(`Arquivo salvo: ${json.arquivo}`, 'sistema');
+            log(`Conectando ao banco Oracle e iniciando leitura...`, 'sistema');
+            
+            // 2. Chama o Processar via EventSource (SSE) para ler linha a linha
+            const evt = new EventSource(`processors/processar.php?arquivo=${json.arquivo}`);
+
+            evt.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                log(data.msg, data.tipo);
+            };
+
+            // Ouve evento customizado de fechamento
+            evt.addEventListener('close', () => {
+                log('Processo finalizado pelo servidor.', 'sucesso');
+                evt.close();
+                resetBtn();
+            });
+
+            evt.onerror = () => {
+                // As vezes o navegador mata a conexão no final, não é necessariamente erro
+                if(evt.readyState !== EventSource.CLOSED) {
+                    log('Conexão encerrada ou erro de rede.', 'aviso');
+                }
+                evt.close();
+                resetBtn();
+            };
+
+            function resetBtn() {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                fileInput.value = '';
+            }
+
+        } catch (e) {
+            log('ERRO CRÍTICO: ' + e.message, 'erro');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
 </script>

@@ -241,8 +241,20 @@ html[data-theme="dark"] .saas-console .card-body{
         try {
             // 1. Faz Upload do arquivo físico
             // Ajuste o caminho se seu upload.php estiver em outro lugar
-            const resp = await fetch('../upload.php', { method: 'POST', body: fd });
-            const json = await resp.json();
+            const resp = await fetch('upload.php', { method: 'POST', body: fd });
+
+            const text = await resp.text(); // lê como texto primeiro
+            let json;
+
+            try {
+                json = JSON.parse(text); // tenta converter para JSON
+            } catch {
+                throw new Error(`Upload não retornou JSON (HTTP ${resp.status}). Início: ${text.substring(0, 120)}`);
+            }
+
+            if (!resp.ok) {
+                throw new Error(json?.errp || `Falha HTTP ${resp.status}`);    
+            }
 
             if(!json.sucesso) throw new Error(json.erro || 'Erro no upload');
 

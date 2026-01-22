@@ -24,37 +24,44 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// ======================================================================
-// 1) CONEXÃO BANCO
-// ======================================================================
+// ===============================
+// CONEXÃO ORACLE (caminho robusto)
+// ===============================
+$pathConexaoCandidates = [];
 
-try {
-    // Busca o arquivo de conexão
-    $pathConexao = dirname(__DIR__, 1).'/db_config/db_connect.php';
-    
-    if (!file_exists($pathConexao)) {
-        throw new Exception("Arquivo de configuração de banco não encontrado.");
-    }
-    
-    require_once($pathConexao);
+// 1) Dentro do projeto (padrão atual)
+$pathConexaoCandidates[] = __DIR__ . '/../db_config/db_connect.php';
+$pathConexaoCandidates[] = dirname(__DIR__) . '/db_config/db_connect.php';
 
-    // Verifica se a variável $conn foi criada e se é um objeto PDO válido
-    if (!isset($conn) || !$conn) {
-        throw new Exception("Falha na conexão com banco Consinco.");
-    }
-    
-    // Força o PDO a lançar exceções em caso de erro
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+// 2) Se existir algum config alternativo
+$pathConexaoCandidates[] = dirname(__DIR__) . '/config/db_connect.php';
+$pathConexaoCandidates[] = dirname(__DIR__) . '/config/db.php';
 
-    // AJUSTE CRÍTICO: Configura sessão Oracle para aceitar ponto e formato de data correto
-    $conn->exec("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'");
-    $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD'");
-
-} catch (Exception $e) {
-    file_put_contents("log_processar.txt", "ERRO CONEXÃO: ".$e->getMessage()."\n", FILE_APPEND);
-    enviarLog("Erro conexão: " . $e->getMessage(), "erro");
-    die("Erro na conexão com banco: " . $e->getMessage());
+// 3) Se você tiver db_config fora do projeto
+if (!empty($_SERVER['DOCUMENT_ROOT'])) {
+    $pathConexaoCandidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/db_config/db_connect.php';
 }
+
+$pathConexao = null;
+foreach ($pathConexaoCandidates as $cand) {
+    if (file_exists($cand)) { $pathConexao = $cand; break; }
+}
+
+if ($pathConexao === null) {
+    throw new Exception(
+        "Arquivo de configuração de banco não encontrado. Tentei: " . implode(" | ", $pathConexaoCandidates)
+    );
+}
+
+require_once $pathConexao;
+
+if (!isset($conn) || !$conn) {
+    throw new Exception("Falha na conexão com banco.");
+}
+
+$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$conn->exec("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'");
+$conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
 
 // ======================================================================
 // 2) VERIFICA UPLOAD
@@ -79,14 +86,14 @@ $importTable = 'megag_imp_setormetacapac'; // <--- TABELA DE DESTINO DESTE PROCE
 // 3) CARREGA EXCEL
 // ======================================================================
 
-require 'vendor/autoload.php';
+require_once dirname(__DIR__) . '/vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 file_put_contents("log_processar.txt", "LENDO EXCEL...\n", FILE_APPEND);
 enviarLog("Lendo planilha... (Aguarde)", "sistema");
 
 // Melhor usar DIRECTORY_SEPARATOR para evitar erros entre Windows/Linux
-$arquivo_tmp = __DIR__ . DIRECTORY_SEPARATOR . "uploads" . DIRECTORY_SEPARATOR . $_GET['arquivo'];
+$arquivo_tmp = dirname(__DIR__) . DIRECTORY_SEPARATOR . "uploads" . DIRECTORY_SEPARATOR . $_GET['arquivo'];
 
 file_put_contents("log_processar.txt", "CAMINHO: $arquivo_tmp\n", FILE_APPEND);
 

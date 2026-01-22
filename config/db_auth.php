@@ -3,10 +3,10 @@
 
 function getAuthConnection() {
     // Configurações do Banco da Consinco (Login)
-    $host = '10.14.35.106';
+    $host = '10.14.35.3';
     $port = '1521';
     $user = 'MEGAWEB';
-    $pass = 'HOMOLOGA'; 
+    $pass = 'Jj#fWFiMu_3';
     $service = 'consinco.vmnetwork.vcnmegag.oraclevcn.com';
     
     // String de Conexão TNS completa

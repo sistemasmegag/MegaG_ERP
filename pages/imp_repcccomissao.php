@@ -203,7 +203,7 @@ html[data-theme="dark"] .saas-console .card-body{
     const btn = document.getElementById('btnGo');
     const fileInput = document.getElementById('arquivoInput');
 
-    // Função de Log visual (Padronizada)
+    // Função para escrever na tela preta
     function log(msg, tipo) {
         if(term.innerText.includes('Aguardando arquivo...')) term.innerHTML = '';
         
@@ -220,62 +220,77 @@ html[data-theme="dark"] .saas-console .card-body{
 
         d.innerHTML = `${icon} <span class="${color}">${msg}</span>`;
         term.appendChild(d);
-        term.scrollTop = term.scrollHeight; // Auto-scroll
+        term.scrollTop = term.scrollHeight; // Rola para baixo automaticamente
     }
 
     async function iniciar() {
         if(!fileInput.files.length) return alert('Selecione um arquivo!');
 
-        // Trava interface
+        // Trava botão
         btn.disabled = true;
         const originalText = btn.innerHTML;
         btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Processando...`;
-        term.innerHTML = '';
-        log('Iniciando upload...', 'sistema');
+        term.innerHTML = ''; // Limpa terminal
+        log('Iniciando upload do arquivo...', 'sistema');
 
         const fd = new FormData();
         fd.append('arquivo', fileInput.files[0]);
 
         try {
-            // 1. Upload do Arquivo (Raiz)
-            const resp = await fetch('../upload.php', { method: 'POST', body: fd });
-            const json = await resp.json();
+            // 1. Faz Upload do arquivo físico
+            // Ajuste o caminho se seu upload.php estiver em outro lugar
+            const resp = await fetch('upload.php', { method: 'POST', body: fd });
+
+            const text = await resp.text(); // lê como texto primeiro
+            let json;
+
+            try {
+                json = JSON.parse(text); // tenta converter para JSON
+            } catch {
+                throw new Error(`Upload não retornou JSON (HTTP ${resp.status}). Início: ${text.substring(0, 120)}`);
+            }
+
+            if (!resp.ok) {
+                throw new Error(json?.errp || `Falha HTTP ${resp.status}`);    
+            }
 
             if(!json.sucesso) throw new Error(json.erro || 'Erro no upload');
 
             log(`Arquivo salvo: ${json.arquivo}`, 'sistema');
             log(`Conectando ao banco Oracle e iniciando leitura...`, 'sistema');
             
-            // 2. Chama Processador de Comissões via SSE (Raiz)
-            const evt = new EventSource(`processors/processa_comissao.php?arquivo=${json.arquivo}`);
+            // 2. Chama o Processar via EventSource (SSE) para ler linha a linha
+            const evt = new EventSource(`processors/processar.php?arquivo=${json.arquivo}`);
 
             evt.onmessage = (e) => {
                 const data = JSON.parse(e.data);
                 log(data.msg, data.tipo);
             };
 
-            const finalizar = () => {
-                evt.close();
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                fileInput.value = '';
-            };
-
-            // Evento customizado de fim enviado pelo PHP
+            // Ouve evento customizado de fechamento
             evt.addEventListener('close', () => {
-                log('--- FINALIZADO ---', 'sucesso');
-                finalizar();
+                log('Processo finalizado pelo servidor.', 'sucesso');
+                evt.close();
+                resetBtn();
             });
 
             evt.onerror = () => {
+                // As vezes o navegador mata a conexão no final, não é necessariamente erro
                 if(evt.readyState !== EventSource.CLOSED) {
                     log('Conexão encerrada ou erro de rede.', 'aviso');
                 }
-                finalizar();
+                evt.close();
+                resetBtn();
             };
 
+            function resetBtn() {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                fileInput.value = '';
+            }
+
         } catch (e) {
-            log('ERRO: ' + e.message, 'erro');
+            log('ERRO CRÍTICO: ' + e.message, 'erro');
             btn.disabled = false;
             btn.innerHTML = originalText;
         }
