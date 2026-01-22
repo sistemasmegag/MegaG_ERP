@@ -24,6 +24,14 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// ======================================================================
+// 0) SESSÃO (para capturar o usuário logado)
+// ======================================================================
+session_start();
+
+// Usuário logado que fez a importação (fallback seguro)
+$usuarioLogado = $_SESSION['usuario'] ?? 'SYSTEM';
+
 // ===============================
 // CONEXÃO ORACLE (caminho robusto)
 // ===============================
@@ -148,8 +156,8 @@ function limparNumero($val) {
     $val = (string)$val;
     $val = trim($val);
     if (strpos($val, ',') !== false) {
-        $val = str_replace('.', '', $val); 
-        $val = str_replace(',', '.', $val); 
+        $val = str_replace('.', '', $val);
+        $val = str_replace(',', '.', $val);
     }
     $val = preg_replace('/[^0-9.-]/', '', $val);
     if ($val === '' || $val === '.') return null;
@@ -181,17 +189,21 @@ for ($row = $linhaInicial; $row <= $ultimaLinha; $row++) {
 
     // TRAVA DE SEGURANÇA: Se a coluna A (seqsetor) estiver vazia, para o loop.
     if (empty($v_seqsetor)) {
-        break; 
+        break;
     }
 
     $v_turno       = trim((string)$worksheet->getCell("B{$row}")->getValue());
     $v_dta_raw     = $worksheet->getCell("C{$row}")->getValue();
-    
+
     // Aplicamos a função de limpeza robusta aqui para evitar ORA-01722
     $v_peso_meta   = limparNumero($worksheet->getCell("D{$row}")->getValue());
     $v_peso_capac  = limparNumero($worksheet->getCell("E{$row}")->getValue());
-    
-    $v_usuinclusao = $worksheet->getCell("F{$row}")->getValue();
+
+    // ==================================================================
+    // AJUSTE: USUINCLUSAO deve ser o usuário logado que fez a importação
+    // (não vem mais do Excel / Coluna F)
+    // ==================================================================
+    $v_usuinclusao = $usuarioLogado;
 
     file_put_contents("log_processar.txt", "PROCESSANDO LINHA $row\n", FILE_APPEND);
 
@@ -215,7 +227,7 @@ for ($row = $linhaInicial; $row <= $ultimaLinha; $row++) {
         ]);
 
         $registros++;
-        
+
         // Atualiza o front a cada 50 linhas
         if ($registros % 50 == 0) {
             enviarLog("Linha $row processada...", "info");
@@ -249,12 +261,12 @@ try {
     // select megag_fn_tabs_importacao_sqlexec('megag_imp_setormetacapac') from dual;
     // ============================
 
-    enviarLog("Executando rotina pós-importação (megag_fn_tabs_importacao_sqlexec)...", "sistema");
+    enviarLog("Executando rotina pós-importação (consinco.megag_fn_tabs_importacao_sqlexec)...", "sistema");
 
     // Segurança: garante nome de tabela "limpo" para evitar qualquer injection acidental
     $importTableClean = preg_replace('/[^a-zA-Z0-9_]/', '', $importTable);
 
-    $sqlFn = "SELECT megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual";
+    $sqlFn = "SELECT consinco.megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual";
     $stmtFn = $conn->prepare($sqlFn);
     $stmtFn->execute([':p_table' => $importTableClean]);
 

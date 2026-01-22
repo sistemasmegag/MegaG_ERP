@@ -294,7 +294,7 @@ try {
     // ============================================================
 
     try {
-        sse_send("Executando rotina pós-importação: megag_fn_tabs_importacao_sqlexec...", 'sistema');
+        sse_send("Executando rotina pós-importação: consinco.megag_fn_tabs_importacao_sqlexec...", 'sistema');
 
         // Sanitiza apenas para evitar qualquer caractere fora do padrão
         $importTableFn = preg_replace('/[^A-Z0-9_]/', '', strtoupper($importTableBase));
@@ -304,7 +304,7 @@ try {
         // Aqui vou mandar em minúsculo conforme seu exemplo.
         $importTableFnLower = strtolower($importTableFn);
 
-        $stmtFn = $conn->prepare("SELECT megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual");
+        $stmtFn = $conn->prepare("SELECT consinco.megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual");
         $stmtFn->execute([':p_table' => $importTableFnLower]);
 
         $ret = $stmtFn->fetch(PDO::FETCH_ASSOC);

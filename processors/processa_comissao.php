@@ -226,13 +226,13 @@ for ($row = $linhaInicial; $row <= $ultimaLinha; $row++) {
 // ============================================================
 
 try {
-    enviarLog("Executando rotina pós-importação: megag_fn_tabs_importacao_sqlexec...", "sistema");
+    enviarLog("Executando rotina pós-importação: consinco.megag_fn_tabs_importacao_sqlexec...", "sistema");
 
     // sanitiza e envia em minúsculo (conforme seu padrão)
     $importTableFn = preg_replace('/[^A-Z0-9_]/', '', strtoupper($importTableBase));
     $importTableFnLower = strtolower($importTableFn);
 
-    $stmtFn = $conn->prepare("SELECT megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual");
+    $stmtFn = $conn->prepare("SELECT consinco.megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual");
     $stmtFn->execute([':p_table' => $importTableFnLower]);
 
     $ret = $stmtFn->fetch(PDO::FETCH_ASSOC);

@@ -138,12 +138,12 @@ WHEN NOT MATCHED THEN INSERT
   // select megag_fn_tabs_importacao_sqlexec('megag_bi_metas_perspect') from dual;
   // ============================================================
   try{
-    sse("Executando rotina pós-importação: megag_fn_tabs_importacao_sqlexec...",'sistema');
+    sse("Executando rotina pós-importação: consinco.megag_fn_tabs_importacao_sqlexec...",'sistema');
 
     $importTableFn = preg_replace('/[^A-Z0-9_]/','',strtoupper($importTableBase));
     $importTableFnLower = strtolower($importTableFn);
 
-    $stmtFn = $conn->prepare("SELECT megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual");
+    $stmtFn = $conn->prepare("SELECT consinco.megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual");
     $stmtFn->execute([':p_table'=>$importTableFnLower]);
 
     $ret = $stmtFn->fetch(PDO::FETCH_ASSOC);
