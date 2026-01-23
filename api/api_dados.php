@@ -214,28 +214,7 @@ try {
 
     /*
      |------------------------------------------------------------
-     | 6) Confirma se o tipo pertence ao usuário (pela VIEW)
-     |------------------------------------------------------------
-    */
-    $chk = $conn->prepare("
-        SELECT COUNT(1) AS QTD
-        FROM {$OWNER_VIEW}.{$VIEW_TIPOS}
-        WHERE {$V_COL_USER} = :usu
-          AND {$V_COL_TIPO} = :tipo
-    ");
-    $chk->execute([
-        ':usu' => $usuarioLogado,
-        ':tipo' => $tipoUpper
-    ]);
-    $qtd = (int)($chk->fetch()['QTD'] ?? 0);
-
-    if ($qtd <= 0) {
-        throw new Exception("Tipo não permitido para este usuário: {$tipoUpper}");
-    }
-
-    /*
-     |------------------------------------------------------------
-     | 7) Agora consulta a TABELA REAL do tipo (dados)
+     | 6) Agora consulta a TABELA REAL do tipo (dados)
      |------------------------------------------------------------
     */
     $OWNER_DATA = 'CONSINCO';
@@ -276,7 +255,7 @@ try {
 
     /*
      |------------------------------------------------------------
-     | 8) Monta SQL (limite 5000)
+     | 7) Monta SQL (limite 5000)
      |------------------------------------------------------------
     */
     $params = [

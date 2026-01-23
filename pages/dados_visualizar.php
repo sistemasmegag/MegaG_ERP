@@ -389,21 +389,18 @@ html[data-theme="dark"] .saas-detail-link .icon{
                         <select id="filtroTipo" class="form-select">
                             <option value="">Carregando...</option>
                         </select>
-                        <div class="text-muted small mt-1" id="tipoHint"></div>
                     </div>
 
                     <!-- Usuário (fixo do logado, pra garantir que ele só veja o que ele importou) -->
                     <div class="col-md-3">
                         <label class="form-label">Usuário de Inclusão</label>
                         <input type="text" id="filtroUsuario" class="form-control" value="<?php echo htmlspecialchars($__usuarioLogado, ENT_QUOTES, 'UTF-8'); ?>" disabled>
-                        <div class="text-muted small mt-1">Filtrado automaticamente pelo usuário logado.</div>
                     </div>
 
                     <!-- Data inclusão (OBRIGATÓRIO) -->
                     <div class="col-md-3">
                         <label class="form-label">Data de Inclusão <span class="text-danger">*</span></label>
                         <input type="date" id="filtroDataInclusao" class="form-control">
-                        <div class="text-muted small mt-1">Obrigatório (evita consultas pesadas).</div>
                     </div>
 
                     <!-- Status -->
@@ -754,8 +751,6 @@ html[data-theme="dark"] .saas-detail-link .icon{
                 opt.textContent = it.label;
                 sel.appendChild(opt);
             });
-
-            if (hint) hint.textContent = 'Lista carregada da VIEW MEGAG_VW_TABS_IMPORTACAOUSU (filtrada por usuário).';
 
         } catch (e) {
             console.error(e);
