@@ -251,7 +251,8 @@ html[data-theme="dark"] .saas-console .card-body{ background: #070c16; }
             log(`Conectando ao banco Oracle e iniciando leitura...`, 'sistema');
             
             // 2. Chama o Processar via EventSource (SSE) para ler linha a linha
-            const evt = new EventSource(`processors/processar.php?arquivo=${json.arquivo}`);
+            const tipo = 'lanctocomissao'; // IMPORTANTE: tem que bater com o índice no $configs do processa_universal_insert.php
+            const evt = new EventSource(`processors/processa_universal_insert.php?tipo=${encodeURIComponent(tipo)}&arquivo=${encodeURIComponent(json.arquivo)}`);
 
             evt.onmessage = (e) => {
                 const data = JSON.parse(e.data);

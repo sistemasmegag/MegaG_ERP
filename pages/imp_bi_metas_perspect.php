@@ -252,7 +252,7 @@ html[data-theme="dark"] .saas-console .card-body{ background: #070c16; }
             log(`Conectando ao banco Oracle e iniciando leitura...`, 'sistema');
             
             // 2. Chama o Processar via EventSource (SSE) para ler linha a linha
-            const evt = new EventSource(`processors/processar.php?arquivo=${json.arquivo}`);
+            const evt = new EventSource(`processors/processa_universal_insert.php?tipo=bi_metas_perspect&arquivo=${json.arquivo}`);
 
             evt.onmessage = (e) => {
                 const data = JSON.parse(e.data);
