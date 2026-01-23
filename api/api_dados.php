@@ -1,11 +1,49 @@
 <?php
 // api/api_dados.php
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
+
+/*
+ |------------------------------------------------------------
+ | Nunca quebrar JSON com Notice/Warning
+ |------------------------------------------------------------
+*/
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+error_reporting(E_ALL);
+
+require_once __DIR__ . '/../routes/check_session.php';
+
+/*
+ |------------------------------------------------------------
+ | Sessão (evita session_start duplicado)
+ |------------------------------------------------------------
+*/
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 try {
-    // ==================================================================
-    // 1) CONEXÃO (caminho robusto)
-    // ==================================================================
+
+    /*
+     |------------------------------------------------------------
+     | 0) Usuário logado
+     |------------------------------------------------------------
+    */
+    $usuarioLogado =
+        $_SESSION['usuario']
+        ?? $_SESSION['user']
+        ?? $_SESSION['nome']
+        ?? $_SESSION['login']
+        ?? 'SYSTEM';
+
+    $usuarioLogado = trim((string)$usuarioLogado);
+    if ($usuarioLogado === '') $usuarioLogado = 'SYSTEM';
+
+    /*
+     |------------------------------------------------------------
+     | 1) Conexão Oracle (robusta)
+     |------------------------------------------------------------
+    */
     $pathConexaoCandidates = [];
 
     if (!empty($_SERVER['DOCUMENT_ROOT'])) {
@@ -22,236 +60,300 @@ try {
     }
 
     if ($pathConexao === null) {
-        throw new Exception("Arquivo de conexão não encontrado. Tentei: " . implode(" | ", $pathConexaoCandidates));
+        throw new Exception("Arquivo de conexão não encontrado.");
     }
 
-    require_once($pathConexao);
+    require_once $pathConexao;
 
-    if (!isset($conn) || !$conn) throw new Exception("Falha na conexão.");
+    if (!isset($conn) || !$conn) {
+        throw new Exception("Falha na conexão com o banco.");
+    }
 
     if ($conn instanceof PDO) {
         $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
-    // Configurações Oracle
     $conn->exec("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'");
     $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
 
-    // ==================================================================
-    // 2) UTIL: Descobrir colunas de uma tabela (ALL_TAB_COLUMNS)
-    // ==================================================================
-    $getTableColumns = function(string $owner, string $tableName) use ($conn): array {
+    /*
+     |------------------------------------------------------------
+     | 2) Helpers
+     |------------------------------------------------------------
+    */
+    $getColumns = function(string $owner, string $obj) use ($conn): array {
         $stmt = $conn->prepare("
             SELECT COLUMN_NAME
             FROM ALL_TAB_COLUMNS
-            WHERE OWNER = :own
-              AND TABLE_NAME = :tab
+            WHERE OWNER = :o AND TABLE_NAME = :t
             ORDER BY COLUMN_ID
         ");
         $stmt->execute([
-            ':own' => strtoupper($owner),
-            ':tab' => strtoupper($tableName),
+            ':o' => strtoupper($owner),
+            ':t' => strtoupper($obj),
         ]);
-        $cols = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        $cols = array_map('strtoupper', $cols ?: []);
-        return $cols;
+        return array_map('strtoupper', $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
     };
 
-    $hasCol = function(array $cols, string $name): bool {
-        return in_array(strtoupper($name), $cols, true);
-    };
-
-    $pickFirstExisting = function(array $cols, array $candidates): ?string {
-        foreach ($candidates as $c) {
-            if (in_array(strtoupper($c), $cols, true)) return strtoupper($c);
+    $pick = function(array $cols, array $cands): ?string {
+        foreach ($cands as $c) {
+            $c = strtoupper($c);
+            if (in_array($c, $cols, true)) return $c;
         }
         return null;
     };
 
-    // ==================================================================
-    // 3) LISTAR TIPOS (vem da MEGAG_TABS_IMPORTACAO)
-    // ==================================================================
-    $action = $_GET['action'] ?? '';
+    $isValidOracleIdent = function(string $name): bool {
+        // Identificador Oracle simples (sem aspas): LETRA/_ no começo, depois LETRA/NUM/_
+        return (bool)preg_match('/^[A-Z_][A-Z0-9_]*$/', strtoupper($name));
+    };
 
-    if ($action === 'list_tipos') {
+    /*
+     |------------------------------------------------------------
+     | 3) Fonte dos tipos (VIEW do usuário)
+     |------------------------------------------------------------
+    */
+    $OWNER_VIEW = 'CONSINCO';
+    $VIEW_TIPOS = 'MEGAG_VW_TABS_IMPORTACAOUSU';
 
-        $ownerTabs = 'CONSINCO';
-        $tabTabs   = 'MEGAG_TABS_IMPORTACAO';
+    $colsView = $getColumns($OWNER_VIEW, $VIEW_TIPOS);
+    if (!$colsView) {
+        throw new Exception("View {$OWNER_VIEW}.{$VIEW_TIPOS} não encontrada.");
+    }
 
-        $colsTabs = $getTableColumns($ownerTabs, $tabTabs);
+    // Pelo seu print: CODTABELA, DESCRICAO, NOMEARQUIVO, SQLEXECUTE, CODUSUARIO
+    $V_COL_TIPO  = $pick($colsView, ['CODTABELA','TIPO','TABELA','TAB']);
+    $V_COL_LABEL = $pick($colsView, ['DESCRICAO','DESCR','NOME','LABEL','TITULO']);
+    $V_COL_USER  = $pick($colsView, ['CODUSUARIO','USUINCLUSAO','USUARIO','LOGIN','USU','SEQPESSOA']);
 
-        // Coluna que identifica a tabela/“tipo”
-        $colTipo = $pickFirstExisting($colsTabs, [
-            'CODTABELA','CODTAB','TABELA','NOME_TABELA','NM_TABELA','TAB','TABELA_ORIGEM'
-        ]);
+    if (!$V_COL_TIPO) throw new Exception("View de tipos sem coluna CODTABELA/TIPO.");
+    if (!$V_COL_USER) throw new Exception("View de tipos sem coluna de usuário (ex: CODUSUARIO).");
 
-        // Coluna de descrição/label
-        $colDesc = $pickFirstExisting($colsTabs, [
-            'DESCRICAO','DESCR','DESCR_TABELA','DESCRICAO_TABELA','NOME','NOM
-E'
-        ]);
+    /*
+     |------------------------------------------------------------
+     | 4) LISTAR TIPOS (combo) - filtrado pelo usuário
+     |------------------------------------------------------------
+    */
+    if (($_GET['action'] ?? '') === 'list_tipos') {
 
-        if (!$colTipo) {
-            throw new Exception("CONSINCO.MEGAG_TABS_IMPORTACAO não tem coluna identificadora do tipo/tabela. Procurei por: CODTABELA, CODTAB, TABELA, NOME_TABELA, NM_TABELA, TAB, TABELA_ORIGEM. Colunas existentes: " . implode(', ', $colsTabs));
-        }
+        $orderBy = $V_COL_LABEL ? $V_COL_LABEL : $V_COL_TIPO;
 
-        // Monta SELECT com as colunas existentes
-        $select = "SELECT " . $colTipo . " AS TIPO";
-        if ($colDesc) $select .= ", " . $colDesc . " AS DESCRICAO";
-        $select .= " FROM {$ownerTabs}.{$tabTabs} WHERE {$colTipo} IS NOT NULL";
+        $sql = "SELECT DISTINCT {$V_COL_TIPO} AS TIPO";
+        if ($V_COL_LABEL) $sql .= ", {$V_COL_LABEL} AS DESCRICAO";
+        $sql .= "
+            FROM {$OWNER_VIEW}.{$VIEW_TIPOS}
+            WHERE {$V_COL_USER} = :usu
+              AND {$V_COL_TIPO} IS NOT NULL
+            ORDER BY {$orderBy}
+        ";
 
-        // Ordenação amigável
-        if ($colDesc) $select .= " ORDER BY " . $colDesc;
-        else $select .= " ORDER BY " . $colTipo;
-
-        $stmt = $conn->prepare($select);
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        $st = $conn->prepare($sql);
+        $st->execute([':usu' => $usuarioLogado]);
 
         $tipos = [];
-        foreach ($rows as $r) {
-            $val = trim((string)($r['TIPO'] ?? ''));
-            if ($val === '') continue;
+        foreach ($st->fetchAll() as $r) {
+            $v = trim((string)($r['TIPO'] ?? ''));
+            if ($v === '') continue;
 
-            $desc = trim((string)($r['DESCRICAO'] ?? ''));
-            $label = $desc !== '' ? "{$desc} ({$val})" : $val;
-
+            $d = trim((string)($r['DESCRICAO'] ?? ''));
             $tipos[] = [
-                'value' => $val,
-                'label' => $label,
+                'value' => $v,
+                'label' => $d ? "{$d} ({$v})" : $v
             ];
         }
 
         echo json_encode([
             'sucesso' => true,
-            'tipos' => $tipos
-        ]);
+            'tipos' => $tipos,
+            'meta' => [
+                'usuario' => $usuarioLogado,
+                'view' => "{$OWNER_VIEW}.{$VIEW_TIPOS}",
+                'col_tipo' => $V_COL_TIPO,
+                'col_label' => $V_COL_LABEL,
+                'col_user' => $V_COL_USER
+            ]
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
-    // ==================================================================
-    // 4) FILTROS FIXOS (conforme gestor)
-    // ==================================================================
-    $tipo         = trim((string)($_GET['tipo'] ?? ''));
-    $usuario      = trim((string)($_GET['usuario'] ?? ''));
-    $dataInclusao = trim((string)($_GET['dataInclusao'] ?? ''));
-    $status       = trim((string)($_GET['status'] ?? ''));
+    /*
+     |------------------------------------------------------------
+     | 5) Filtros (tipo + data obrigatórios)
+     |------------------------------------------------------------
+    */
+    $tipo   = trim((string)($_GET['tipo'] ?? ''));
+    $data   = trim((string)($_GET['dataInclusao'] ?? ''));
+    $status = trim((string)($_GET['status'] ?? ''));
+    $usuarioFiltro = trim((string)($_GET['usuario'] ?? '')); // opcional: campo na tela (mas sempre vai ser limitado ao usuário logado)
 
-    // status permitido: S/E/C/P
+    if ($tipo === '' || $data === '') {
+        echo json_encode([
+            'sucesso' => true,
+            'meta' => [
+                'mensagem' => 'Informe tipo e dataInclusao para pesquisar.'
+            ],
+            'dados' => []
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    if (!preg_match('/^\d{4}\-\d{2}\-\d{2}$/', $data)) {
+        throw new Exception("Data de inclusão inválida. Formato esperado: YYYY-MM-DD.");
+    }
+
     if ($status !== '' && !in_array($status, ['S','E','C','P'], true)) {
         throw new Exception("Status inválido. Use: S, E, C ou P.");
     }
 
-    // ==================================================================
-    // 5) VALIDAÇÃO DO TIPO via whitelist (MEGAG_TABS_IMPORTACAO)
-    //    (evita SQL injection em nome de tabela)
-    // ==================================================================
-    $ownerTabs = 'CONSINCO';
-    $tabTabs   = 'MEGAG_TABS_IMPORTACAO';
-    $colsTabs  = $getTableColumns($ownerTabs, $tabTabs);
+    // Valida o tipo para evitar injection
+    $tipoUpper = strtoupper($tipo);
+    if (!$isValidOracleIdent($tipoUpper)) {
+        throw new Exception("Tipo inválido (nome de tabela inválido).");
+    }
 
-    $colTipo = $pickFirstExisting($colsTabs, [
-        'CODTABELA','CODTAB','TABELA','NOME_TABELA','NM_TABELA','TAB','TABELA_ORIGEM'
+    /*
+     |------------------------------------------------------------
+     | 6) Confirma se o tipo pertence ao usuário (pela VIEW)
+     |------------------------------------------------------------
+    */
+    $chk = $conn->prepare("
+        SELECT COUNT(1) AS QTD
+        FROM {$OWNER_VIEW}.{$VIEW_TIPOS}
+        WHERE {$V_COL_USER} = :usu
+          AND {$V_COL_TIPO} = :tipo
+    ");
+    $chk->execute([
+        ':usu' => $usuarioLogado,
+        ':tipo' => $tipoUpper
     ]);
-
-    if (!$colTipo) {
-        throw new Exception("CONSINCO.MEGAG_TABS_IMPORTACAO não tem coluna identificadora do tipo/tabela. Colunas existentes: " . implode(', ', $colsTabs));
-    }
-
-    // Se o tipo estiver vazio, tenta pegar o primeiro da lista (pra não quebrar a tela)
-    if ($tipo === '') {
-        $stmtFirst = $conn->prepare("SELECT {$colTipo} AS TIPO FROM {$ownerTabs}.{$tabTabs} WHERE {$colTipo} IS NOT NULL FETCH FIRST 1 ROWS ONLY");
-        $stmtFirst->execute();
-        $first = $stmtFirst->fetch(PDO::FETCH_ASSOC);
-        $tipo = trim((string)($first['TIPO'] ?? ''));
-    }
-
-    if ($tipo === '') {
-        throw new Exception("Nenhum tipo encontrado na MEGAG_TABS_IMPORTACAO.");
-    }
-
-    // Confirma se o tipo existe na MEGAG_TABS_IMPORTACAO
-    $stmtChk = $conn->prepare("SELECT COUNT(1) AS QTD FROM {$ownerTabs}.{$tabTabs} WHERE {$colTipo} = :t");
-    $stmtChk->execute([':t' => $tipo]);
-    $qtd = (int)($stmtChk->fetch(PDO::FETCH_ASSOC)['QTD'] ?? 0);
+    $qtd = (int)($chk->fetch()['QTD'] ?? 0);
 
     if ($qtd <= 0) {
-        throw new Exception("Tipo informado não existe na MEGAG_TABS_IMPORTACAO: {$tipo}");
+        throw new Exception("Tipo não permitido para este usuário: {$tipoUpper}");
     }
 
-    // ==================================================================
-    // 6) CONSULTA DINÂMICA NA TABELA SELECIONADA (traz toda a tabela)
-    // ==================================================================
-    $ownerData = 'CONSINCO';
-    $tableName = $tipo; // vindo da whitelist (MEGAG_TABS_IMPORTACAO)
+    /*
+     |------------------------------------------------------------
+     | 7) Agora consulta a TABELA REAL do tipo (dados)
+     |------------------------------------------------------------
+    */
+    $OWNER_DATA = 'CONSINCO';
+    $TABLE_DATA = $tipoUpper;
 
-    // Descobre colunas reais da tabela destino
-    $colsData = $getTableColumns($ownerData, $tableName);
-    if (empty($colsData)) {
-        throw new Exception("Tabela {$ownerData}.{$tableName} não encontrada ou sem colunas visíveis.");
+    $colsData = $getColumns($OWNER_DATA, $TABLE_DATA);
+    if (!$colsData) {
+        throw new Exception("Tabela {$OWNER_DATA}.{$TABLE_DATA} não encontrada ou sem colunas visíveis.");
     }
 
-    // Colunas padrão (variações)
-    $colStatus = $pickFirstExisting($colsData, ['STATUS']);
-    $colUser   = $pickFirstExisting($colsData, ['USULANCTO','USUINCLUSAO','USUARIOINCLUSAO','USUARIO_INCLUSAO','USU_INCLUSAO','USUARIO']);
-    $colDtaInc = $pickFirstExisting($colsData, ['DTAINCLUSAO','DTA_INCLUSAO','DATAINCLUSAO','DATA_INCLUSAO','DT_INCLUSAO']);
+    // Colunas padrão na tabela destino
+    $COL_STATUS = $pick($colsData, ['STATUS']);
 
-    // (Opcional) colunas de “resultado/log”
-    $colRes    = $pickFirstExisting($colsData, ['MSG_LOG','RESIMPOTACAO','RESULTADO','RESULT','RES','OBS','OBSERVACAO','OBSERVAÇÃO','LOG']);
+    // Usuário na tabela (tenta várias possibilidades)
+    $COL_USER = $pick($colsData, [
+        'USUINCLUSAO','USUARIO','LOGIN','USU','USU_INCLUSAO',
+        'CODUSUARIO','SEQUSUARIO','SEQPESSOA',
+        'USULANCTO'
+    ]);
 
-    // Monta SQL
-    $params = [];
-    $sql = "SELECT ROWNUM AS ID, t.* FROM {$ownerData}.{$tableName} t WHERE 1=1";
+    // Data inclusão na tabela
+    $COL_DTAINC = $pick($colsData, [
+        'DTAINCLUSAO','DTINCLUSAO','DATAINCLUSAO',
+        'DTA_INCLUSAO','DT_INCLUSAO','DATA_INCLUSAO'
+    ]);
 
-    // Status
-    if ($status !== '' && $colStatus) {
-        $sql .= " AND t.{$colStatus} = :status";
+    // Data processamento/importação (opcional)
+    $COL_DTAPROC = $pick($colsData, [
+        'DTAIMPORTACAO','DTIMPORTACAO',
+        'DTAPROCESSAMENTO','DTPROCESSAMENTO',
+        'DTAIMPOTACAO','DTIMPOTACAO',
+        'DTA_PROC','DT_PROC'
+    ]);
+
+    if (!$COL_DTAINC) {
+        throw new Exception("Tabela {$OWNER_DATA}.{$TABLE_DATA} não possui coluna de data de inclusão (DTAINCLUSAO...).");
+    }
+
+    /*
+     |------------------------------------------------------------
+     | 8) Monta SQL (limite 5000)
+     |------------------------------------------------------------
+    */
+    $params = [
+        ':dta' => $data
+    ];
+
+    $sql = "
+        SELECT *
+        FROM (
+            SELECT
+                ROWNUM AS ID,
+                t.*,
+                TO_CHAR(t.{$COL_DTAINC}, 'DD/MM/YYYY HH24:MI:SS') AS DTAINCLUSAO_FMT
+    ";
+
+    if ($COL_DTAPROC) {
+        $sql .= ",
+                TO_CHAR(t.{$COL_DTAPROC}, 'DD/MM/YYYY HH24:MI:SS') AS DTAIMPORTACAO_FMT
+        ";
+    }
+
+    $sql .= "
+            FROM {$OWNER_DATA}.{$TABLE_DATA} t
+            WHERE TRUNC(t.{$COL_DTAINC}) = TO_DATE(:dta,'YYYY-MM-DD')
+    ";
+
+    // Filtro por usuário:
+    // regra: sempre limitar ao usuário logado se existir coluna de usuário na tabela.
+    if ($COL_USER) {
+        // Se o sistema grava exatamente o usuário, usa igualdade;
+        // Se houver divergências (ex: ADMIN vs admin), usa upper trim.
+        $sql .= " AND UPPER(TRIM(t.{$COL_USER})) = UPPER(:usu_logado)";
+        $params[':usu_logado'] = $usuarioLogado;
+
+        // (Opcional) se você quiser permitir o campo "Usuário de Inclusão" como LIKE dentro do universo do usuário logado
+        // normalmente não faz sentido porque já é o próprio usuário, mas mantenho caso você queira filtrar por outra representação
+        if ($usuarioFiltro !== '' && strtoupper($usuarioFiltro) !== strtoupper($usuarioLogado)) {
+            $sql .= " AND UPPER(TRIM(t.{$COL_USER})) LIKE UPPER(:usu_like)";
+            $params[':usu_like'] = '%' . $usuarioFiltro . '%';
+        }
+    }
+
+    // Filtro status se existir coluna
+    if ($status !== '' && $COL_STATUS) {
+        $sql .= " AND t.{$COL_STATUS} = :status";
         $params[':status'] = $status;
     }
 
-    // Usuário inclusão (LIKE)
-    if ($usuario !== '' && $colUser) {
-        $sql .= " AND UPPER(TRIM(t.{$colUser})) LIKE UPPER(:usuario)";
-        $params[':usuario'] = '%' . $usuario . '%';
-    }
+    // ordenação
+    $sql .= " ORDER BY t.{$COL_DTAINC} DESC
+        )
+        WHERE ROWNUM <= 5000
+    ";
 
-    // Data inclusão
-    if ($dataInclusao !== '' && $colDtaInc) {
-        $sql .= " AND TRUNC(t.{$colDtaInc}) = TO_DATE(:dtaInc, 'YYYY-MM-DD')";
-        $params[':dtaInc'] = $dataInclusao;
-    }
-
-    // Ordenação preferida (data inclusão desc, senão ID desc)
-    if ($colDtaInc) {
-        $sql .= " ORDER BY t.{$colDtaInc} DESC";
-    } else {
-        $sql .= " ORDER BY ID DESC";
-    }
-
-    // Limite
-    $sql .= " FETCH FIRST 200 ROWS ONLY";
-
-    $stmt = $conn->prepare($sql);
-    $stmt->execute($params);
-    $dados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $st = $conn->prepare($sql);
+    $st->execute($params);
 
     echo json_encode([
         'sucesso' => true,
         'meta' => [
-            'tipo' => $tipo,
-            'tabela' => "{$ownerData}.{$tableName}",
-            'col_status' => $colStatus,
-            'col_usuario' => $colUser,
-            'col_dtainclusao' => $colDtaInc,
-            'col_resultado' => $colRes,
+            'usuario' => $usuarioLogado,
+            'tipo' => $tipoUpper,
+            'data' => $data,
+            'view_tipos' => "{$OWNER_VIEW}.{$VIEW_TIPOS}",
+            'tabela_dados' => "{$OWNER_DATA}.{$TABLE_DATA}",
+            'col_status' => $COL_STATUS,
+            'col_usuario' => $COL_USER,
+            'col_dtainclusao' => $COL_DTAINC,
+            'col_dtaprocessamento' => $COL_DTAPROC,
+            'limite' => 5000
         ],
-        'dados' => $dados
-    ]);
+        'dados' => $st->fetchAll()
+    ], JSON_UNESCAPED_UNICODE);
 
 } catch (Exception $e) {
     echo json_encode([
         'sucesso' => false,
         'erro' => $e->getMessage()
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 }

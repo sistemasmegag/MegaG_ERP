@@ -1,6 +1,16 @@
 <?php 
 require_once __DIR__ . '/../routes/check_session.php';
 $paginaAtual = 'dados_visualizar'; 
+
+// Usuário logado (pra filtrar e também preencher UI)
+$__usuarioLogado = $_SESSION['usuario']
+    ?? $_SESSION['user']
+    ?? $_SESSION['nome']
+    ?? $_SESSION['login']
+    ?? 'SYSTEM';
+
+$__usuarioLogado = trim((string)$__usuarioLogado);
+if ($__usuarioLogado === '') $__usuarioLogado = 'SYSTEM';
 ?>
 
 <style>
@@ -43,13 +53,13 @@ html[data-theme="dark"] .saas-head{
 /* Cards mini (contadores) */
 .saas-metrics{
     display:grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 10px;
     margin-top: 14px;
     position: relative;
     z-index: 1;
 }
-@media (max-width: 900px){
+@media (max-width: 1100px){
     .saas-metrics{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .saas-metric{
@@ -186,16 +196,17 @@ html[data-theme="dark"] .saas-form .form-select{
     overflow: hidden;
 }
 
-/* Cabeçalho sticky */
+/* Cabeçalho sticky (fundo sólido pra não “sumir” no scroll) */
 .saas-table thead th{
     position: sticky;
     top: 0;
-    z-index: 2;
-    background: rgba(17,24,39,.03) !important;
+    z-index: 5;
+    background: var(--saas-surface) !important;
     color: var(--saas-text) !important;
+    box-shadow: 0 1px 0 var(--saas-border);
 }
 html[data-theme="dark"] .saas-table thead th{
-    background: rgba(255,255,255,.06) !important;
+    background: var(--saas-surface) !important;
 }
 
 /* Hover */
@@ -274,6 +285,12 @@ html[data-theme="dark"] .saas-detail-link .icon{
     border-top: 1px solid var(--saas-border);
     background: transparent;
 }
+
+/* Mensagem de requisito */
+.saas-require{
+    border-top: 1px solid var(--saas-border);
+    background: transparent;
+}
 </style>
 
 <main class="main-content">
@@ -341,6 +358,11 @@ html[data-theme="dark"] .saas-detail-link .icon{
                     <div class="value" id="mPendente">0</div>
                     <div class="hint">status P</div>
                 </div>
+                <div class="saas-metric">
+                    <div class="label">Cancelado</div>
+                    <div class="value" id="mCancelado">0</div>
+                    <div class="hint">status C</div>
+                </div>
             </div>
         </div>
 
@@ -355,34 +377,36 @@ html[data-theme="dark"] .saas-detail-link .icon{
                         <div class="fw-bold text-dark" style="letter-spacing:-.01em;">Pesquisa de Registros</div>
                     </div>
                 </div>
-                <div class="text-muted small">Refine por tipo, usuário, data e status</div>
+                <div class="text-muted small">Refine por tipo, data e status</div>
             </div>
 
             <div class="card-body saas-form">
                 <div class="row g-2 align-items-end">
 
-                    <!-- FIXO: Tipo de dado (vem da MEGAG_TABS_IMPORTACAO) -->
+                    <!-- Tipo de dado (agora vem da VIEW MEGAG_VW_TABS_IMPORTACAOUSU filtrada por usuário logado) -->
                     <div class="col-md-4">
-                        <label class="form-label">Tipo de Dado</label>
+                        <label class="form-label">Tipo de Dado <span class="text-danger">*</span></label>
                         <select id="filtroTipo" class="form-select">
                             <option value="">Carregando...</option>
                         </select>
                         <div class="text-muted small mt-1" id="tipoHint"></div>
                     </div>
 
-                    <!-- FIXO: Usuário inclusão -->
+                    <!-- Usuário (fixo do logado, pra garantir que ele só veja o que ele importou) -->
                     <div class="col-md-3">
                         <label class="form-label">Usuário de Inclusão</label>
-                        <input type="text" id="filtroUsuario" class="form-control" placeholder="Ex: ADMIN">
+                        <input type="text" id="filtroUsuario" class="form-control" value="<?php echo htmlspecialchars($__usuarioLogado, ENT_QUOTES, 'UTF-8'); ?>" disabled>
+                        <div class="text-muted small mt-1">Filtrado automaticamente pelo usuário logado.</div>
                     </div>
 
-                    <!-- FIXO: Data inclusão -->
+                    <!-- Data inclusão (OBRIGATÓRIO) -->
                     <div class="col-md-3">
-                        <label class="form-label">Data de Inclusão</label>
+                        <label class="form-label">Data de Inclusão <span class="text-danger">*</span></label>
                         <input type="date" id="filtroDataInclusao" class="form-control">
+                        <div class="text-muted small mt-1">Obrigatório (evita consultas pesadas).</div>
                     </div>
 
-                    <!-- FIXO: Status -->
+                    <!-- Status -->
                     <div class="col-md-2">
                         <label class="form-label">Status</label>
                         <select id="filtroStatus" class="form-select">
@@ -413,6 +437,12 @@ html[data-theme="dark"] .saas-detail-link .icon{
                     <thead id="tabelaHead"></thead>
                     <tbody id="tabelaCorpo"></tbody>
                 </table>
+            </div>
+
+            <div id="requireState" class="text-center p-5 text-muted saas-require" style="display:block;">
+                <i class="bi bi-funnel fs-1 d-block mb-2 opacity-50"></i>
+                <div class="fw-bold text-dark mb-1">Selecione <b>Tipo</b> e <b>Data</b> para pesquisar</div>
+                <div class="text-muted">Por desempenho, nenhum dado é carregado automaticamente.</div>
             </div>
 
             <div id="loading" class="text-center p-5 text-muted saas-state" style="display:none;">
@@ -449,6 +479,8 @@ html[data-theme="dark"] .saas-detail-link .icon{
 </div>
 
 <script>
+    const __USUARIO_LOGADO = <?php echo json_encode($__usuarioLogado, JSON_UNESCAPED_UNICODE); ?>;
+
     const escapeHtml = (str) => {
         if (str === null || str === undefined) return '';
         return String(str)
@@ -471,9 +503,20 @@ html[data-theme="dark"] .saas-detail-link .icon{
 
     const formatDate = (dateString) => {
         if (!dateString) return '-';
+
+        // já formatado tipo "23/01/2026 10:22:11"
         if (String(dateString).includes('/')) return dateString;
-        const partes = String(dateString).split(' ')[0].split('-'); 
-        return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : dateString;
+
+        // tenta ISO "YYYY-MM-DD HH:MM:SS"
+        const s = String(dateString);
+        const parts = s.split(' ');
+        const d = parts[0];
+        const t = parts[1] ? (' ' + parts[1]) : '';
+
+        const dd = d.split('-');
+        if (dd.length === 3) return `${dd[2]}/${dd[1]}/${dd[0]}${t}`;
+
+        return dateString;
     };
 
     const renderStatus = (status) => {
@@ -578,12 +621,10 @@ html[data-theme="dark"] .saas-detail-link .icon{
     function renderDynamicCell(key, val, row){
         const k = upper(key);
 
-        // status
         if (k === 'STATUS') {
             return renderStatus(val);
         }
 
-        // valores longos: abre modal
         if (isLongTextKey(k)) {
             const safe = escapeHtml(val || '-');
             const label = (val === null || val === undefined || val === '') ? '-' : escapeHtml(String(val));
@@ -604,21 +645,17 @@ html[data-theme="dark"] .saas-detail-link .icon{
             `;
         }
 
-        // vazio
         if (val === null || val === undefined || val === '') return '-';
 
-        // datas
         if (isDateKey(k)) {
             return escapeHtml(formatDate(String(val)));
         }
 
-        // dinheiro
         if (isMoneyKey(k)) {
             const n = normalizeNumber(val);
             if (n !== null) return escapeHtml(formatMoney(n));
         }
 
-        // números gerais
         const n = normalizeNumber(val);
         if (n !== null) {
             if (Number.isInteger(n)) return escapeHtml(String(n));
@@ -675,13 +712,13 @@ html[data-theme="dark"] .saas-detail-link .icon{
         const mS = document.getElementById('mSucesso');
         const mE = document.getElementById('mErro');
         const mP = document.getElementById('mPendente');
+        const mC = document.getElementById('mCancelado');
 
         if (mTotal) mTotal.textContent = total;
         if (mS) mS.textContent = s;
         if (mE) mE.textContent = e;
         if (mP) mP.textContent = p;
-
-        // (opcional) se você quiser um card 5º de cancelado, eu adiciono depois — por ora mantém 4 cards como está no layout.
+        if (mC) mC.textContent = c;
     }
 
     async function carregarTipos() {
@@ -703,6 +740,8 @@ html[data-theme="dark"] .saas-detail-link .icon{
             const itens = json.tipos || [];
             sel.innerHTML = '';
 
+            sel.appendChild(new Option('Selecione...', ''));
+
             if (itens.length === 0) {
                 sel.innerHTML = `<option value="">(Nenhum tipo encontrado)</option>`;
                 if (hint) hint.textContent = '';
@@ -716,7 +755,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
                 sel.appendChild(opt);
             });
 
-            if (hint) hint.textContent = 'Lista carregada da MEGAG_TABS_IMPORTACAO';
+            if (hint) hint.textContent = 'Lista carregada da VIEW MEGAG_VW_TABS_IMPORTACAOUSU (filtrada por usuário).';
 
         } catch (e) {
             console.error(e);
@@ -727,10 +766,11 @@ html[data-theme="dark"] .saas-detail-link .icon{
     }
 
     function limparFiltros(){
-        const u = document.getElementById('filtroUsuario');
+        const t = document.getElementById('filtroTipo');
         const d = document.getElementById('filtroDataInclusao');
         const s = document.getElementById('filtroStatus');
-        if (u) u.value = '';
+
+        if (t) t.value = '';
         if (d) d.value = '';
         if (s) s.value = '';
 
@@ -741,12 +781,18 @@ html[data-theme="dark"] .saas-detail-link .icon{
             if (first) first.classList.add('active');
         }
 
-        carregarDados();
+        // limpa tabela + métricas
+        document.getElementById('tabelaCorpo').innerHTML = '';
+        document.getElementById('tabelaHead').innerHTML = '';
+        updateMetrics([]);
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'none';
+        document.getElementById('requireState').style.display = 'block';
     }
 
     async function carregarDados() {
         const tipo = document.getElementById('filtroTipo').value;
-        const usuario = document.getElementById('filtroUsuario').value;
         const dataInclusao = document.getElementById('filtroDataInclusao').value;
         const status = document.getElementById('filtroStatus').value;
 
@@ -754,16 +800,36 @@ html[data-theme="dark"] .saas-detail-link .icon{
         const thead = document.getElementById('tabelaHead');
         const loading = document.getElementById('loading');
         const empty = document.getElementById('emptyState');
+        const requireState = document.getElementById('requireState');
 
         syncChipActive();
 
+        // regra: NÃO TRAZ NADA sem Tipo e Data
+        if (!tipo || !dataInclusao) {
+            tbody.innerHTML = '';
+            thead.innerHTML = '';
+            updateMetrics([]);
+
+            loading.style.display = 'none';
+            empty.style.display = 'none';
+            requireState.style.display = 'block';
+            return;
+        }
+
         tbody.innerHTML = '';
         thead.innerHTML = '';
+
+        requireState.style.display = 'none';
         loading.style.display = 'block';
         empty.style.display = 'none';
 
         try {
-            const params = new URLSearchParams({ tipo, usuario, dataInclusao, status });
+            const params = new URLSearchParams({
+                tipo,
+                dataInclusao,
+                status
+            });
+
             const resp = await fetch(`api/api_dados.php?${params.toString()}`);
             if (!resp.ok) {
                 const txt = await resp.text();
@@ -810,7 +876,9 @@ html[data-theme="dark"] .saas-detail-link .icon{
 
     window.onload = async () => {
         await carregarTipos();
-        // Depois que carregar os tipos, já busca dados do primeiro item (se existir)
-        carregarDados();
+
+        // NÃO CARREGA dados automaticamente (requisito de performance)
+        // mostra o estado "Selecione Tipo e Data"
+        limparFiltros();
     };
 </script>
