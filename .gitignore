@@ -1,0 +1,5 @@
+# Ignorar tudo dentro de uploads
+/uploads/*
+
+# Permitir versionar o diretório (opcional)
+!/uploads/.gitkeep
