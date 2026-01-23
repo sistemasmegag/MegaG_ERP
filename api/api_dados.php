@@ -267,15 +267,8 @@ try {
         FROM (
             SELECT
                 ROWNUM AS ID,
-                t.*,
-                TO_CHAR(t.{$COL_DTAINC}, 'DD/MM/YYYY HH24:MI:SS') AS DTAINCLUSAO_FMT
+                t.*
     ";
-
-    if ($COL_DTAPROC) {
-        $sql .= ",
-                TO_CHAR(t.{$COL_DTAPROC}, 'DD/MM/YYYY HH24:MI:SS') AS DTAIMPORTACAO_FMT
-        ";
-    }
 
     $sql .= "
             FROM {$OWNER_DATA}.{$TABLE_DATA} t
