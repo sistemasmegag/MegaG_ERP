@@ -31,7 +31,7 @@ foreach ($grupos as $codModulo => &$itens) {
         $oa = (int)($a['ORDEM_APLICACAO'] ?? 9999);
         $ob = (int)($b['ORDEM_APLICACAO'] ?? 9999);
         if ($oa === $ob) {
-            return strcmp((string)($a['APLICACAO'] ?? ''), (string)($b['APLICACAO'] ?? ''));
+            return strcmp((string)($a['APLIACACAO'] ?? ''), (string)($b['APLIACACAO'] ?? ''));
         }
         return $oa <=> $ob;
     });
@@ -303,7 +303,7 @@ body.sidebar-collapsed .app-shell .main-inner{
                     <?php foreach ($itens as $app): ?>
                         <?php
                             $codApp   = (string)($app['CODAPLICACAO'] ?? '');
-                            $nomeApp  = (string)($app['APLICACAO'] ?? $codApp);
+                            $nomeApp  = (string)($app['APLIACACAO'] ?? $codApp);
 
                             // pega o link cru da view
                             $linkMenuRaw = (string)($app['LINKMENU'] ?? '');
