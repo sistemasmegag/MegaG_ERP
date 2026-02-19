@@ -407,7 +407,7 @@
         btn.addEventListener('click', function(){
             const isPassword = input.getAttribute('type') === 'password';
             input.setAttribute('type', isPassword ? 'text' : 'password');
-            btn.textContent = isPassword ? '🙈' : '👁';
+            btn.textContent = isPassword ? '🔓' : '👁';
             btn.setAttribute('aria-label', isPassword ? 'Ocultar senha' : 'Mostrar senha');
         });
     })();
