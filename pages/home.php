@@ -1,400 +1,309 @@
 <?php
-require_once(__DIR__ . '/../routes/check_session.php');
-$paginaAtual = 'home';
+// pages/home_usuario.php
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    @session_start();
+}
+
+$user = $_SESSION['usuario'] ?? 'Usuário';
+$menuApps = $_SESSION['menu_apps'] ?? [];
+
+// Helpers de normalização (caso não estejam no helpers)
+if (!function_exists('normalizeLinkMenu')) {
+    function normalizeLinkMenu($linkMenu) {
+        $linkMenu = trim((string)$linkMenu);
+        if ($linkMenu !== '' && stripos($linkMenu, '.php') !== false) {
+            $linkMenu = preg_replace('/\.php$/i', '', $linkMenu);
+        }
+        if ($linkMenu !== '' && stripos($linkMenu, 'upload_') === 0) {
+            $linkMenu = 'imp_' . substr($linkMenu, strlen('upload_'));
+        }
+        return $linkMenu;
+    }
+}
+
+date_default_timezone_set('America/Sao_Paulo');
+$agora = new DateTime();
+$dataFmt = $agora->format('d/m/Y');
+$horaFmt = $agora->format('H:i');
+
+// Placeholders (depois você pluga banco/rotinas)
+// Você pode preencher isso no login_action.php, ou via consultas.
+$recados = $_SESSION['recados'] ?? [
+    ['titulo' => 'Bem-vindo!', 'texto' => 'Sua área pessoal está pronta. Em breve teremos recados e lembretes aqui.', 'tipo' => 'info', 'quando' => $dataFmt . ' ' . $horaFmt],
+];
+
+$tarefas = $_SESSION['tarefas'] ?? [
+    ['titulo' => 'Revisar importações pendentes', 'status' => 'Pendente', 'prazo' => $dataFmt],
+    ['titulo' => 'Validar comissões do mês', 'status' => 'Em andamento', 'prazo' => $dataFmt],
+];
+
+// Monta atalhos: pega do menu_apps (limita e ordena por ORDEM_APLICACAO)
+$atalhos = [];
+foreach ($menuApps as $app) {
+    $linkRaw = (string)($app['LINKMENU'] ?? '');
+    $slug    = normalizeLinkMenu($linkRaw);
+    if ($slug === '' || $slug === 'home') continue;
+
+    $atalhos[] = [
+        'nome' => (string)($app['APLICACAO'] ?? $slug),
+        'slug' => $slug,
+        'mod'  => (string)($app['CODMODULO'] ?? 'OUTROS'),
+        'ord'  => (int)($app['ORDEM_APLICACAO'] ?? 9999),
+    ];
+}
+
+usort($atalhos, function($a, $b){
+    if ($a['ord'] === $b['ord']) return strcmp($a['nome'], $b['nome']);
+    return $a['ord'] <=> $b['ord'];
+});
+
+// limita atalhos para não poluir
+$atalhos = array_slice($atalhos, 0, 10);
+
+// Badges por tipo (recados)
+function badgeRecado($tipo) {
+    $tipo = strtolower((string)$tipo);
+    if ($tipo === 'alerta' || $tipo === 'erro') return 'bg-danger bg-opacity-10 text-danger';
+    if ($tipo === 'aviso') return 'bg-warning bg-opacity-10 text-warning';
+    if ($tipo === 'sucesso') return 'bg-success bg-opacity-10 text-success';
+    return 'bg-primary bg-opacity-10 text-primary';
+}
 ?>
 
 <style>
-/* ========= Clean SaaS ========= */
-:root{
-  --saas-bg: #f6f8fb;
-  --saas-card: #ffffff;
-  --saas-border: rgba(17,24,39,.10);
-  --saas-text: #111827;
-  --saas-muted: rgba(17,24,39,.60);
-  --saas-shadow: 0 12px 30px rgba(17,24,39,.08);
-  --saas-shadow-soft: 0 10px 30px rgba(17,24,39,.06);
-  --saas-ring: rgba(13,110,253,.12);
+/* ===== Home do Usuário – SaaS/ERP ===== */
+.userhub-head{
+    border: 1px solid var(--saas-border);
+    background: linear-gradient(135deg, rgba(99,102,241,.14), rgba(99,102,241,.05));
+    border-radius: 18px;
+    box-shadow: var(--saas-shadow-soft);
+    padding: 18px 18px;
+    overflow:hidden;
+    position:relative;
 }
+html[data-theme="dark"] .userhub-head{
+    background: linear-gradient(135deg, rgba(99,102,241,.16), rgba(255,255,255,.02));
+}
+.userhub-head:before{
+    content:"";
+    position:absolute;
+    inset:-140px -200px auto auto;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle at 30% 30%, rgba(99,102,241,.32), transparent 60%);
+    filter: blur(6px);
+    transform: rotate(8deg);
+    pointer-events:none;
+}
+.userhub-title{ font-weight: 900; letter-spacing: -.02em; margin:0; color: var(--saas-text); }
+.userhub-sub{ margin: 6px 0 0; color: var(--saas-muted); font-size: 14px; }
 
-html[data-theme="dark"]{
-  --saas-bg: #1f1f1f;
-  --saas-card: rgba(255,255,255,.05);
-  --saas-border: rgba(255,255,255,.10);
-  --saas-text: rgba(255,255,255,.92);
-  --saas-muted: rgba(255,255,255,.65);
-  --saas-shadow: 0 16px 40px rgba(0,0,0,.35);
-  --saas-shadow-soft: 0 14px 40px rgba(0,0,0,.25);
-  --saas-ring: rgba(13,110,253,.20);
-}
-
-/* Fundo e tipografia só da área principal */
-.main-content{
-  background:
-    radial-gradient(1200px 600px at 15% 10%, rgba(13,110,253,.14), transparent 60%),
-    radial-gradient(1000px 500px at 85% 25%, rgba(25,135,84,.10), transparent 55%),
-    var(--saas-bg);
-  color: var(--saas-text);
-  min-height: 100vh;
-}
-
-/* Cabeçalho */
-.saas-page-head{
-  border: 1px solid var(--saas-border);
-  background: linear-gradient(135deg, rgba(13,110,253,.10), rgba(13,110,253,.04));
-  border-radius: 18px;
-  box-shadow: var(--saas-shadow-soft);
-  padding: 18px 18px;
-  overflow:hidden;
-  position:relative;
-}
-html[data-theme="dark"] .saas-page-head{
-  background: linear-gradient(135deg, rgba(13,110,253,.14), rgba(255,255,255,.02));
-}
-.saas-page-head:before{
-  content:"";
-  position:absolute;
-  inset:-130px -190px auto auto;
-  width: 360px;
-  height: 360px;
-  background: radial-gradient(circle at 30% 30%, rgba(13,110,253,.30), transparent 60%);
-  filter: blur(6px);
-  transform: rotate(10deg);
-  pointer-events:none;
-}
-.saas-title{ font-weight: 900; letter-spacing: -.02em; margin:0; }
-.saas-subtitle{ margin: 6px 0 0; color: var(--saas-muted); font-size: 14px; }
-
-/* Botão tema */
-.saas-theme-toggle{
-  border: 1px solid var(--saas-border);
-  background: transparent;
-  color: var(--saas-muted);
-  border-radius: 999px;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 800;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.saas-theme-toggle:hover{ color: var(--saas-text); border-color: rgba(13,110,253,.35); }
-
-/* Cards */
 .saas-card{
-  background: var(--saas-card) !important;
-  border: 1px solid var(--saas-border) !important;
-  border-radius: 18px !important;
-  box-shadow: var(--saas-shadow) !important;
-  overflow:hidden;
-  backdrop-filter: blur(10px);
+    background: var(--saas-surface) !important;
+    border: 1px solid var(--saas-border) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--saas-shadow) !important;
+    overflow:hidden;
 }
-
-.quick-card{
-  text-decoration:none;
-  color: inherit;
-  display:block;
+.saas-card .card-header{
+    background: transparent !important;
+    border-bottom: 1px solid var(--saas-border) !important;
 }
-.quick-card:hover .saas-card{
-  transform: translateY(-2px);
-  transition: transform .18s ease;
-  box-shadow: 0 18px 44px rgba(17,24,39,.10) !important;
+.saas-kicker{
+    color: var(--saas-muted);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 900;
 }
-
-.quick-icon{
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.item-row{
+    padding: 12px 14px;
+    border: 1px solid rgba(17,24,39,.08);
+    border-radius: 14px;
+    background: rgba(255,255,255,.55);
 }
-
-.quick-card:hover .quick-icon {
-  transform: scale(1.1);
-  transition: 0.2s ease;
+html[data-theme="dark"] .item-row{
+    background: rgba(255,255,255,.04);
+    border-color: rgba(255,255,255,.08);
 }
+.mini-muted{ color: var(--saas-muted); font-size: 12px; }
 
-.text-muted{ color: var(--saas-muted) !important; }
-.text-dark{ color: var(--saas-text) !important; }
-
-/* ===== QUICK CARDS - DARK MODE ===== */
-[data-bs-theme="dark"] .saas-card {
-  background-color: #1e1e2d;
-  border: 1px solid #2b2b40;
+.quick-link{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(17,24,39,.08);
+    background: rgba(255,255,255,.55);
+    text-decoration:none;
+    color: inherit;
 }
-
-[data-bs-theme="dark"] .saas-card h5 {
-  color: #ffffff;
+.quick-link:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(0,0,0,.06);
 }
-
-[data-bs-theme="dark"] .saas-card .text-muted {
-  color: #b5b5c3 !important;
-}
-
-/* seta da direita */
-[data-bs-theme="dark"] .saas-card .bi-arrow-right {
-  color: #8a8aa3 !important;
-}
-
-/* ícone com fundo suave */
-[data-bs-theme="dark"] .quick-icon {
-  background-color: rgba(255, 255, 255, 0.06) !important;
-}
-
-/* hover */
-.quick-card:hover .saas-card {
-  transform: translateY(-2px);
-  transition: 0.2s ease;
+html[data-theme="dark"] .quick-link{
+    background: rgba(255,255,255,.04);
+    border-color: rgba(255,255,255,.08);
 }
 </style>
 
-<main class="main-content">
-  <div class="container-fluid">
+<div class="container-fluid">
 
-    <div class="d-flex align-items-center d-md-none mb-4 pb-3 border-bottom">
-      <button class="mobile-toggle me-3" onclick="toggleMenu()">
-        <i class="bi bi-list"></i>
-      </button>
-      <h4 class="m-0 fw-bold text-dark">Importador Mega G</h4>
-    </div>
+    <div class="userhub-head mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 position-relative">
+            <div>
+                <h3 class="userhub-title">Olá, <?php echo htmlspecialchars($user, ENT_QUOTES, 'UTF-8'); ?> 👋</h3>
+                <p class="userhub-sub">
+                    <?php echo $dataFmt; ?> • <?php echo $horaFmt; ?> — sua central de recados, tarefas e atalhos.
+                </p>
+            </div>
 
-    <!-- Header -->
-    <div class="saas-page-head mb-4">
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 position-relative">
-        <div>
-          <h3 class="saas-title text-dark">Visão Geral</h3>
-          <p class="saas-subtitle">
-            Acesse rapidamente os módulos de importação.
-          </p>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary fw-bold px-3 py-2">
+                    <i class="bi bi-inboxes me-1"></i> Central do Usuário
+                </span>
+                <a class="btn btn-outline-secondary rounded-pill px-3" href="index.php?page=home">
+                    <i class="bi bi-cloud-arrow-up me-1"></i> Ir para Importação
+                </a>
+            </div>
         </div>
-
-        <button type="button" id="btnTemaHome" class="saas-theme-toggle">
-          <span id="themeIconHome">🌙</span>
-          <span id="themeTextHome">Dark</span>
-        </button>
-      </div>
     </div>
 
-    <!-- Cards de navegação -->
-     <!-- Cards - Logistica -->
     <div class="row g-4">
 
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_setormetacapac">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-primary bg-opacity-10">
-                <i class="bi bi-box-seam fs-2 text-primary"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Cargas/Metas</h5>
-                <div class="text-muted mt-1">Importar capacidade logística / metas.</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
+        <!-- Coluna 1: Tarefas -->
+        <div class="col-lg-4">
+            <div class="card saas-card">
+                <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="saas-kicker">Minhas tarefas</div>
+                        <div class="fw-bold" style="letter-spacing:-.01em;">Pendências e foco do dia</div>
+                    </div>
+                    <a href="index.php?page=tarefas" class="btn btn-sm btn-primary rounded-pill px-3">
+                        <i class="bi bi-kanban me-1"></i> Kanban
+                    </a>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($tarefas)): ?>
+                        <div class="text-muted">Sem tarefas por aqui. 🎉</div>
+                    <?php else: ?>
+                        <div class="d-flex flex-column gap-2">
+                            <?php foreach ($tarefas as $t): ?>
+                                <?php
+                                    $st = strtolower((string)($t['status'] ?? 'pendente'));
+                                    $badge = 'bg-secondary bg-opacity-10 text-secondary';
+                                    if ($st === 'pendente') $badge = 'bg-warning bg-opacity-10 text-warning';
+                                    if ($st === 'em andamento') $badge = 'bg-primary bg-opacity-10 text-primary';
+                                    if ($st === 'concluida' || $st === 'concluída') $badge = 'bg-success bg-opacity-10 text-success';
+                                ?>
+                                <div class="item-row">
+                                    <div class="d-flex align-items-start justify-content-between gap-2">
+                                        <div>
+                                            <div class="fw-bold"><?php echo htmlspecialchars($t['titulo'] ?? 'Tarefa', ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="mini-muted">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                Prazo: <?php echo htmlspecialchars($t['prazo'] ?? '-', ENT_QUOTES, 'UTF-8'); ?>
+                                            </div>
+                                        </div>
+                                        <span class="badge rounded-pill <?php echo $badge; ?> fw-bold">
+                                            <?php echo htmlspecialchars($t['status'] ?? 'Pendente', ENT_QUOTES, 'UTF-8'); ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="mt-3">
+                        <a href="index.php?page=tarefas" class="text-decoration-none fw-bold">
+                            Ver todas <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-          </div>
-        </a>
-      </div>
+        </div>
 
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_lanctocomissao">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-primary bg-opacity-10">
-                <i class="bi bi-truck fs-2 text-primary"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Comissão Transportadores</h5>
-                <div class="text-muted mt-1">Importar comissão de transportadores.</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
+        <!-- Coluna 2: Recados -->
+        <div class="col-lg-5">
+            <div class="card saas-card">
+                <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="saas-kicker">Últimos recados</div>
+                        <div class="fw-bold" style="letter-spacing:-.01em;">Avisos, novidades e comunicados</div>
+                    </div>
+                    <span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary fw-bold px-3 py-2">
+                        <i class="bi bi-megaphone me-1"></i> Mural
+                    </span>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($recados)): ?>
+                        <div class="text-muted">Nenhum recado no momento.</div>
+                    <?php else: ?>
+                        <div class="d-flex flex-column gap-2">
+                            <?php foreach ($recados as $r): ?>
+                                <div class="item-row">
+                                    <div class="d-flex align-items-start justify-content-between gap-2">
+                                        <div>
+                                            <div class="fw-bold"><?php echo htmlspecialchars($r['titulo'] ?? 'Recado', ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="text-muted" style="font-size:14px;">
+                                                <?php echo htmlspecialchars($r['texto'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                            </div>
+                                            <div class="mini-muted mt-1">
+                                                <i class="bi bi-clock me-1"></i>
+                                                <?php echo htmlspecialchars($r['quando'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                                            </div>
+                                        </div>
+                                        <span class="badge rounded-pill <?php echo badgeRecado($r['tipo'] ?? 'info'); ?> fw-bold">
+                                            <?php echo htmlspecialchars(strtoupper((string)($r['tipo'] ?? 'INFO')), ENT_QUOTES, 'UTF-8'); ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="mt-3">
+                        <a href="index.php?page=recados" class="text-decoration-none fw-bold">
+                            Ver mural completo <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-          </div>
-        </a>
-      </div>
+        </div>
 
-      <!-- Card - Comercialização -->
+        <!-- Coluna 3: Atalhos -->
+        <div class="col-lg-3">
+            <div class="card saas-card">
+                <div class="card-header py-3">
+                    <div class="saas-kicker">Atalhos</div>
+                    <div class="fw-bold" style="letter-spacing:-.01em;">Acesso rápido</div>
+                </div>
+                <div class="card-body">
+                    <?php if (empty($atalhos)): ?>
+                        <div class="text-muted">Sem atalhos disponíveis.</div>
+                    <?php else: ?>
+                        <div class="d-flex flex-column gap-2">
+                            <?php foreach ($atalhos as $a): ?>
+                                <a class="quick-link" href="index.php?page=<?php echo urlencode($a['slug']); ?>">
+                                    <div class="d-flex flex-column">
+                                        <div class="fw-bold"><?php echo htmlspecialchars($a['nome'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="mini-muted"><?php echo htmlspecialchars($a['mod'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                    </div>
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
 
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_tabvdaprodraio">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-secondary bg-opacity-10">
-                <i class="bi bi-bullseye fs-2 text-secondary"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Custo de Comercialização</h5>
-                <div class="text-muted mt-1">Importar custo de comercialização.</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
+                    <div class="mt-3 text-muted" style="font-size:12px;">
+                        *Atalhos baseados no seu menu/permissão.
+                    </div>
+                </div>
             </div>
-          </div>
-        </a>
-      </div>
-
-      <!-- Cards - Compras -->
-
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_bi_metas">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-warning bg-opacity-10">
-                <i class="bi bi-graph-up-arrow fs-2 text-warning"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Meta de Compras</h5>
-                <div class="text-muted mt-1">Importar tabela de meta de compras - Setor de Compras</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_bi_metas_perspect">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-warning bg-opacity-10">
-                <i class="bi bi-speedometer fs-2 text-warning"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Perspectivas - Compras</h5>
-                <div class="text-muted mt-1">Importar tabelas de perspectivas - Setor de Compras</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <!-- Cards - Vendas -->
-
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_repcccomissao">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-danger bg-opacity-10">
-                <i class="bi bi-cash-coin fs-2 text-danger"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Comissões</h5>
-                <div class="text-muted mt-1">Importar comissões de vendedor.</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_metas">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-danger bg-opacity-10">
-                <i class="bi bi-graph-up-arrow fs-2 text-danger"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Meta de Vendas</h5>
-                <div class="text-muted mt-1">Importar tabela de meta - Setor de Vendas.</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_metas_perspec">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-danger bg-opacity-10">
-                <i class="bi bi-speedometer fs-2 text-danger"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Perspectiva - Vendas </h5>
-                <div class="text-muted mt-1">Importar tabela de perspectiva - Setor de Vendas</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_metas_faixa">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-danger bg-opacity-10">
-                <i class="bi bi-receipt-cutoff fs-2 text-danger"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Faixas - Vendas</h5>
-                <div class="text-muted mt-1">Importar tabela de faixas - Setor de Vendas</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="col-12 col-md-6 col-xl-4">
-        <a class="quick-card" href="index.php?page=imp_metas_gap">
-          <div class="card saas-card h-100">
-            <div class="card-body d-flex align-items-center gap-3 p-4">
-              <div class="quick-icon bg-danger bg-opacity-10">
-                <i class="bi bi-receipt-cutoff fs-2 text-danger"></i>
-              </div>
-              <div class="flex-grow-1">
-                <h5 class="m-0 fw-bold">Gap - Vendas </h5>
-                <div class="text-muted mt-1">Importar tabela de Gap - Setor de Vendas</div>
-              </div>
-              <i class="bi bi-arrow-right fs-4 text-muted"></i>
-            </div>
-          </div>
-        </a>
-      </div>
+        </div>
 
     </div>
-
-  </div>
-</main>
-
-<script>
-(function () {
-  const root = document.documentElement;
-  const btnTema = document.getElementById('btnTemaHome');
-  const icon = document.getElementById('themeIconHome');
-  const text = document.getElementById('themeTextHome');
-
-  function applyTheme(theme){
-    const isDark = theme === 'dark';
-
-    // Seu tema
-    root.setAttribute('data-theme', theme);
-
-    // Tema do Bootstrap (ESSENCIAL pro seu CSS [data-bs-theme="dark"])
-    root.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
-
-    if (icon) icon.textContent = isDark ? '☀️' : '🌙';
-    if (text) text.textContent = isDark ? 'Light' : 'Dark';
-  }
-
-  const saved = localStorage.getItem('theme');
-  if (saved === 'dark' || saved === 'light') {
-    applyTheme(saved);
-  } else {
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(prefersDark ? 'dark' : 'light');
-  }
-
-  if (btnTema) {
-    btnTema.addEventListener('click', function(){
-      const current = root.getAttribute('data-theme') || 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('theme', next);
-      applyTheme(next);
-    });
-  }
-})();
-</script>
+</div>

@@ -87,7 +87,8 @@ if (!function_exists('normalizeLinkMenu')) {
 // (Como a view não traz ICO, usamos um fallback por módulo)
 // ============================
 if (!function_exists('renderMenuIconFromModulo')) {
-    function renderMenuIconFromModulo($codModulo) {
+    function renderMenuIconFromModulo($codModulo)
+    {
         $codModulo = strtoupper(trim((string)$codModulo));
 
         if ($codModulo === 'UPLOAD') return '<i class="bi bi-cloud-arrow-up-fill me-2"></i>';
@@ -261,10 +262,13 @@ if (!function_exists('normalizeLinkMenu')) {
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <a href="index.php?page=home" class="brand mb-0 d-flex align-items-center">
-            <div class="bg-success bg-gradient rounded-3 d-flex justify-content-center align-items-center me-2 brand-icon" style="width: 36px; height: 36px;">
-                <i class="bi bi-patch-check-fill fs-5 text-white"></i>
+            <div class="brand-icon me-2 d-flex align-items-center justify-content-center"
+                style="width: 58px; height: 58px;">
+                <img src="assets/images/logo.png"
+                    alt="MegaG"
+                    style="width: 98px; height: 98px; object-fit: contain;">
             </div>
-            <span class="brand-text">Importador Mega G</span>
+            <span class="brand-text">MEGAG - ERP</span>
         </a>
 
         <div class="d-flex align-items-center gap-2">
@@ -555,7 +559,9 @@ if (!function_exists('normalizeLinkMenu')) {
             const collapses = sidebar ? sidebar.querySelectorAll('[data-menu-collapse="1"]') : [];
 
             if (!q) {
-                items.forEach(li => { li.style.display = ''; });
+                items.forEach(li => {
+                    li.style.display = '';
+                });
                 return;
             }
 
@@ -578,7 +584,9 @@ if (!function_exists('normalizeLinkMenu')) {
 
                 if (typeof bootstrap === 'undefined' || !bootstrap.Collapse) return;
 
-                const inst = bootstrap.Collapse.getOrCreateInstance(col, { toggle: false });
+                const inst = bootstrap.Collapse.getOrCreateInstance(col, {
+                    toggle: false
+                });
                 if (hasMatch) inst.show();
                 else inst.hide();
             });
