@@ -13,13 +13,9 @@ ini_set('default_charset', 'UTF-8');
 
 // ==========================================
 
-require_once $_SERVER['DOCUMENT_ROOT'] . '/db_config/db_connect.php';
+require_once __DIR__ . '/../../db_config/db_connect.php';
 
-/*
-|--------------------------------------------------------------------------
-| Conexão PDO (padrão projeto)
-|--------------------------------------------------------------------------
-*/
+/* |-------------------------------------------------------------------------- | Conexão PDO (padrão projeto) |-------------------------------------------------------------------------- */
 
 function getConexaoPDO()
 {
@@ -33,7 +29,8 @@ function getConexaoPDO()
         $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
 
         return $conn;
-    } catch (PDOException $e) {
+    }
+    catch (PDOException $e) {
 
         $ret = [
             'status' => 401,
@@ -49,11 +46,7 @@ function getConexaoPDO()
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| JSON padrão API nova
-|--------------------------------------------------------------------------
-*/
+/* |-------------------------------------------------------------------------- | JSON padrão API nova |-------------------------------------------------------------------------- */
 
 function mg_json_success($data = null)
 {
@@ -65,7 +58,7 @@ function mg_json_success($data = null)
 
     echo json_encode([
         'success' => true,
-        'data'    => $data
+        'data' => $data
     ], JSON_UNESCAPED_UNICODE);
 
     exit;
@@ -81,17 +74,13 @@ function mg_json_error($msg)
 
     echo json_encode([
         'success' => false,
-        'error'   => $msg
+        'error' => $msg
     ], JSON_UNESCAPED_UNICODE);
 
     exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Permissão (por enquanto liberada)
-|--------------------------------------------------------------------------
-*/
+/* |-------------------------------------------------------------------------- | Permissão (por enquanto liberada) |-------------------------------------------------------------------------- */
 
 function mg_need_permission($perm)
 {
@@ -99,11 +88,7 @@ function mg_need_permission($perm)
     return true;
 }
 
-/*
-|--------------------------------------------------------------------------
-| Helper para nome de package
-|--------------------------------------------------------------------------
-*/
+/* |-------------------------------------------------------------------------- | Helper para nome de package |-------------------------------------------------------------------------- */
 
 function mg_pkg($pkg)
 {

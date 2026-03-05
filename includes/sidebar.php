@@ -15,6 +15,31 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 // ============================
 $menuApps = $_SESSION['menu_apps'] ?? [];
 
+// Injeta módulos de teste (SaaS)
+$menuApps[] = [
+    'CODMODULO'       => 'SAAS_APPS',
+    'ORDEM_APLICACAO' => 1,
+    'APLICACAO'       => 'CRM & Leads',
+    'CODAPLICACAO'    => 'APP_CRM',
+    'LINKMENU'        => 'crm'
+];
+
+$menuApps[] = [
+    'CODMODULO'       => 'SAAS_APPS',
+    'ORDEM_APLICACAO' => 2,
+    'APLICACAO'       => 'Base de Conhecimento',
+    'CODAPLICACAO'    => 'APP_WIKI',
+    'LINKMENU'        => 'wiki'
+];
+
+$menuApps[] = [
+    'CODMODULO'       => 'SAAS_APPS',
+    'ORDEM_APLICACAO' => 3,
+    'APLICACAO'       => 'Recursos Humanos',
+    'CODAPLICACAO'    => 'APP_RH',
+    'LINKMENU'        => 'rh'
+];
+
 // ============================
 // 2) Agrupa por módulo (CODMODULO)
 // ============================
@@ -40,9 +65,10 @@ unset($itens);
 
 // Labels amigáveis pros módulos
 $labelsModulo = [
-    'UPLOAD' => 'Importação',
-    'DADOS'  => 'Dados',
-    'ADMIN'  => 'Administração',
+    'SAAS_APPS' => 'Aplicativos SaaS',
+    'UPLOAD'    => 'Importação',
+    'DADOS'     => 'Dados',
+    'ADMIN'     => 'Administração',
 ];
 
 // ============================
@@ -91,6 +117,7 @@ if (!function_exists('renderMenuIconFromModulo')) {
     {
         $codModulo = strtoupper(trim((string)$codModulo));
 
+        if ($codModulo === 'SAAS_APPS') return '<i class="bi bi-rocket-takeoff-fill me-2"></i>';
         if ($codModulo === 'UPLOAD') return '<i class="bi bi-cloud-arrow-up-fill me-2"></i>';
         if ($codModulo === 'DADOS')  return '<i class="bi bi-table me-2"></i>';
         if ($codModulo === 'ADMIN')  return '<i class="bi bi-shield-lock-fill me-2"></i>';
@@ -126,137 +153,7 @@ if (!function_exists('normalizeLinkMenu')) {
 }
 ?>
 
-<style>
-    /* =========================
-   Sidebar – tamanho + recolher/expandir + busca
-   ========================= */
 
-    :root {
-        --sidebar-expanded: 300px;
-        --sidebar-collapsed: 88px;
-    }
-
-    /* LARGURA DO SIDEBAR */
-    .modern-sidebar {
-        width: var(--sidebar-expanded);
-        min-width: var(--sidebar-expanded);
-        font-size: 15px;
-        transition: width .18s ease, min-width .18s ease, transform .18s ease;
-    }
-
-    /* colapsado */
-    .modern-sidebar.is-collapsed {
-        width: var(--sidebar-collapsed);
-        min-width: var(--sidebar-collapsed);
-    }
-
-    /* esconder textos no modo recolhido (mantém ícones/estrutura) */
-    .modern-sidebar.is-collapsed .brand-text,
-    .modern-sidebar.is-collapsed .menu-header,
-    .modern-sidebar.is-collapsed .nav-link span .nav-text,
-    .modern-sidebar.is-collapsed .sidebar-search,
-    .modern-sidebar.is-collapsed .user-info,
-    .modern-sidebar.is-collapsed .logout-btn {
-        display: none !important;
-    }
-
-    /* ainda permite ver o “logo” (ícone verde) e avatar no recolhido */
-    .modern-sidebar.is-collapsed .brand {
-        justify-content: center;
-    }
-
-    .modern-sidebar.is-collapsed .brand .brand-icon {
-        margin-right: 0 !important;
-    }
-
-    /* itens centralizados no recolhido */
-    .modern-sidebar.is-collapsed .nav-link {
-        justify-content: center;
-        padding: 12px 0;
-    }
-
-    /* links e ícones */
-    .modern-sidebar .nav-link {
-        font-size: 0.98rem;
-        padding: 11px 16px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-    }
-
-    .modern-sidebar .nav-link i {
-        font-size: 1.10rem;
-    }
-
-    .modern-sidebar .nav-link.active {
-        padding-left: 18px;
-    }
-
-    /* headers clicáveis dos módulos */
-    .modern-sidebar .menu-header {
-        font-size: 0.78rem;
-        letter-spacing: .08em;
-        padding-top: 12px;
-        padding-bottom: 6px;
-        opacity: .85;
-    }
-
-    /* botão recolher */
-    .sidebar-toggle-btn {
-        border: 0;
-        background: transparent;
-        color: inherit;
-        padding: 6px 8px;
-        border-radius: 10px;
-    }
-
-    .sidebar-toggle-btn:hover {
-        background: rgba(255, 255, 255, .08);
-    }
-
-    /* busca */
-    .modern-sidebar .sidebar-search .form-control {
-        font-size: 0.95rem;
-        padding: 10px 12px;
-        border-radius: 14px;
-    }
-
-    /* perfil */
-    .modern-sidebar .user-profile h6 {
-        font-size: .95rem;
-    }
-
-    .modern-sidebar .user-profile small {
-        font-size: .80rem;
-    }
-
-    /* =========================================================
-   AJUSTE DO "CONTEÚDO" (pra não ficar aquele espaço estranho)
-   - muita gente fixa margin-left no conteúdo
-   - a gente tenta acompanhar via CSS (quando possível)
-   ========================================================= */
-
-    /* tenta ajustar containers comuns (se existirem) */
-    .app-shell .main,
-    .app-shell .main-content,
-    .app-shell .content,
-    .app-shell .content-wrapper,
-    .app-shell .page-content,
-    .app-shell .main-inner {
-        transition: margin-left .18s ease;
-    }
-
-    /* quando o sidebar estiver colapsado, o JS também ajusta inline,
-   mas esse fallback ajuda quando o layout não usa inline */
-    body.sidebar-collapsed .app-shell .main,
-    body.sidebar-collapsed .app-shell .main-content,
-    body.sidebar-collapsed .app-shell .content,
-    body.sidebar-collapsed .app-shell .content-wrapper,
-    body.sidebar-collapsed .app-shell .page-content,
-    body.sidebar-collapsed .app-shell .main-inner {
-        margin-left: var(--sidebar-collapsed) !important;
-    }
-</style>
 
 <div class="modern-sidebar flex-shrink-0" id="sidebarMenu">
 

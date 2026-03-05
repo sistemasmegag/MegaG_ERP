@@ -10,8 +10,9 @@ $menuApps = $_SESSION['menu_apps'] ?? [];
 
 // Helpers de normalização (caso não estejam no helpers)
 if (!function_exists('normalizeLinkMenu')) {
-    function normalizeLinkMenu($linkMenu) {
-        $linkMenu = trim((string)$linkMenu);
+    function normalizeLinkMenu($linkMenu)
+    {
+        $linkMenu = trim((string) $linkMenu);
         if ($linkMenu !== '' && stripos($linkMenu, '.php') !== false) {
             $linkMenu = preg_replace('/\.php$/i', '', $linkMenu);
         }
@@ -41,20 +42,22 @@ $tarefas = $_SESSION['tarefas'] ?? [
 // Monta atalhos: pega do menu_apps (limita e ordena por ORDEM_APLICACAO)
 $atalhos = [];
 foreach ($menuApps as $app) {
-    $linkRaw = (string)($app['LINKMENU'] ?? '');
-    $slug    = normalizeLinkMenu($linkRaw);
-    if ($slug === '' || $slug === 'home') continue;
+    $linkRaw = (string) ($app['LINKMENU'] ?? '');
+    $slug = normalizeLinkMenu($linkRaw);
+    if ($slug === '' || $slug === 'home')
+        continue;
 
     $atalhos[] = [
-        'nome' => (string)($app['APLICACAO'] ?? $slug),
+        'nome' => (string) ($app['APLICACAO'] ?? $slug),
         'slug' => $slug,
-        'mod'  => (string)($app['CODMODULO'] ?? 'OUTROS'),
-        'ord'  => (int)($app['ORDEM_APLICACAO'] ?? 9999),
+        'mod' => (string) ($app['CODMODULO'] ?? 'OUTROS'),
+        'ord' => (int) ($app['ORDEM_APLICACAO'] ?? 9999),
     ];
 }
 
-usort($atalhos, function($a, $b){
-    if ($a['ord'] === $b['ord']) return strcmp($a['nome'], $b['nome']);
+usort($atalhos, function ($a, $b) {
+    if ($a['ord'] === $b['ord'])
+        return strcmp($a['nome'], $b['nome']);
     return $a['ord'] <=> $b['ord'];
 });
 
@@ -62,93 +65,20 @@ usort($atalhos, function($a, $b){
 $atalhos = array_slice($atalhos, 0, 10);
 
 // Badges por tipo (recados)
-function badgeRecado($tipo) {
-    $tipo = strtolower((string)$tipo);
-    if ($tipo === 'alerta' || $tipo === 'erro') return 'bg-danger bg-opacity-10 text-danger';
-    if ($tipo === 'aviso') return 'bg-warning bg-opacity-10 text-warning';
-    if ($tipo === 'sucesso') return 'bg-success bg-opacity-10 text-success';
+function badgeRecado($tipo)
+{
+    $tipo = strtolower((string) $tipo);
+    if ($tipo === 'alerta' || $tipo === 'erro')
+        return 'bg-danger bg-opacity-10 text-danger';
+    if ($tipo === 'aviso')
+        return 'bg-warning bg-opacity-10 text-warning';
+    if ($tipo === 'sucesso')
+        return 'bg-success bg-opacity-10 text-success';
     return 'bg-primary bg-opacity-10 text-primary';
 }
 ?>
 
-<style>
-/* ===== Home do Usuário – SaaS/ERP ===== */
-.userhub-head{
-    border: 1px solid var(--saas-border);
-    background: linear-gradient(135deg, rgba(99,102,241,.14), rgba(99,102,241,.05));
-    border-radius: 18px;
-    box-shadow: var(--saas-shadow-soft);
-    padding: 18px 18px;
-    overflow:hidden;
-    position:relative;
-}
-html[data-theme="dark"] .userhub-head{
-    background: linear-gradient(135deg, rgba(99,102,241,.16), rgba(255,255,255,.02));
-}
-.userhub-head:before{
-    content:"";
-    position:absolute;
-    inset:-140px -200px auto auto;
-    width: 380px;
-    height: 380px;
-    background: radial-gradient(circle at 30% 30%, rgba(99,102,241,.32), transparent 60%);
-    filter: blur(6px);
-    transform: rotate(8deg);
-    pointer-events:none;
-}
-.userhub-title{ font-weight: 900; letter-spacing: -.02em; margin:0; color: var(--saas-text); }
-.userhub-sub{ margin: 6px 0 0; color: var(--saas-muted); font-size: 14px; }
 
-.saas-card{
-    background: var(--saas-surface) !important;
-    border: 1px solid var(--saas-border) !important;
-    border-radius: 18px !important;
-    box-shadow: var(--saas-shadow) !important;
-    overflow:hidden;
-}
-.saas-card .card-header{
-    background: transparent !important;
-    border-bottom: 1px solid var(--saas-border) !important;
-}
-.saas-kicker{
-    color: var(--saas-muted);
-    font-size: 12px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    font-weight: 900;
-}
-.item-row{
-    padding: 12px 14px;
-    border: 1px solid rgba(17,24,39,.08);
-    border-radius: 14px;
-    background: rgba(255,255,255,.55);
-}
-html[data-theme="dark"] .item-row{
-    background: rgba(255,255,255,.04);
-    border-color: rgba(255,255,255,.08);
-}
-.mini-muted{ color: var(--saas-muted); font-size: 12px; }
-
-.quick-link{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding: 12px 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(17,24,39,.08);
-    background: rgba(255,255,255,.55);
-    text-decoration:none;
-    color: inherit;
-}
-.quick-link:hover{
-    transform: translateY(-1px);
-    box-shadow: 0 14px 26px rgba(0,0,0,.06);
-}
-html[data-theme="dark"] .quick-link{
-    background: rgba(255,255,255,.04);
-    border-color: rgba(255,255,255,.08);
-}
-</style>
 
 <div class="container-fluid">
 
@@ -193,16 +123,21 @@ html[data-theme="dark"] .quick-link{
                         <div class="d-flex flex-column gap-2">
                             <?php foreach ($tarefas as $t): ?>
                                 <?php
-                                    $st = strtolower((string)($t['status'] ?? 'pendente'));
-                                    $badge = 'bg-secondary bg-opacity-10 text-secondary';
-                                    if ($st === 'pendente') $badge = 'bg-warning bg-opacity-10 text-warning';
-                                    if ($st === 'em andamento') $badge = 'bg-primary bg-opacity-10 text-primary';
-                                    if ($st === 'concluida' || $st === 'concluída') $badge = 'bg-success bg-opacity-10 text-success';
+                                $st = strtolower((string) ($t['status'] ?? 'pendente'));
+                                $badge = 'bg-secondary bg-opacity-10 text-secondary';
+                                if ($st === 'pendente')
+                                    $badge = 'bg-warning bg-opacity-10 text-warning';
+                                if ($st === 'em andamento')
+                                    $badge = 'bg-primary bg-opacity-10 text-primary';
+                                if ($st === 'concluida' || $st === 'concluída')
+                                    $badge = 'bg-success bg-opacity-10 text-success';
                                 ?>
                                 <div class="item-row">
                                     <div class="d-flex align-items-start justify-content-between gap-2">
                                         <div>
-                                            <div class="fw-bold"><?php echo htmlspecialchars($t['titulo'] ?? 'Tarefa', ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="fw-bold">
+                                                <?php echo htmlspecialchars($t['titulo'] ?? 'Tarefa', ENT_QUOTES, 'UTF-8'); ?>
+                                            </div>
                                             <div class="mini-muted">
                                                 <i class="bi bi-calendar3 me-1"></i>
                                                 Prazo: <?php echo htmlspecialchars($t['prazo'] ?? '-', ENT_QUOTES, 'UTF-8'); ?>
@@ -247,7 +182,9 @@ html[data-theme="dark"] .quick-link{
                                 <div class="item-row">
                                     <div class="d-flex align-items-start justify-content-between gap-2">
                                         <div>
-                                            <div class="fw-bold"><?php echo htmlspecialchars($r['titulo'] ?? 'Recado', ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="fw-bold">
+                                                <?php echo htmlspecialchars($r['titulo'] ?? 'Recado', ENT_QUOTES, 'UTF-8'); ?>
+                                            </div>
                                             <div class="text-muted" style="font-size:14px;">
                                                 <?php echo htmlspecialchars($r['texto'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </div>
@@ -256,8 +193,9 @@ html[data-theme="dark"] .quick-link{
                                                 <?php echo htmlspecialchars($r['quando'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
                                             </div>
                                         </div>
-                                        <span class="badge rounded-pill <?php echo badgeRecado($r['tipo'] ?? 'info'); ?> fw-bold">
-                                            <?php echo htmlspecialchars(strtoupper((string)($r['tipo'] ?? 'INFO')), ENT_QUOTES, 'UTF-8'); ?>
+                                        <span
+                                            class="badge rounded-pill <?php echo badgeRecado($r['tipo'] ?? 'info'); ?> fw-bold">
+                                            <?php echo htmlspecialchars(strtoupper((string) ($r['tipo'] ?? 'INFO')), ENT_QUOTES, 'UTF-8'); ?>
                                         </span>
                                     </div>
                                 </div>
@@ -289,8 +227,10 @@ html[data-theme="dark"] .quick-link{
                             <?php foreach ($atalhos as $a): ?>
                                 <a class="quick-link" href="index.php?page=<?php echo urlencode($a['slug']); ?>">
                                     <div class="d-flex flex-column">
-                                        <div class="fw-bold"><?php echo htmlspecialchars($a['nome'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                        <div class="mini-muted"><?php echo htmlspecialchars($a['mod'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="fw-bold"><?php echo htmlspecialchars($a['nome'], ENT_QUOTES, 'UTF-8'); ?>
+                                        </div>
+                                        <div class="mini-muted"><?php echo htmlspecialchars($a['mod'], ENT_QUOTES, 'UTF-8'); ?>
+                                        </div>
                                     </div>
                                     <i class="bi bi-arrow-right"></i>
                                 </a>

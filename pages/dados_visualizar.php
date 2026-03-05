@@ -1,6 +1,6 @@
-<?php 
+<?php
 require_once __DIR__ . '/../routes/check_session.php';
-$paginaAtual = 'dados_visualizar'; 
+$paginaAtual = 'dados_visualizar';
 
 // Usuário logado (pra filtrar e também preencher UI)
 $__usuarioLogado = $_SESSION['usuario']
@@ -9,288 +9,342 @@ $__usuarioLogado = $_SESSION['usuario']
     ?? $_SESSION['login']
     ?? 'SYSTEM';
 
-$__usuarioLogado = trim((string)$__usuarioLogado);
-if ($__usuarioLogado === '') $__usuarioLogado = 'SYSTEM';
+$__usuarioLogado = trim((string) $__usuarioLogado);
+if ($__usuarioLogado === '')
+    $__usuarioLogado = 'SYSTEM';
 ?>
 
 <style>
-/* ===== Clean SaaS (escopado pra Visualizar) ===== */
-.saas-head{
-    border: 1px solid var(--saas-border);
-    background: linear-gradient(135deg, rgba(108,117,125,.10), rgba(108,117,125,.04));
-    border-radius: 18px;
-    box-shadow: var(--saas-shadow-soft);
-    padding: 18px 18px;
-    overflow:hidden;
-    position:relative;
-}
-html[data-theme="dark"] .saas-head{
-    background: linear-gradient(135deg, rgba(108,117,125,.14), rgba(255,255,255,.02));
-}
-.saas-head:before{
-    content:"";
-    position:absolute;
-    inset:-130px -190px auto auto;
-    width: 360px;
-    height: 360px;
-    background: radial-gradient(circle at 30% 30%, rgba(13,110,253,.18), transparent 60%);
-    filter: blur(6px);
-    transform: rotate(10deg);
-    pointer-events:none;
-}
-.saas-title{
-    font-weight: 900;
-    letter-spacing: -.02em;
-    margin:0;
-    color: var(--saas-text);
-}
-.saas-subtitle{
-    margin: 6px 0 0;
-    color: var(--saas-muted);
-    font-size: 14px;
-}
+    /* ===== Clean SaaS (escopado pra Visualizar) ===== */
+    .saas-head {
+        border: 1px solid var(--saas-border);
+        background: linear-gradient(135deg, rgba(108, 117, 125, .10), rgba(108, 117, 125, .04));
+        border-radius: 18px;
+        box-shadow: var(--saas-shadow-soft);
+        padding: 18px 18px;
+        overflow: hidden;
+        position: relative;
+    }
 
-/* Cards mini (contadores) */
-.saas-metrics{
-    display:grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 14px;
-    position: relative;
-    z-index: 1;
-}
-@media (max-width: 1100px){
-    .saas-metrics{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-.saas-metric{
-    border: 1px solid var(--saas-border);
-    background: rgba(255,255,255,.55);
-    border-radius: 16px;
-    padding: 12px 12px;
-    box-shadow: var(--saas-shadow-soft);
-    backdrop-filter: blur(10px);
-}
-html[data-theme="dark"] .saas-metric{
-    background: rgba(255,255,255,.06);
-}
-.saas-metric .label{
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--saas-muted);
-}
-.saas-metric .value{
-    margin-top: 4px;
-    font-size: 24px;
-    font-weight: 900;
-    letter-spacing: -.02em;
-    color: var(--saas-text);
-    line-height: 1.1;
-}
-.saas-metric .hint{
-    margin-top: 2px;
-    font-size: 12px;
-    color: var(--saas-muted);
-}
+    html[data-theme="dark"] .saas-head {
+        background: linear-gradient(135deg, rgba(108, 117, 125, .14), rgba(255, 255, 255, .02));
+    }
 
-/* Chips rápidos */
-.saas-chips{
-    display:flex;
-    flex-wrap:wrap;
-    gap: 8px;
-    margin-top: 12px;
-    position: relative;
-    z-index: 1;
-}
-.saas-chip{
-    border: 1px solid var(--saas-border);
-    background: rgba(255,255,255,.55);
-    color: var(--saas-text);
-    border-radius: 999px;
-    padding: 8px 12px;
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing: .01em;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    cursor:pointer;
-    user-select:none;
-    transition: .16s ease;
-}
-html[data-theme="dark"] .saas-chip{ background: rgba(255,255,255,.06); }
-.saas-chip:hover{
-    transform: translateY(-1px);
-    border-color: rgba(13,110,253,.25);
-}
-.saas-chip.active{
-    background: rgba(13,110,253,.12);
-    border-color: rgba(13,110,253,.22);
-    box-shadow: 0 10px 18px rgba(13,110,253,.10);
-}
+    .saas-head:before {
+        content: "";
+        position: absolute;
+        inset: -130px -190px auto auto;
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle at 30% 30%, rgba(13, 110, 253, .18), transparent 60%);
+        filter: blur(6px);
+        transform: rotate(10deg);
+        pointer-events: none;
+    }
 
-/* Card SaaS */
-.saas-card{
-    background: var(--saas-surface) !important;
-    border: 1px solid var(--saas-border) !important;
-    border-radius: 18px !important;
-    box-shadow: var(--saas-shadow) !important;
-    overflow:hidden;
-    backdrop-filter: blur(10px);
-}
-.saas-card .card-header{
-    background: transparent !important;
-    border-bottom: 1px solid var(--saas-border) !important;
-}
-.saas-kicker{
-    color: var(--saas-muted);
-    font-size: 12px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    font-weight: 900;
-}
+    .saas-title {
+        font-weight: 900;
+        letter-spacing: -.02em;
+        margin: 0;
+        color: var(--saas-text);
+    }
 
-/* Inputs clean */
-.saas-form .form-label{
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: .10em;
-    text-transform: uppercase;
-    color: var(--saas-muted);
-    margin-bottom: .35rem;
-}
-.saas-form .form-control,
-.saas-form .form-select{
-    border-radius: 14px;
-    border: 1px solid var(--saas-border);
-    background: rgba(17,24,39,.03);
-    color: var(--saas-text);
-    height: 44px;
-}
-html[data-theme="dark"] .saas-form .form-control,
-html[data-theme="dark"] .saas-form .form-select{
-    background: rgba(255,255,255,.06);
-}
-.saas-form .form-control:focus,
-.saas-form .form-select:focus{
-    border-color: rgba(13,110,253,.45);
-    box-shadow: 0 0 0 .22rem var(--ring);
-    background: var(--saas-surface);
-}
+    .saas-subtitle {
+        margin: 6px 0 0;
+        color: var(--saas-muted);
+        font-size: 14px;
+    }
 
-/* Botão buscar */
-.saas-search-btn{
-    height: 44px;
-    border-radius: 14px;
-    font-weight: 900;
-    box-shadow: 0 10px 18px rgba(13,110,253,.18);
-}
+    /* Cards mini (contadores) */
+    .saas-metrics {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 14px;
+        position: relative;
+        z-index: 1;
+    }
 
-/* Tabela container SaaS */
-.saas-table-wrap{
-    background: var(--saas-surface);
-    border: 1px solid var(--saas-border);
-    border-radius: 18px;
-    box-shadow: var(--saas-shadow);
-    overflow: hidden;
-}
+    @media (max-width: 1100px) {
+        .saas-metrics {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
 
-/* Cabeçalho sticky (fundo sólido pra não “sumir” no scroll) */
-.saas-table thead th{
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: var(--saas-surface) !important;
-    color: var(--saas-text) !important;
-    box-shadow: 0 1px 0 var(--saas-border);
-}
-html[data-theme="dark"] .saas-table thead th{
-    background: var(--saas-surface) !important;
-}
+    .saas-metric {
+        border: 1px solid var(--saas-border);
+        background: rgba(255, 255, 255, .55);
+        border-radius: 16px;
+        padding: 12px 12px;
+        box-shadow: var(--saas-shadow-soft);
+        backdrop-filter: blur(10px);
+    }
 
-/* Hover */
-.saas-table.table-hover tbody tr:hover{
-    background: rgba(13,110,253,.06) !important;
-}
-html[data-theme="dark"] .saas-table.table-hover tbody tr:hover{
-    background: rgba(13,110,253,.12) !important;
-}
+    html[data-theme="dark"] .saas-metric {
+        background: rgba(255, 255, 255, .06);
+    }
 
-/* Scroll tabela */
-.saas-table-scroll{
-    max-height: 62vh;
-    overflow:auto;
-    scrollbar-width: thin;
-}
-.saas-table-scroll::-webkit-scrollbar{ width: 10px; height: 10px; }
-.saas-table-scroll::-webkit-scrollbar-track{ background: rgba(17,24,39,.04); }
-html[data-theme="dark"] .saas-table-scroll::-webkit-scrollbar-track{ background: rgba(255,255,255,.06); }
-.saas-table-scroll::-webkit-scrollbar-thumb{
-    background: rgba(17,24,39,.18);
-    border-radius: 999px;
-    border: 2px solid rgba(0,0,0,0.06);
-}
-html[data-theme="dark"] .saas-table-scroll::-webkit-scrollbar-thumb{
-    background: rgba(255,255,255,.18);
-    border-color: rgba(0,0,0,0.25);
-}
-.saas-table-scroll::-webkit-scrollbar-thumb:hover{ background: rgba(17,24,39,.28); }
-html[data-theme="dark"] .saas-table-scroll::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,.26); }
+    .saas-metric .label {
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: var(--saas-muted);
+    }
 
-.text-muted{ color: var(--saas-muted) !important; }
-.text-dark{ color: var(--saas-text) !important; }
+    .saas-metric .value {
+        margin-top: 4px;
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: -.02em;
+        color: var(--saas-text);
+        line-height: 1.1;
+    }
 
-/* ====== Upgrade SaaS: link com ícone abrir ====== */
-.saas-detail-link{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    max-width: 100%;
-}
-.saas-detail-link .label{
-    display:block;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-}
-.saas-detail-link .icon{
-    width: 28px;
-    height: 28px;
-    border-radius: 10px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    border: 1px solid var(--saas-border);
-    background: rgba(13,110,253,.08);
-    color: rgba(13,110,253,.95);
-    flex: 0 0 auto;
-    transition: .16s ease;
-}
-html[data-theme="dark"] .saas-detail-link .icon{
-    background: rgba(13,110,253,.14);
-    border-color: rgba(255,255,255,.10);
-    color: rgba(255,255,255,.92);
-}
-.saas-detail-link:hover .icon{
-    transform: translateY(-1px);
-    box-shadow: 0 10px 18px rgba(13,110,253,.12);
-}
-.saas-detail-link:hover{
-    text-decoration:none;
-}
+    .saas-metric .hint {
+        margin-top: 2px;
+        font-size: 12px;
+        color: var(--saas-muted);
+    }
 
-/* Empty/loading */
-.saas-state{
-    border-top: 1px solid var(--saas-border);
-    background: transparent;
-}
+    /* Chips rápidos */
+    .saas-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+        position: relative;
+        z-index: 1;
+    }
 
-/* Mensagem de requisito */
-.saas-require{
-    border-top: 1px solid var(--saas-border);
-    background: transparent;
-}
+    .saas-chip {
+        border: 1px solid var(--saas-border);
+        background: rgba(255, 255, 255, .55);
+        color: var(--saas-text);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: .01em;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+        transition: .16s ease;
+    }
+
+    html[data-theme="dark"] .saas-chip {
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .saas-chip:hover {
+        transform: translateY(-1px);
+        border-color: rgba(13, 110, 253, .25);
+    }
+
+    .saas-chip.active {
+        background: rgba(13, 110, 253, .12);
+        border-color: rgba(13, 110, 253, .22);
+        box-shadow: 0 10px 18px rgba(13, 110, 253, .10);
+    }
+
+    /* Card SaaS */
+    .saas-card {
+        background: var(--saas-surface) !important;
+        border: 1px solid var(--saas-border) !important;
+        border-radius: 18px !important;
+        box-shadow: var(--saas-shadow) !important;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .saas-card .card-header {
+        background: transparent !important;
+        border-bottom: 1px solid var(--saas-border) !important;
+    }
+
+    .saas-kicker {
+        color: var(--saas-muted);
+        font-size: 12px;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        font-weight: 900;
+    }
+
+    /* Inputs clean */
+    .saas-form .form-label {
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: .10em;
+        text-transform: uppercase;
+        color: var(--saas-muted);
+        margin-bottom: .35rem;
+    }
+
+    .saas-form .form-control,
+    .saas-form .form-select {
+        border-radius: 14px;
+        border: 1px solid var(--saas-border);
+        background: rgba(17, 24, 39, .03);
+        color: var(--saas-text);
+        height: 44px;
+    }
+
+    html[data-theme="dark"] .saas-form .form-control,
+    html[data-theme="dark"] .saas-form .form-select {
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .saas-form .form-control:focus,
+    .saas-form .form-select:focus {
+        border-color: rgba(13, 110, 253, .45);
+        box-shadow: 0 0 0 .22rem var(--ring);
+        background: var(--saas-surface);
+    }
+
+    /* Botão buscar */
+    .saas-search-btn {
+        height: 44px;
+        border-radius: 14px;
+        font-weight: 900;
+        box-shadow: 0 10px 18px rgba(13, 110, 253, .18);
+    }
+
+    /* Tabela container SaaS */
+    .saas-table-wrap {
+        background: var(--saas-surface);
+        border: 1px solid var(--saas-border);
+        border-radius: 18px;
+        box-shadow: var(--saas-shadow);
+        overflow: hidden;
+    }
+
+    /* Cabeçalho sticky (fundo sólido pra não “sumir” no scroll) */
+    .saas-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: var(--saas-surface) !important;
+        color: var(--saas-text) !important;
+        box-shadow: 0 1px 0 var(--saas-border);
+    }
+
+    html[data-theme="dark"] .saas-table thead th {
+        background: var(--saas-surface) !important;
+    }
+
+    /* Hover */
+    .saas-table.table-hover tbody tr:hover {
+        background: rgba(13, 110, 253, .06) !important;
+    }
+
+    html[data-theme="dark"] .saas-table.table-hover tbody tr:hover {
+        background: rgba(13, 110, 253, .12) !important;
+    }
+
+    /* Scroll tabela */
+    .saas-table-scroll {
+        max-height: 62vh;
+        overflow: auto;
+        scrollbar-width: thin;
+    }
+
+    .saas-table-scroll::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    .saas-table-scroll::-webkit-scrollbar-track {
+        background: rgba(17, 24, 39, .04);
+    }
+
+    html[data-theme="dark"] .saas-table-scroll::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, .06);
+    }
+
+    .saas-table-scroll::-webkit-scrollbar-thumb {
+        background: rgba(17, 24, 39, .18);
+        border-radius: 999px;
+        border: 2px solid rgba(0, 0, 0, 0.06);
+    }
+
+    html[data-theme="dark"] .saas-table-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, .18);
+        border-color: rgba(0, 0, 0, 0.25);
+    }
+
+    .saas-table-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(17, 24, 39, .28);
+    }
+
+    html[data-theme="dark"] .saas-table-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, .26);
+    }
+
+    .text-muted {
+        color: var(--saas-muted) !important;
+    }
+
+    .text-dark {
+        color: var(--saas-text) !important;
+    }
+
+    /* ====== Upgrade SaaS: link com ícone abrir ====== */
+    .saas-detail-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 100%;
+    }
+
+    .saas-detail-link .label {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .saas-detail-link .icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--saas-border);
+        background: rgba(13, 110, 253, .08);
+        color: rgba(13, 110, 253, .95);
+        flex: 0 0 auto;
+        transition: .16s ease;
+    }
+
+    html[data-theme="dark"] .saas-detail-link .icon {
+        background: rgba(13, 110, 253, .14);
+        border-color: rgba(255, 255, 255, .10);
+        color: rgba(255, 255, 255, .92);
+    }
+
+    .saas-detail-link:hover .icon {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 18px rgba(13, 110, 253, .12);
+    }
+
+    .saas-detail-link:hover {
+        text-decoration: none;
+    }
+
+    /* Empty/loading */
+    .saas-state {
+        border-top: 1px solid var(--saas-border);
+        background: transparent;
+    }
+
+    /* Mensagem de requisito */
+    .saas-require {
+        border-top: 1px solid var(--saas-border);
+        background: transparent;
+    }
 </style>
 
 <main class="main-content">
@@ -366,10 +420,32 @@ html[data-theme="dark"] .saas-detail-link .icon{
             </div>
         </div>
 
-        <div class="card saas-card mb-4">
+        <!-- ROW DE GRÁFICOS (Analytics) -->
+        <div class="row g-4 mb-4" id="analyticsRow" style="display: none;">
+            <div class="col-md-4">
+                <div class="saas-card h-100 p-3">
+                    <h6 class="fw-bold text-dark mb-3">Distribuição de Status</h6>
+                    <div id="statusChart"
+                        style="min-height: 250px; display: flex; align-items: center; justify-content: center;"></div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="saas-card h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-dark m-0">Volume de Registros Processados</h6>
+                        <span class="saas-badge" style="background: rgba(13,110,253,.10); color: #0d6efd;">Análise
+                            Geral</span>
+                    </div>
+                    <div id="barChart" style="min-height: 250px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card saas-card mb-4" id="filterCard">
             <div class="card-header py-3 d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
-                    <div class="bg-secondary bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center" style="width:42px;height:42px;">
+                    <div class="bg-secondary bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center"
+                        style="width:42px;height:42px;">
                         <i class="bi bi-funnel-fill fs-5 text-secondary"></i>
                     </div>
                     <div>
@@ -394,7 +470,8 @@ html[data-theme="dark"] .saas-detail-link .icon{
                     <!-- Usuário (fixo do logado, pra garantir que ele só veja o que ele importou) -->
                     <div class="col-md-3">
                         <label class="form-label">Usuário de Inclusão</label>
-                        <input type="text" id="filtroUsuario" class="form-control" value="<?php echo htmlspecialchars($__usuarioLogado, ENT_QUOTES, 'UTF-8'); ?>" disabled>
+                        <input type="text" id="filtroUsuario" class="form-control"
+                            value="<?php echo htmlspecialchars($__usuarioLogado, ENT_QUOTES, 'UTF-8'); ?>" disabled>
                     </div>
 
                     <!-- Data inclusão (OBRIGATÓRIO) -->
@@ -416,10 +493,12 @@ html[data-theme="dark"] .saas-detail-link .icon{
                     </div>
 
                     <div class="col-md-12 d-flex gap-2 mt-2">
-                        <button onclick="carregarDados()" class="btn btn-primary saas-search-btn px-4" title="Pesquisar">
+                        <button onclick="carregarDados()" class="btn btn-primary saas-search-btn px-4"
+                            title="Pesquisar">
                             <i class="bi bi-search me-1"></i> Buscar
                         </button>
-                        <button onclick="limparFiltros()" class="btn btn-outline-secondary saas-search-btn px-4" title="Limpar">
+                        <button onclick="limparFiltros()" class="btn btn-outline-secondary saas-search-btn px-4"
+                            title="Limpar">
                             <i class="bi bi-eraser me-1"></i> Limpar
                         </button>
                     </div>
@@ -458,25 +537,35 @@ html[data-theme="dark"] .saas-detail-link .icon{
 </main>
 
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content" style="border-radius:18px; border:1px solid var(--saas-border); background: var(--saas-surface); color: var(--saas-text); box-shadow: var(--saas-shadow);">
-      <div class="modal-header" style="border-bottom:1px solid var(--saas-border);">
-        <h5 class="modal-title fw-bold" id="detailModalTitle" style="letter-spacing:-.01em;">Detalhe</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body">
-        <div class="text-muted small mb-2" id="detailModalMeta"></div>
-        <pre class="mb-0" id="detailModalBody" style="white-space:pre-wrap; word-break:break-word; background: rgba(17,24,39,.03); border:1px solid var(--saas-border); border-radius:14px; padding: 14px; color: var(--saas-text);"></pre>
-      </div>
-      <div class="modal-footer" style="border-top:1px solid var(--saas-border);">
-        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Fechar</button>
-      </div>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content"
+            style="border-radius:18px; border:1px solid var(--saas-border); background: var(--saas-surface); color: var(--saas-text); box-shadow: var(--saas-shadow);">
+            <div class="modal-header" style="border-bottom:1px solid var(--saas-border);">
+                <h5 class="modal-title fw-bold" id="detailModalTitle" style="letter-spacing:-.01em;">Detalhe</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-muted small mb-2" id="detailModalMeta"></div>
+                <pre class="mb-0" id="detailModalBody"
+                    style="white-space:pre-wrap; word-break:break-word; background: rgba(17,24,39,.03); border:1px solid var(--saas-border); border-radius:14px; padding: 14px; color: var(--saas-text);"></pre>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--saas-border);">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
+                    data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
+<!-- Injetando ApexCharts para Dashboard -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <script>
     const __USUARIO_LOGADO = <?php echo json_encode($__usuarioLogado, JSON_UNESCAPED_UNICODE); ?>;
+
+    // Instâncias Globais dos Gráficos
+    let apexStatusChart = null;
+    let apexBarChart = null;
 
     const escapeHtml = (str) => {
         if (str === null || str === undefined) return '';
@@ -489,12 +578,12 @@ html[data-theme="dark"] .saas-detail-link .icon{
     };
 
     const formatMoney = (num) => {
-        if(num === null || num === undefined) return '-';
+        if (num === null || num === undefined) return '-';
         return parseFloat(num).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     };
 
     const formatNumber = (num) => {
-        if(num === null || num === undefined) return '-';
+        if (num === null || num === undefined) return '-';
         return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(num);
     };
 
@@ -517,14 +606,14 @@ html[data-theme="dark"] .saas-detail-link .icon{
     };
 
     const renderStatus = (status) => {
-        if(status === 'S') return '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Sucesso</span>';
-        if(status === 'E') return '<span class="badge bg-danger"><i class="bi bi-exclamation-circle me-1"></i>Erro</span>';
-        if(status === 'P') return '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pendente</span>';
-        if(status === 'C') return '<span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Cancelado</span>';
+        if (status === 'S') return '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Sucesso</span>';
+        if (status === 'E') return '<span class="badge bg-danger"><i class="bi bi-exclamation-circle me-1"></i>Erro</span>';
+        if (status === 'P') return '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pendente</span>';
+        if (status === 'C') return '<span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Cancelado</span>';
         return escapeHtml(status);
     };
 
-    (function initChips(){
+    (function initChips() {
         const chipsWrap = document.getElementById('quickChips');
         if (!chipsWrap) return;
 
@@ -543,7 +632,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
         });
     })();
 
-    function syncChipActive(){
+    function syncChipActive() {
         const chipsWrap = document.getElementById('quickChips');
         const filtroStatus = document.getElementById('filtroStatus');
         if (!chipsWrap || !filtroStatus) return;
@@ -556,12 +645,12 @@ html[data-theme="dark"] .saas-detail-link .icon{
 
     function openDetailModal({ title, meta, body }) {
         const elTitle = document.getElementById('detailModalTitle');
-        const elMeta  = document.getElementById('detailModalMeta');
-        const elBody  = document.getElementById('detailModalBody');
+        const elMeta = document.getElementById('detailModalMeta');
+        const elBody = document.getElementById('detailModalBody');
 
         if (elTitle) elTitle.textContent = title || 'Detalhe';
-        if (elMeta)  elMeta.textContent  = meta || '';
-        if (elBody)  elBody.textContent  = body || '-';
+        if (elMeta) elMeta.textContent = meta || '';
+        if (elBody) elBody.textContent = body || '-';
 
         const modalEl = document.getElementById('detailModal');
         if (!modalEl) return;
@@ -570,7 +659,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
         modal.show();
     }
 
-    (function initTableDetailClicks(){
+    (function initTableDetailClicks() {
         const tbody = document.getElementById('tabelaCorpo');
         if (!tbody) return;
 
@@ -579,8 +668,8 @@ html[data-theme="dark"] .saas-detail-link .icon{
             if (!target) return;
 
             const title = target.getAttribute('data-title') || 'Detalhe';
-            const meta  = target.getAttribute('data-meta') || '';
-            const body  = target.getAttribute('data-body') || target.textContent || '-';
+            const meta = target.getAttribute('data-meta') || '';
+            const body = target.getAttribute('data-body') || target.textContent || '-';
 
             openDetailModal({ title, meta, body });
         });
@@ -615,7 +704,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
         return null;
     };
 
-    function renderDynamicCell(key, val, row){
+    function renderDynamicCell(key, val, row) {
         const k = upper(key);
 
         if (k === 'STATUS') {
@@ -627,7 +716,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
             const label = (val === null || val === undefined || val === '') ? '-' : escapeHtml(String(val));
 
             const meta = Object.keys(row || {})
-                .filter(x => ['ID','STATUS'].includes(upper(x)))
+                .filter(x => ['ID', 'STATUS'].includes(upper(x)))
                 .map(x => `${x}: ${row[x]}`)
                 .join(' | ');
 
@@ -662,10 +751,10 @@ html[data-theme="dark"] .saas-detail-link .icon{
         return escapeHtml(String(val));
     }
 
-    function buildDynamicHeader(keys){
-        const keysSorted = [...keys].sort((a,b)=>{
-            if (upper(a)==='ID') return -1;
-            if (upper(b)==='ID') return 1;
+    function buildDynamicHeader(keys) {
+        const keysSorted = [...keys].sort((a, b) => {
+            if (upper(a) === 'ID') return -1;
+            if (upper(b) === 'ID') return 1;
             return 0;
         });
 
@@ -677,10 +766,10 @@ html[data-theme="dark"] .saas-detail-link .icon{
         return `<tr>${ths}</tr>`;
     }
 
-    function buildDynamicRow(keys, row){
-        const keysSorted = [...keys].sort((a,b)=>{
-            if (upper(a)==='ID') return -1;
-            if (upper(b)==='ID') return 1;
+    function buildDynamicRow(keys, row) {
+        const keysSorted = [...keys].sort((a, b) => {
+            if (upper(a) === 'ID') return -1;
+            if (upper(b) === 'ID') return 1;
             return 0;
         });
 
@@ -693,9 +782,9 @@ html[data-theme="dark"] .saas-detail-link .icon{
         return tds;
     }
 
-    function updateMetrics(dados){
+    function updateMetrics(dados) {
         const total = dados.length;
-        let s=0,e=0,p=0,c=0;
+        let s = 0, e = 0, p = 0, c = 0;
 
         dados.forEach(r => {
             const st = r?.STATUS;
@@ -716,6 +805,60 @@ html[data-theme="dark"] .saas-detail-link .icon{
         if (mE) mE.textContent = e;
         if (mP) mP.textContent = p;
         if (mC) mC.textContent = c;
+
+        // Renderiza Gráficos (Analytics Elevado)
+        renderCharts(s, e, p, c);
+    }
+
+    function renderCharts(s, e, p, c) {
+        const row = document.getElementById('analyticsRow');
+        if (s === 0 && e === 0 && p === 0 && c === 0) {
+            row.style.display = 'none';
+            return;
+        }
+
+        row.style.display = 'flex';
+
+        // Gráfico Donut (Status)
+        const donutOptions = {
+            series: [s, e, p, c],
+            labels: ['Sucesso', 'Erro', 'Pendente', 'Cancelado'],
+            colors: ['#198754', '#dc3545', '#ffc107', '#6c757d'],
+            chart: { type: 'donut', height: 280 },
+            dataLabels: { enabled: false },
+            plotOptions: {
+                pie: {
+                    donut: { size: '65%' }
+                }
+            },
+            legend: { position: 'bottom' }
+        };
+
+        if (apexStatusChart) { apexStatusChart.destroy(); }
+        apexStatusChart = new ApexCharts(document.querySelector("#statusChart"), donutOptions);
+        apexStatusChart.render();
+
+        // Gráfico Barras (Volume Simples)
+        const barOptions = {
+            series: [{ name: 'Registros', data: [s, e, p, c] }],
+            chart: { type: 'bar', height: 280, toolbar: { show: false } },
+            colors: ['#0d6efd'],
+            plotOptions: {
+                bar: { borderRadius: 6, horizontal: false, columnWidth: '45%' }
+            },
+            dataLabels: { enabled: false },
+            xaxis: {
+                categories: ['Sucesso', 'Erro', 'Pendente', 'Cancelado'],
+            },
+            grid: {
+                borderColor: 'rgba(17,24,39,.05)',
+                strokeDashArray: 4
+            }
+        };
+
+        if (apexBarChart) { apexBarChart.destroy(); }
+        apexBarChart = new ApexCharts(document.querySelector("#barChart"), barOptions);
+        apexBarChart.render();
     }
 
     async function carregarTipos() {
@@ -726,7 +869,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
             const resp = await fetch(`api/api_dados.php?action=list_tipos`);
             if (!resp.ok) {
                 const txt = await resp.text();
-                throw new Error(`HTTP ${resp.status} - ${txt.substring(0,200)}`);
+                throw new Error(`HTTP ${resp.status} - ${txt.substring(0, 200)}`);
             }
             const json = await resp.json();
 
@@ -760,7 +903,7 @@ html[data-theme="dark"] .saas-detail-link .icon{
         }
     }
 
-    function limparFiltros(){
+    function limparFiltros() {
         const t = document.getElementById('filtroTipo');
         const d = document.getElementById('filtroDataInclusao');
         const s = document.getElementById('filtroStatus');

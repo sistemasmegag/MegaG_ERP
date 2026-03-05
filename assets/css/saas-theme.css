@@ -1,0 +1,927 @@
+/* ==========================
+   Clean SaaS Tokens + Theme
+   ========================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+    --saas-bg: #f6f8fb;
+    --saas-surface: #ffffff;
+    --saas-card: #ffffff;
+    --saas-text: #111827;
+    --saas-muted: rgba(17, 24, 39, .62);
+    --saas-border: rgba(17, 24, 39, .10);
+    --saas-shadow: 0 12px 30px rgba(17, 24, 39, .08);
+    --saas-shadow-soft: 0 10px 30px rgba(17, 24, 39, .06);
+
+    /* Sidebar (Light SaaS) */
+    --sidebar-bg: rgba(255, 255, 255, .72);
+    --sidebar-text: rgba(17, 24, 39, .70);
+    --sidebar-text-strong: rgba(17, 24, 39, .90);
+    --sidebar-hover: rgba(13, 110, 253, .08);
+    --sidebar-active-bg: rgba(13, 110, 253, .12);
+    --accent: #0d6efd;
+    --accent-dark: #0b5ed7;
+    --accent-red: #ff4757;
+
+    --ring: rgba(13, 110, 253, .14);
+
+    --sidebar-expanded: 300px;
+    --sidebar-collapsed: 88px;
+}
+
+html[data-theme="dark"] {
+    --saas-bg: #0b1220;
+    --saas-surface: rgba(255, 255, 255, .06);
+    --saas-card: #1f2937;
+    --saas-text: rgba(255, 255, 255, .92);
+    --saas-muted: rgba(255, 255, 255, .66);
+    --saas-border: rgba(255, 255, 255, .10);
+    --saas-shadow: 0 16px 40px rgba(0, 0, 0, .35);
+    --saas-shadow-soft: 0 14px 40px rgba(0, 0, 0, .25);
+
+    /* Sidebar (Dark SaaS) */
+    --sidebar-bg: rgba(255, 255, 255, .06);
+    --sidebar-text: rgba(255, 255, 255, .72);
+    --sidebar-text-strong: rgba(255, 255, 255, .92);
+    --sidebar-hover: rgba(13, 110, 253, .14);
+    --sidebar-active-bg: rgba(13, 110, 253, .18);
+    --accent: #6ea8fe;
+    --accent-dark: #9ec5fe;
+
+    --ring: rgba(13, 110, 253, .22);
+}
+
+body {
+    height: 100vh;
+    overflow: hidden;
+    /* Scroll interno apenas */
+    background:
+        radial-gradient(1200px 600px at 15% 10%, rgba(13, 110, 253, .14), transparent 60%),
+        radial-gradient(1000px 500px at 85% 25%, rgba(25, 135, 84, .10), transparent 55%),
+        var(--saas-bg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--saas-text);
+}
+
+/* ==========================
+   Global Common Styles
+   ========================== */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.main-content {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+body>.d-flex {
+    width: 100vw;
+}
+
+.main-content .container {
+    max-width: none !important;
+    width: 100% !important;
+}
+
+/* ==========================
+   Sidebar Clean SaaS
+   ========================== */
+.modern-sidebar {
+    width: var(--sidebar-expanded);
+    min-width: var(--sidebar-expanded);
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    transition: width .18s ease, min-width .18s ease, transform .18s ease;
+    padding: 1.25rem 1rem;
+    border-right: 1px solid var(--saas-border);
+    box-shadow: var(--saas-shadow-soft);
+    backdrop-filter: blur(12px);
+    font-size: 15px;
+}
+
+.modern-sidebar.is-collapsed {
+    width: var(--sidebar-collapsed);
+    min-width: var(--sidebar-collapsed);
+}
+
+.modern-sidebar.is-collapsed .brand-text,
+.modern-sidebar.is-collapsed .menu-header,
+.modern-sidebar.is-collapsed .nav-link span .nav-text,
+.modern-sidebar.is-collapsed .sidebar-search,
+.modern-sidebar.is-collapsed .theme-toggler,
+.modern-sidebar.is-collapsed .user-info,
+.modern-sidebar.is-collapsed .logout-btn {
+    display: none !important;
+}
+
+.modern-sidebar.is-collapsed .brand {
+    justify-content: center;
+}
+
+.modern-sidebar.is-collapsed .brand .brand-icon {
+    margin-right: 0 !important;
+}
+
+.modern-sidebar.is-collapsed .nav-link {
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.modern-sidebar .brand {
+    color: var(--sidebar-text-strong);
+    font-weight: 900;
+    font-size: 1.05rem;
+    letter-spacing: -.02em;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: .65rem;
+}
+
+/* Barra de busca */
+.sidebar-search input {
+    background: rgba(17, 24, 39, .04);
+    border: 1px solid var(--saas-border);
+    color: var(--saas-text);
+    border-radius: 14px;
+    padding-left: 2.5rem;
+    padding-right: .75rem;
+    height: 42px;
+    box-shadow: none;
+    font-size: 0.95rem;
+}
+
+html[data-theme="dark"] .sidebar-search input {
+    background: rgba(255, 255, 255, .06);
+}
+
+.sidebar-search input::placeholder {
+    color: rgba(17, 24, 39, .40);
+}
+
+html[data-theme="dark"] .sidebar-search input::placeholder {
+    color: rgba(255, 255, 255, .45);
+}
+
+.sidebar-search input:focus {
+    border-color: rgba(13, 110, 253, .45);
+    box-shadow: 0 0 0 .22rem var(--ring);
+    background: var(--saas-surface);
+}
+
+.sidebar-search .bi-search {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(17, 24, 39, .35);
+}
+
+html[data-theme="dark"] .sidebar-search .bi-search {
+    color: rgba(255, 255, 255, .40);
+}
+
+/* Seções */
+.menu-header {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: rgba(17, 24, 39, .45);
+    margin-top: 1.25rem;
+    margin-bottom: .5rem;
+    padding-top: 12px;
+    padding-bottom: 6px;
+    padding-left: .85rem;
+    font-weight: 800;
+    opacity: .85;
+}
+
+html[data-theme="dark"] .menu-header {
+    color: rgba(255, 255, 255, .45);
+}
+
+/* Links Sidebar */
+.nav-link.is-denied {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.nav-link.is-denied:hover {
+    transform: none !important;
+    background: rgba(220, 53, 69, .08) !important;
+    border-color: rgba(220, 53, 69, .18) !important;
+}
+
+.modern-sidebar .nav-pills .nav-link {
+    color: var(--sidebar-text);
+    font-weight: 700;
+    font-size: 0.98rem;
+    padding: 11px 16px;
+    border-radius: 12px;
+    margin-bottom: 6px;
+    transition: all .18s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid transparent;
+}
+
+.modern-sidebar .nav-pills .nav-link i {
+    font-size: 1.10rem;
+}
+
+.modern-sidebar .nav-pills .nav-link:hover {
+    background: var(--sidebar-hover);
+    color: var(--sidebar-text-strong);
+    border-color: rgba(13, 110, 253, .12);
+    transform: translateY(-1px);
+}
+
+.modern-sidebar .nav-pills .nav-link.active {
+    background: var(--sidebar-active-bg);
+    color: var(--sidebar-text-strong);
+    border-color: rgba(13, 110, 253, .18);
+    position: relative;
+    padding-left: 18px;
+    box-shadow: 0 10px 18px rgba(13, 110, 253, .10);
+}
+
+.modern-sidebar .nav-pills .nav-link.active::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 6px;
+    background: var(--accent);
+    border-radius: 999px;
+}
+
+.badge-sidebar {
+    background-color: var(--accent-red);
+    color: white;
+    font-size: .70rem;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 900;
+    letter-spacing: .02em;
+}
+
+/* Sidebar toggle */
+.sidebar-toggle-btn {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 6px 8px;
+    border-radius: 10px;
+}
+
+.sidebar-toggle-btn:hover {
+    background: rgba(255, 255, 255, .08);
+}
+
+/* Theme toggler */
+.theme-toggler {
+    background: rgba(17, 24, 39, .04);
+    border: 1px solid var(--saas-border);
+    border-radius: 14px;
+    padding: 4px;
+    display: flex;
+    margin-top: auto;
+    margin-bottom: .9rem;
+    gap: 4px;
+}
+
+html[data-theme="dark"] .theme-toggler {
+    background: rgba(255, 255, 255, .06);
+}
+
+.theme-toggler div {
+    flex: 1;
+    text-align: center;
+    padding: 8px 10px;
+    font-size: .85rem;
+    cursor: pointer;
+    border-radius: 12px;
+    color: var(--saas-muted);
+    font-weight: 800;
+    user-select: none;
+}
+
+.theme-toggler div.active {
+    background: var(--sidebar-active-bg);
+    color: var(--sidebar-text-strong);
+}
+
+/* Perfil usuário */
+.user-profile {
+    display: flex;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--saas-border);
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    background: rgba(13, 110, 253, .12);
+    color: var(--sidebar-text-strong);
+    border: 1px solid rgba(13, 110, 253, .18);
+    margin-right: 12px;
+}
+
+html[data-theme="dark"] .user-avatar {
+    background: rgba(13, 110, 253, .16);
+    border-color: rgba(13, 110, 253, .22);
+}
+
+.user-info {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.user-info h6 {
+    margin: 0;
+    color: var(--sidebar-text-strong);
+    font-weight: 900;
+    font-size: .95rem;
+    letter-spacing: -.01em;
+}
+
+.user-info small {
+    color: var(--saas-muted);
+    font-size: .80rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.logout-btn {
+    color: var(--saas-muted);
+    transition: .2s;
+}
+
+.logout-btn:hover {
+    color: var(--accent-red);
+    transform: translateY(-1px);
+}
+
+/* Mobile */
+.mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--saas-text);
+    font-size: 1.5rem;
+    padding: .5rem;
+    cursor: pointer;
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    backdrop-filter: blur(2px);
+}
+
+@media (max-width: 768px) {
+    .modern-sidebar {
+        display: flex !important;
+        position: fixed;
+        left: -290px;
+        top: 0;
+        bottom: 0;
+        z-index: 1050;
+        width: 290px;
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.22);
+    }
+
+    .modern-sidebar.show {
+        left: 0;
+    }
+
+    .mobile-toggle {
+        display: block;
+    }
+
+    .main-content {
+        padding: 1rem;
+    }
+}
+
+/* Ajustes Container Principal App Shell */
+.app-shell .main,
+.app-shell .main-content,
+.app-shell .content,
+.app-shell .content-wrapper,
+.app-shell .page-content,
+.app-shell .main-inner {
+    transition: margin-left .18s ease;
+}
+
+body.sidebar-collapsed .app-shell .main,
+body.sidebar-collapsed .app-shell .main-content,
+body.sidebar-collapsed .app-shell .content,
+body.sidebar-collapsed .app-shell .content-wrapper,
+body.sidebar-collapsed .app-shell .page-content,
+body.sidebar-collapsed .app-shell .main-inner {
+    margin-left: var(--sidebar-collapsed) !important;
+}
+
+/* ==========================
+   Componentes Globais (Cards, Botões, Badges)
+   ========================== */
+.saas-card {
+    background: var(--saas-card) !important;
+    border: 1px solid var(--saas-border) !important;
+    border-radius: 18px !important;
+    box-shadow: var(--saas-shadow-soft) !important;
+    overflow: hidden;
+}
+
+.saas-page-head {
+    border: 1px solid var(--saas-border);
+    background: linear-gradient(135deg, rgba(13, 110, 253, .10), rgba(13, 110, 253, .04));
+    border-radius: 18px;
+    box-shadow: var(--saas-shadow-soft);
+    padding: 18px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+html[data-theme="dark"] .saas-page-head {
+    background: linear-gradient(135deg, rgba(13, 110, 253, .14), rgba(255, 255, 255, .02));
+}
+
+.saas-title {
+    font-weight: 900;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.saas-subtitle {
+    margin: 4px 0 0;
+    color: var(--saas-muted);
+    font-size: 0.9rem;
+}
+
+.saas-btn {
+    border: 1px solid var(--saas-border);
+    background: var(--saas-card);
+    color: var(--saas-text);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.saas-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.15);
+}
+
+.saas-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.saas-btn.primary:hover {
+    background: var(--accent-dark);
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+}
+
+.saas-btn.danger {
+    background: rgba(220, 38, 38, .10);
+    color: #dc2626;
+    border-color: rgba(220, 38, 38, .24);
+}
+
+.saas-btn.danger:hover {
+    background: rgba(220, 38, 38, .2);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+.saas-input,
+.saas-select,
+.saas-textarea {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--saas-border);
+    background: transparent;
+    color: var(--saas-text);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.saas-input:focus,
+.saas-select:focus,
+.saas-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--ring);
+}
+
+.saas-badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.saas-badge.success {
+    background: rgba(22, 163, 74, .15);
+    color: #16a34a;
+}
+
+.saas-badge.warning {
+    background: rgba(234, 179, 8, .15);
+    color: #ca8a04;
+}
+
+.saas-badge.danger {
+    background: rgba(220, 38, 38, .15);
+    color: #dc2626;
+}
+
+.saas-badge.info {
+    background: rgba(59, 130, 246, .15);
+    color: #3b82f6;
+}
+
+.saas-badge.secondary {
+    background: rgba(107, 114, 128, .15);
+    color: #6b7280;
+}
+
+/* Modal Padronizado SaaS */
+.saas-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.saas-modal-backdrop.show {
+    display: flex;
+    opacity: 1;
+}
+
+.saas-modal {
+    background: var(--saas-card);
+    border: 1px solid var(--saas-border);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--saas-shadow);
+    transform: scale(0.95) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.saas-modal-backdrop.show .saas-modal {
+    transform: scale(1) translateY(0);
+}
+
+.saas-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--saas-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.saas-modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.saas-modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.saas-modal-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--saas-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Tabelas SaaS */
+.saas-table-container {
+    overflow-x: auto;
+}
+
+.saas-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.saas-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 800;
+    color: var(--saas-muted);
+    border-bottom: 2px solid var(--saas-border);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+.saas-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--saas-border);
+    vertical-align: middle;
+}
+
+.saas-table tr:hover {
+    background: rgba(13, 110, 253, 0.03);
+}
+
+/* Skeleton Loader */
+@keyframes skeleton-loading {
+    0% {
+        background-color: rgba(163, 163, 163, 0.1);
+    }
+
+    50% {
+        background-color: rgba(163, 163, 163, 0.3);
+    }
+
+    100% {
+        background-color: rgba(163, 163, 163, 0.1);
+    }
+}
+
+.skeleton {
+    animation: skeleton-loading 1s linear infinite alternate;
+    border-radius: 4px;
+    width: 100%;
+    height: 20px;
+    display: inline-block;
+}
+
+/* Notificações Flyout/Toasts (Base) */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    /* or right */
+    z-index: 1100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ==========================
+   Home/Dashboard Classes
+   ========================== */
+.userhub-head {
+    border: 1px solid var(--saas-border);
+    background: linear-gradient(135deg, rgba(99, 102, 241, .14), rgba(99, 102, 241, .05));
+    border-radius: 18px;
+    box-shadow: var(--saas-shadow-soft);
+    padding: 18px 18px;
+    overflow: hidden;
+    position: relative;
+}
+
+html[data-theme="dark"] .userhub-head {
+    background: linear-gradient(135deg, rgba(99, 102, 241, .16), rgba(255, 255, 255, .02));
+}
+
+.userhub-head:before {
+    content: "";
+    position: absolute;
+    inset: -140px -200px auto auto;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, .32), transparent 60%);
+    filter: blur(6px);
+    transform: rotate(8deg);
+    pointer-events: none;
+}
+
+.userhub-title {
+    font-weight: 900;
+    letter-spacing: -.02em;
+    margin: 0;
+    color: var(--saas-text);
+}
+
+.userhub-sub {
+    margin: 6px 0 0;
+    color: var(--saas-muted);
+    font-size: 14px;
+}
+
+.saas-kicker {
+    color: var(--saas-muted);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+.item-row {
+    padding: 12px 14px;
+    border: 1px solid rgba(17, 24, 39, .08);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .55);
+}
+
+html[data-theme="dark"] .item-row {
+    background: rgba(255, 255, 255, .04);
+    border-color: rgba(255, 255, 255, .08);
+}
+
+.mini-muted {
+    color: var(--saas-muted);
+    font-size: 12px;
+}
+
+.quick-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(17, 24, 39, .08);
+    background: rgba(255, 255, 255, .55);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+}
+
+.quick-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, .06);
+}
+
+html[data-theme="dark"] .quick-link {
+    background: rgba(255, 255, 255, .04);
+    border-color: rgba(255, 255, 255, .08);
+}
+
+/* ==========================
+   Notificações e FAB
+   ========================== */
+.mg-notif-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(13, 110, 253, 0.4);
+    cursor: pointer;
+    z-index: 1060;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+}
+
+.mg-notif-fab:hover {
+    transform: scale(1.08);
+    box-shadow: 0 14px 30px rgba(13, 110, 253, 0.5);
+}
+
+.mg-notif-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: var(--accent-red);
+    color: white;
+    font-size: 0.70rem;
+    font-weight: 900;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--saas-surface);
+}
+
+.mg-notif-panel {
+    position: fixed;
+    bottom: 96px;
+    right: 24px;
+    width: 360px;
+    max-height: 500px;
+    background: var(--saas-card);
+    border: 1px solid var(--saas-border);
+    border-radius: 20px;
+    box-shadow: var(--saas-shadow);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mg-notif-panel.open {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: visible;
+}
+
+.mg-notif-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--saas-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(13, 110, 253, 0.03);
+}
+
+.mg-notif-title {
+    margin: 0;
+    font-weight: 900;
+    font-size: 1.05rem;
+}
+
+.mg-notif-btn {
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 2px 6px;
+    transition: 0.2s;
+}
+
+.mg-notif-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mg-notif-btn:hover:not(:disabled) {
+    color: var(--accent-dark);
+    text-decoration: underline;
+}
+
+.mg-notif-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 400px;
+    scrollbar-width: thin;
+}

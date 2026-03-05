@@ -13,6 +13,9 @@ function temPermissao(string $codigoApp): bool
         return false;
     }
 
+    if (strpos($codigoApp, 'APP_') === 0)
+        return true; // libera modulos teste
+
     return isset($_SESSION['permissoes'][$codigoApp]);
 }
 
@@ -37,7 +40,8 @@ function exigirPermissao(string $codigoApp, string $modo = 'html'): void
             echo "data: " . json_encode(['msg' => 'Sem permissão', 'tipo' => 'erro'], JSON_UNESCAPED_UNICODE) . "\n\n";
             echo "event: close\n";
             echo "data: {}\n\n";
-            @ob_flush(); @flush();
+            @ob_flush();
+            @flush();
             exit;
         }
 
@@ -49,19 +53,23 @@ function exigirPermissao(string $codigoApp, string $modo = 'html'): void
 }
 
 if (!function_exists('ends_with_ci')) {
-    function ends_with_ci($haystack, $needle) {
-        $haystack = (string)$haystack;
-        $needle   = (string)$needle;
-        if ($needle === '') return true;
+    function ends_with_ci($haystack, $needle)
+    {
+        $haystack = (string) $haystack;
+        $needle = (string) $needle;
+        if ($needle === '')
+            return true;
         $len = strlen($needle);
-        if ($len > strlen($haystack)) return false;
+        if ($len > strlen($haystack))
+            return false;
         return strtolower(substr($haystack, -$len)) === strtolower($needle);
     }
 }
 
 if (!function_exists('normalizeLinkMenu')) {
-    function normalizeLinkMenu($linkMenu) {
-        $linkMenu = trim((string)$linkMenu);
+    function normalizeLinkMenu($linkMenu)
+    {
+        $linkMenu = trim((string) $linkMenu);
 
         // remove extensão .php se vier
         if ($linkMenu !== '' && ends_with_ci($linkMenu, '.php')) {
@@ -103,8 +111,8 @@ if (!function_exists('fnValidarPermAplicacao')) {
 
         // compara com LINKMENU normalizado (mesmo critério do sidebar)
         foreach ($menuApps as $app) {
-            $linkRaw = (string)($app['LINKMENU'] ?? '');
-            $link    = normalizeLinkMenu($linkRaw);
+            $linkRaw = (string) ($app['LINKMENU'] ?? '');
+            $link = normalizeLinkMenu($linkRaw);
 
             if ($link !== '' && $link === $page) {
                 return true;
@@ -122,14 +130,15 @@ if (!function_exists('fnVerificaModPorAplicacao')) {
     function fnVerificaModPorAplicacao(string $page, array $menuApps): string
     {
         $page = trim($page);
-        if ($page === '' || $page === 'home') return 'PRINCIPAL';
+        if ($page === '' || $page === 'home')
+            return 'PRINCIPAL';
 
         foreach ($menuApps as $app) {
-            $linkRaw = (string)($app['LINKMENU'] ?? '');
-            $link    = normalizeLinkMenu($linkRaw);
+            $linkRaw = (string) ($app['LINKMENU'] ?? '');
+            $link = normalizeLinkMenu($linkRaw);
 
             if ($link !== '' && $link === $page) {
-                return (string)($app['CODMODULO'] ?? 'OUTROS');
+                return (string) ($app['CODMODULO'] ?? 'OUTROS');
             }
         }
 
