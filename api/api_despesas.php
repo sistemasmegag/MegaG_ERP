@@ -1,393 +1,248 @@
 <?php
 require_once __DIR__ . '/../routes/check_session.php';
-
 header('Content-Type: application/json; charset=utf-8');
+// Procura o db_connect em pastas acima
+$pathConexaoCandidates = [
+    __DIR__ . '/../db_config/db_connect.php',
+    __DIR__ . '/../../db_config/db_connect.php',
+    __DIR__ . '/config/db_connect.php'
+];
+$pathConexao = null;
+foreach ($pathConexaoCandidates as $cand) {
+    if (file_exists($cand)) {
+        $pathConexao = $cand;
+        break;
+    }
+}
+if (!$pathConexao) {
+    jexit(false, [], "Arquivo de conexão não encontrado!");
+}
+require_once $pathConexao;
 
-require_once __DIR__ . '/../db_config/db_connect.php';
-
-function jexit($ok, $data = [], $erro = null){
+function jexit($ok, $data = [], $erro = null)
+{
     echo json_encode([
-        'sucesso' => (bool)$ok,
-        'dados'   => $ok ? ($data['dados'] ?? null) : null,
-        'historico' => $ok ? ($data['historico'] ?? null) : null,
-        'erro'    => $ok ? null : ($erro ?? 'Erro desconhecido'),
+        'sucesso' => (bool) $ok,
+        'dados' => $ok ? ($data['dados'] ?? null) : null,
+        'erro' => $ok ? null : ($erro ?? 'Erro desconhecido'),
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-function body_json(){
+function body_json()
+{
     $raw = file_get_contents('php://input');
     $j = json_decode($raw, true);
     return is_array($j) ? $j : [];
 }
 
-function require_login(){
+try {
     if (empty($_SESSION['logado']) || empty($_SESSION['usuario'])) {
         jexit(false, [], 'Sessão expirada. Faça login novamente.');
     }
-}
 
-function can($app, $acao){
-    // Se seu projeto já tem temPermissao(), use.
-    if (function_exists('temPermissao')) {
-        return temPermissao($app, $acao);
-    }
-    // fallback: se não existir, libera (não recomendado, mas evita travar)
-    return true;
-}
-
-function hist(PDO $conn, $despesaId, $acao, $statusAntes, $statusDepois, $obs, $usuario){
-    $sql = "
-        INSERT INTO MEGAG_CRM_DESPESAS_HIST
-        (ID, DESPESA_ID, ACAO, STATUS_ANTES, STATUS_DEPOIS, OBS, USUARIO, DT_EVENTO)
-        VALUES
-        (MEGAG_CRM_DESPESAS_HIST_SEQ.NEXTVAL, :DESPESA_ID, :ACAO, :SA, :SD, :OBS, :USU, SYSDATE)
-    ";
-    $st = $conn->prepare($sql);
-    $st->execute([
-        ':DESPESA_ID' => (int)$despesaId,
-        ':ACAO' => $acao,
-        ':SA' => $statusAntes,
-        ':SD' => $statusDepois,
-        ':OBS' => $obs,
-        ':USU' => $usuario
-    ]);
-}
-
-function fetch_one(PDO $conn, $id){
-    $st = $conn->prepare("
-        SELECT
-          ID,
-          SOLICITANTE,
-          SOLICITANTE_NOME,
-          GESTOR,
-          GESTOR_NOME,
-          CENTRO_CUSTO,
-          CATEGORIA,
-          FORNECEDOR,
-          DESCRICAO,
-          VALOR,
-          TO_CHAR(DATA_DESPESA,'YYYY-MM-DD') AS DATA_DESPESA,
-          FORMA_PGTO,
-          STATUS,
-          MOTIVO_REPROVACAO,
-          TO_CHAR(DT_CRIACAO,'YYYY-MM-DD HH24:MI:SS') AS DT_CRIACAO,
-          TO_CHAR(DT_ATUALIZACAO,'YYYY-MM-DD HH24:MI:SS') AS DT_ATUALIZACAO,
-          TO_CHAR(DT_APROVACAO,'YYYY-MM-DD HH24:MI:SS') AS DT_APROVACAO,
-          TO_CHAR(DT_REPROVACAO,'YYYY-MM-DD HH24:MI:SS') AS DT_REPROVACAO,
-          USU_ULT_ACAO
-        FROM MEGAG_CRM_DESPESAS
-        WHERE ID = :ID
-    ");
-    $st->execute([':ID' => (int)$id]);
-    return $st->fetch(PDO::FETCH_ASSOC);
-}
-
-function fetch_hist(PDO $conn, $id){
-    $st = $conn->prepare("
-        SELECT
-          ID,
-          DESPESA_ID,
-          ACAO,
-          STATUS_ANTES,
-          STATUS_DEPOIS,
-          OBS,
-          USUARIO,
-          TO_CHAR(DT_EVENTO,'YYYY-MM-DD HH24:MI:SS') AS DT_EVENTO
-        FROM MEGAG_CRM_DESPESAS_HIST
-        WHERE DESPESA_ID = :ID
-        ORDER BY ID ASC
-    ");
-    $st->execute([':ID' => (int)$id]);
-    return $st->fetchAll(PDO::FETCH_ASSOC);
-}
-
-try {
-    require_login();
+    // $conn é a PDO de Oracle presente no db_connect.php (esperado)
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $user = $_SESSION['usuario']; // ou outro identificador (NUMBER) se for o caso
 
-    $user = $_SESSION['usuario'];
-
+    // Decide if handling JSON payload or FormData (multipart/form-data)
     $req = body_json();
+    if (empty($req) && !empty($_POST)) {
+        $req = $_POST;
+    }
+
     $action = $req['action'] ?? '';
 
-    if ($action === 'list_mine') {
-        if (!can('DESPESAS','VER')) jexit(false, [], 'Sem permissão: DESPESAS/VER');
+    // ============================================
+    // AUXILIARES: SELECTS DE DOMÍNIO
+    // ============================================
+    if ($action === 'get_doms') {
+        // Obter tipos de despesas
+        $st = $conn->prepare("SELECT CODTIPODESPESA, DESCRICAO FROM CONSINCO.MEGAG_DESP_TIPO ORDER BY DESCRICAO");
+        $st->execute();
+        $tipos = $st->fetchAll(PDO::FETCH_ASSOC);
 
-        $status = trim((string)($req['status'] ?? ''));
-        $sql = "
-            SELECT
-              ID,
-              SOLICITANTE,
-              GESTOR,
-              CENTRO_CUSTO,
-              CATEGORIA,
-              DESCRICAO,
-              VALOR,
-              TO_CHAR(DATA_DESPESA,'YYYY-MM-DD') AS DATA_DESPESA,
-              STATUS,
-              TO_CHAR(DT_CRIACAO,'YYYY-MM-DD HH24:MI:SS') AS DT_CRIACAO
-            FROM MEGAG_CRM_DESPESAS
-            WHERE SOLICITANTE = :U
-        ";
-        $params = [':U' => $user];
+        // Obter centros de custo da tabela oficial ABA_CENTRORESULTADO 
+        // (conforme procedure PRC_LIST_MEGAG_DESP_CENTRORESULTADO)
+        $stCc = $conn->prepare("SELECT CENTRORESULTADO AS CENTROCUSTO, SEQCENTRORESULTADO, DESCRICAO AS NOME FROM CONSINCO.ABA_CENTRORESULTADO ORDER BY DESCRICAO");
+        $stCc->execute();
+        $ccs = $stCc->fetchAll(PDO::FETCH_ASSOC);
 
-        if ($status !== '') {
-            $sql .= " AND STATUS = :S ";
-            $params[':S'] = $status;
-        }
-
-        $sql .= " ORDER BY ID DESC ";
-
-        $st = $conn->prepare($sql);
-        $st->execute($params);
-
-        jexit(true, ['dados' => $st->fetchAll(PDO::FETCH_ASSOC)]);
+        jexit(true, ['dados' => ['tipos' => $tipos, 'ccs' => $ccs]]);
     }
 
-    if ($action === 'list_approve') {
-        if (!can('DESPESAS_APROVACAO','VER')) jexit(false, [], 'Sem permissão: DESPESAS_APROVACAO/VER');
-
-        $status = trim((string)($req['status'] ?? ''));
-        $busca  = trim((string)($req['busca'] ?? ''));
-
-        $sql = "
-            SELECT
-              ID,
-              SOLICITANTE,
-              GESTOR,
-              CENTRO_CUSTO,
-              CATEGORIA,
-              VALOR,
-              TO_CHAR(DATA_DESPESA,'YYYY-MM-DD') AS DATA_DESPESA,
-              STATUS,
-              TO_CHAR(DT_CRIACAO,'YYYY-MM-DD HH24:MI:SS') AS DT_CRIACAO
-            FROM MEGAG_CRM_DESPESAS
-            WHERE GESTOR = :G
-        ";
-        $params = [':G' => $user];
-
-        if ($status !== '') {
-            $sql .= " AND STATUS = :S ";
-            $params[':S'] = $status;
-        }
-
-        if ($busca !== '') {
-            // busca por ID ou solicitante (case insensitive)
-            $sql .= " AND (TO_CHAR(ID) = :BID OR UPPER(SOLICITANTE) LIKE '%' || UPPER(:BUSCA) || '%') ";
-            $params[':BID'] = $busca;
-            $params[':BUSCA'] = $busca;
-        }
-
-        $sql .= " ORDER BY ID DESC ";
-
-        $st = $conn->prepare($sql);
-        $st->execute($params);
-
-        jexit(true, ['dados' => $st->fetchAll(PDO::FETCH_ASSOC)]);
-    }
-
+    // ============================================
+    // CRIAR DESPESA
+    // ============================================
     if ($action === 'create') {
-        if (!can('DESPESAS','CRIAR')) jexit(false, [], 'Sem permissão: DESPESAS/CRIAR');
+        $vlr = str_replace(['R$', '.', ' '], '', $req['valor'] ?? '0');
+        $vlr = str_replace(',', '.', $vlr);
 
-        $data = trim((string)($req['data_despesa'] ?? ''));
-        $valor = $req['valor'] ?? null;
-        $gestor = trim((string)($req['gestor'] ?? ''));
+        $forn = trim($req['estabelecimento'] ?? '');
+        $data = trim($req['data_despesa'] ?? '');
+        $tipo = (int) ($req['categoria'] ?? 0);
+        $cc_str = trim($req['centro_custo'] ?? '');
+        $venc = trim($req['vencimento'] ?? '');
+        $obs = trim($req['comentario'] ?? '');
 
-        if ($data === '') jexit(false, [], 'Data da despesa é obrigatória.');
-        if ($valor === null || $valor === '' || !is_numeric($valor)) jexit(false, [], 'Valor inválido.');
-        if ($gestor === '') jexit(false, [], 'Gestor é obrigatório.');
+        if ($tipo === 0)
+            jexit(false, [], 'Categoria é obrigatória.');
+        if ($vlr <= 0)
+            jexit(false, [], 'Valor inválido.');
+        if ($cc_str === '')
+            jexit(false, [], 'Centro de custo é obrigatório.');
 
-        $sql = "
-            INSERT INTO MEGAG_CRM_DESPESAS
-            (ID, SOLICITANTE, GESTOR, CENTRO_CUSTO, CATEGORIA, FORNECEDOR, DESCRICAO,
-             VALOR, DATA_DESPESA, FORMA_PGTO, STATUS, DT_CRIACAO, DT_ATUALIZACAO, USU_ULT_ACAO)
-            VALUES
-            (MEGAG_CRM_DESPESAS_SEQ.NEXTVAL, :SOL, :GES, :CC, :CAT, :FORN, :DESC,
-             :VAL, TO_DATE(:DATA,'YYYY-MM-DD'), :FP, 'P', SYSDATE, SYSDATE, :USU)
-            RETURNING ID INTO :RID
-        ";
+        $cc_parts = explode('|', $cc_str);
+        $centro_custo = (int) ($cc_parts[0] ?? 0);
+        $seq_cc = (int) ($cc_parts[1] ?? 0);
+
+        // USUARIO logado: para testes, enviamos 1 se não for numero
+        $usr_solicitante = is_numeric($user) ? (int) $user : 1;
+
+        // Upload verification
+        $fileNameParam = null;
+        $tipoArquivo = null;
+        if (isset($_FILES['arquivo']) && $_FILES['arquivo']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../uploads/';
+            if (!is_dir($uploadDir))
+                mkdir($uploadDir, 0777, true);
+
+            $ext = pathinfo($_FILES['arquivo']['name'], PATHINFO_EXTENSION);
+            $fileNameParam = 'despesa_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+            $tipoArquivo = $_FILES['arquivo']['type'];
+
+            if (!move_uploaded_file($_FILES['arquivo']['tmp_name'], $uploadDir . $fileNameParam)) {
+                jexit(false, [], 'Erro ao salvar o arquivo no servidor.');
+            }
+        }
+
+        $sql = "BEGIN
+                  CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP(
+                      p_USUARIOSOLICITANTE => :USU,
+                      p_USUARIOAPROVADOR   => NULL,
+                      p_CODTIPODESPESA     => :TIPO,
+                      p_PAGO               => 'N',
+                      p_VLRRATDESPESA      => :VLR,
+                      p_FORNECEDOR         => :FORN,
+                      p_NOMEARQUIVO        => :NOMEARQ,
+                      p_OBSERVACAO         => :OBS,
+                      p_SEQCENTRORESULTADO => :SEQCC,
+                      p_CENTROCUSTO        => :CC,
+                      p_STATUS             => 'LANCADO',
+                      p_CODDESPESA_OUT     => :OUT_ID
+                  );
+                END;";
 
         $st = $conn->prepare($sql);
+        $st->bindValue(':USU', $usr_solicitante);
+        $st->bindValue(':TIPO', $tipo);
+        $st->bindValue(':VLR', (float) $vlr);
+        $st->bindValue(':FORN', $forn);
+        $st->bindValue(':NOMEARQ', $fileNameParam);
+        $st->bindValue(':OBS', $obs);
+        $st->bindValue(':SEQCC', $seq_cc);
+        $st->bindValue(':CC', $centro_custo);
 
-        $rid = 0;
-        $st->bindParam(':SOL', $user);
-        $st->bindParam(':GES', $gestor);
-        $st->bindValue(':CC', $req['centro_custo'] ?? null);
-        $st->bindValue(':CAT', $req['categoria'] ?? null);
-        $st->bindValue(':FORN', $req['fornecedor'] ?? null);
-        $st->bindValue(':DESC', $req['descricao'] ?? null);
-        $st->bindValue(':VAL', (float)$valor);
-        $st->bindParam(':DATA', $data);
-        $st->bindValue(':FP', $req['forma_pgto'] ?? null);
-        $st->bindParam(':USU', $user);
-        $st->bindParam(':RID', $rid, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+        $out_id = 0;
+        $st->bindParam(':OUT_ID', $out_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
 
         $st->execute();
 
-        hist($conn, $rid, 'CRIAR', null, 'P', 'Criado e enviado para aprovação.', $user);
-
-        jexit(true, ['dados' => ['id' => $rid]]);
-    }
-
-    if ($action === 'detail') {
-        if (!can('DESPESAS','VER') && !can('DESPESAS_APROVACAO','VER')) jexit(false, [], 'Sem permissão para ver detalhes.');
-
-        $id = (int)($req['id'] ?? 0);
-        if ($id <= 0) jexit(false, [], 'ID inválido.');
-
-        $d = fetch_one($conn, $id);
-        if (!$d) jexit(false, [], 'Despesa não encontrada.');
-
-        // segurança: só quem criou ou gestor ou admin (se temPermissao for completo)
-        $isOwner = ($d['SOLICITANTE'] === $user);
-        $isGestor = ($d['GESTOR'] === $user);
-        $isAdmin = (function_exists('temPermissao') && temPermissao('ADMIN','ALL'));
-
-        if (!$isOwner && !$isGestor && !$isAdmin) {
-            jexit(false, [], 'Você não tem permissão para ver esta despesa.');
+        // Se gravou a despesa e tem arquivo, grava na tabela de arquivos anexa (PKG: PRC_INS_MEGAG_DESP_ARQUIVO)
+        if ($out_id > 0 && $fileNameParam) {
+            $sqlArq = "BEGIN
+                        CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_ARQUIVO(
+                            p_CODDESPESA     => :COD_DESP,
+                            p_NOMEARQUIVO    => :NOME_ARQ,
+                            p_TIPOARQUIVO    => :TIPO_ARQ,
+                            p_CODARQUIVO_OUT => :OUT_ARQ
+                        );
+                      END;";
+            $stArq = $conn->prepare($sqlArq);
+            $stArq->bindValue(':COD_DESP', $out_id);
+            $stArq->bindValue(':NOME_ARQ', $fileNameParam);
+            $stArq->bindValue(':TIPO_ARQ', $tipoArquivo);
+            $out_arq_id = 0;
+            $stArq->bindParam(':OUT_ARQ', $out_arq_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+            $stArq->execute();
         }
 
-        $h = fetch_hist($conn, $id);
+        // Commit da transação pois os PL/SQL anônimos não dão autocommit nativamente no PDO OCI
+        $conn->exec('COMMIT');
 
-        jexit(true, ['dados' => $d, 'historico' => $h]);
+        jexit(true, ['dados' => ['id' => $out_id, 'mensagem' => 'Despesa cadastrada com sucesso!']]);
     }
 
-    if ($action === 'update') {
-        if (!can('DESPESAS','EDITAR')) jexit(false, [], 'Sem permissão: DESPESAS/EDITAR');
+    // ============================================
+    // LISTAR MINHAS DESPESAS (Para despesas.php)
+    // ============================================
+    if ($action === 'list_mine') {
+        $usr_solicitante = is_numeric($user) ? (int) $user : 1;
 
-        $id = (int)($req['id'] ?? 0);
-        if ($id <= 0) jexit(false, [], 'ID inválido.');
-
-        $d = fetch_one($conn, $id);
-        if (!$d) jexit(false, [], 'Despesa não encontrada.');
-
-        if ($d['SOLICITANTE'] !== $user) jexit(false, [], 'Você só pode editar suas próprias despesas.');
-        if ($d['STATUS'] !== 'P') jexit(false, [], 'Somente despesas pendentes podem ser editadas.');
-
-        $data = trim((string)($req['data_despesa'] ?? ''));
-        $valor = $req['valor'] ?? null;
-        $gestor = trim((string)($req['gestor'] ?? ''));
-
-        if ($data === '') jexit(false, [], 'Data é obrigatória.');
-        if ($valor === null || $valor === '' || !is_numeric($valor)) jexit(false, [], 'Valor inválido.');
-        if ($gestor === '') jexit(false, [], 'Gestor é obrigatório.');
-
-        $sql = "
-            UPDATE MEGAG_CRM_DESPESAS
-            SET
-              GESTOR = :GES,
-              CENTRO_CUSTO = :CC,
-              CATEGORIA = :CAT,
-              FORNECEDOR = :FORN,
-              DESCRICAO = :DESC,
-              VALOR = :VAL,
-              DATA_DESPESA = TO_DATE(:DATA,'YYYY-MM-DD'),
-              FORMA_PGTO = :FP,
-              DT_ATUALIZACAO = SYSDATE,
-              USU_ULT_ACAO = :USU
-            WHERE ID = :ID
-        ";
+        $sql = "SELECT D.*, 
+                       (SELECT DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.CENTRORESULTADO = D.CENTROCUSTO AND ROWNUM = 1) as DESC_CC
+                FROM CONSINCO.MEGAG_DESP D 
+                WHERE D.USUARIOSOLICITANTE = :U 
+                ORDER BY D.DTAINCLUSAO DESC";
         $st = $conn->prepare($sql);
-        $st->execute([
-            ':GES' => $gestor,
-            ':CC' => $req['centro_custo'] ?? null,
-            ':CAT' => $req['categoria'] ?? null,
-            ':FORN' => $req['fornecedor'] ?? null,
-            ':DESC' => $req['descricao'] ?? null,
-            ':VAL' => (float)$valor,
-            ':DATA' => $data,
-            ':FP' => $req['forma_pgto'] ?? null,
-            ':USU' => $user,
-            ':ID' => $id
-        ]);
+        $st->execute([':U' => $usr_solicitante]);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
-        hist($conn, $id, 'EDITAR', $d['STATUS'], $d['STATUS'], 'Dados alterados pelo solicitante.', $user);
+        $metrics = [
+            'total' => 0,
+            'total_valor' => 0,
+            'em_aprovacao' => 0,
+            'em_aprovacao_valor' => 0,
+            'reembolsado' => 0,
+            'reembolsado_valor' => 0,
+            'reprovado' => 0,
+            'reprovado_valor' => 0
+        ];
 
-        jexit(true, ['dados' => ['ok' => true]]);
+        foreach ($rows as $r) {
+            $v = (float) $r['VLRRATDESPESA'];
+            $metrics['total']++;
+            $metrics['total_valor'] += $v;
+
+            $status = strtoupper($r['STATUS'] ?? '');
+            if ($status === 'LANCADO' || $status === 'EM_APROVACAO' || $status === 'APROVACAO') {
+                $metrics['em_aprovacao']++;
+                $metrics['em_aprovacao_valor'] += $v;
+            } else if ($status === 'APROVADO' || strtoUpper($r['PAGO'] ?? '') === 'S' || $status === 'REEMBOLSADO') {
+                $metrics['reembolsado']++;
+                $metrics['reembolsado_valor'] += $v;
+            } else if ($status === 'REJEITADO' || $status === 'REPROVADO') {
+                $metrics['reprovado']++;
+                $metrics['reprovado_valor'] += $v;
+            }
+        }
+
+        jexit(true, ['dados' => ['dados' => $rows, 'metricas' => $metrics]]);
     }
 
-    if ($action === 'cancel') {
-        if (!can('DESPESAS','CANCELAR')) jexit(false, [], 'Sem permissão: DESPESAS/CANCELAR');
+    if ($action === 'list_approvals') {
+        $usr_aprovador = is_numeric($user) ? (int) $user : 1;
 
-        $id = (int)($req['id'] ?? 0);
-        if ($id <= 0) jexit(false, [], 'ID inválido.');
+        $sql = "SELECT desp.*,
+                       (SELECT NOME FROM CONSINCO.GE_USUARIO U WHERE U.SEQUSUARIO = desp.USUARIOSOLICITANTE AND ROWNUM = 1) as NOME_SOLICITANTE,
+                       (SELECT DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.CENTRORESULTADO = desp.CENTROCUSTO AND ROWNUM = 1) as DESC_CC
+                FROM CONSINCO.MEGAG_DESP desp
+                INNER JOIN CONSINCO.MEGAG_DESP_APROVADORES aprov
+                   ON desp.CENTROCUSTO = aprov.CENTROCUSTO
+                WHERE (desp.STATUS = 'LANCADO' OR desp.STATUS = 'EM_APROVACAO' OR desp.STATUS = 'APROVACAO')
+                  AND aprov.SEQUSUARIO = :U
+                ORDER BY desp.DTAINCLUSAO DESC";
+        $st = $conn->prepare($sql);
+        $st->execute([':U' => $usr_aprovador]);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
-        $d = fetch_one($conn, $id);
-        if (!$d) jexit(false, [], 'Despesa não encontrada.');
+        $metrics = [
+            'pendentes' => count($rows),
+            'aprovadas_hoje' => 0, // Mockado por enquanto até haver log de ação
+            'reprovadas_hoje' => 0
+        ];
 
-        if ($d['SOLICITANTE'] !== $user) jexit(false, [], 'Você só pode cancelar suas próprias despesas.');
-        if ($d['STATUS'] !== 'P') jexit(false, [], 'Somente despesas pendentes podem ser canceladas.');
-
-        $st = $conn->prepare("
-            UPDATE MEGAG_CRM_DESPESAS
-            SET STATUS = 'C', DT_ATUALIZACAO = SYSDATE, USU_ULT_ACAO = :USU
-            WHERE ID = :ID
-        ");
-        $st->execute([':USU' => $user, ':ID' => $id]);
-
-        hist($conn, $id, 'CANCELAR', $d['STATUS'], 'C', 'Cancelada pelo solicitante.', $user);
-
-        jexit(true, ['dados' => ['ok' => true]]);
-    }
-
-    if ($action === 'approve') {
-        if (!can('DESPESAS_APROVACAO','APROVAR')) jexit(false, [], 'Sem permissão: DESPESAS_APROVACAO/APROVAR');
-
-        $id = (int)($req['id'] ?? 0);
-        if ($id <= 0) jexit(false, [], 'ID inválido.');
-
-        $d = fetch_one($conn, $id);
-        if (!$d) jexit(false, [], 'Despesa não encontrada.');
-
-        if ($d['GESTOR'] !== $user) jexit(false, [], 'Você não é o gestor responsável desta despesa.');
-        if ($d['STATUS'] !== 'P') jexit(false, [], 'Somente despesas pendentes podem ser aprovadas.');
-
-        $st = $conn->prepare("
-            UPDATE MEGAG_CRM_DESPESAS
-            SET STATUS = 'A',
-                DT_APROVACAO = SYSDATE,
-                DT_ATUALIZACAO = SYSDATE,
-                USU_ULT_ACAO = :USU,
-                MOTIVO_REPROVACAO = NULL
-            WHERE ID = :ID
-        ");
-        $st->execute([':USU' => $user, ':ID' => $id]);
-
-        hist($conn, $id, 'APROVAR', $d['STATUS'], 'A', 'Aprovada pelo gestor.', $user);
-
-        jexit(true, ['dados' => ['ok' => true]]);
-    }
-
-    if ($action === 'reject') {
-        if (!can('DESPESAS_APROVACAO','REPROVAR')) jexit(false, [], 'Sem permissão: DESPESAS_APROVACAO/REPROVAR');
-
-        $id = (int)($req['id'] ?? 0);
-        $motivo = trim((string)($req['motivo'] ?? ''));
-
-        if ($id <= 0) jexit(false, [], 'ID inválido.');
-        if ($motivo === '') jexit(false, [], 'Motivo é obrigatório.');
-
-        $d = fetch_one($conn, $id);
-        if (!$d) jexit(false, [], 'Despesa não encontrada.');
-
-        if ($d['GESTOR'] !== $user) jexit(false, [], 'Você não é o gestor responsável desta despesa.');
-        if ($d['STATUS'] !== 'P') jexit(false, [], 'Somente despesas pendentes podem ser reprovadas.');
-
-        $st = $conn->prepare("
-            UPDATE MEGAG_CRM_DESPESAS
-            SET STATUS = 'R',
-                DT_REPROVACAO = SYSDATE,
-                DT_ATUALIZACAO = SYSDATE,
-                USU_ULT_ACAO = :USU,
-                MOTIVO_REPROVACAO = :M
-            WHERE ID = :ID
-        ");
-        $st->execute([':USU' => $user, ':M' => $motivo, ':ID' => $id]);
-
-        hist($conn, $id, 'REPROVAR', $d['STATUS'], 'R', $motivo, $user);
-
-        jexit(true, ['dados' => ['ok' => true]]);
+        jexit(true, ['dados' => ['dados' => $rows, 'metricas' => $metrics]]);
     }
 
     jexit(false, [], 'Ação inválida.');

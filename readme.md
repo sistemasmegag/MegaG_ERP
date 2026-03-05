@@ -11,7 +11,10 @@ O projeto hoje contempla:
 - 🔎 Monitor de Importação Unificado (consulta dinâmica por tabela)
 - 🔐 Controle de Usuários e Permissões
 - 🗂️ **Módulo de Tarefas (Kanban + Detalhes + Comentários + Anexos)**
-- 🎨 UI **Clean SaaS** (tema dark/light, cards, badges, sidebar moderna)
+- 🚀 **Aplicativos SaaS Novos (CRM, Wiki Corporativa e RH/DP)**
+- 🔔 **Sistema de Notificações Global (Toasts + Painel Inteligente)**
+- 📈 **Analytics Avançado com ApexCharts no Dashboard de Dados**
+- 🎨 UI **Clean SaaS** (tema dark/light, tokens CSS centralizados, glassmorphism)
 
 ![Status do Projeto](https://img.shields.io/badge/Status-Em%20Produ%C3%A7%C3%A3o-brightgreen)
 ![PHP](https://img.shields.io/badge/PHP-7.4%20|%208.x-blue)
@@ -45,6 +48,11 @@ O sistema foi padronizado com layout **Clean SaaS**, focado em usabilidade, clar
   - Contadores em tempo real
   - Logs completos sem truncamento
   - Renderização dinâmica de colunas
+  - **Diferencial:** Gráficos estáticos interativos gerados sob os dados (ApexCharts).
+- 🔔 **Ecossistema de Notificação**
+  - Painel global no Footer com divisão de "Lido/Não Lido".
+  - Notificações Toasts (popups de não-bloqueio) avisando do tráfego.
+  - Sinos com badge counter rodando de forma invisível via polling longo.
 
 ---
 
@@ -272,6 +280,27 @@ Anexos:
 
 ---
 
+## 🚀 Novos Módulos SaaS Incorporados
+
+Esses módulos elevam o ERP a um sistema de Gestão Integrada focada em interatividade moderna.
+
+### 💼 CRM & Leads (Gestão Comercial)
+- Quadro **Kanban Drag & Drop** super leve (sem lib externa).
+- Funil com etapas de venda: Novos Leads, Contato, Proposta, Ganho, Perdido.
+- Modal limpo de inserção rápida e edição de Oportunidades.
+
+### 📚 Base de Conhecimento (Wiki)
+- Divisão responsiva: Lateral fixa com **Tópicos** (TI, RH, Comerciais, etc).
+- Dois Estados Visuais: Grid de visualização de Artigos e State "Reader" focado no conteúdo com fontes legíveis.
+- Formulário em simulador de Markdown.
+
+### 👥 Recursos Humanos (RH / Departamento Pessoal)
+- Estilo diferenciado (foco em Ruby/Pink para remeter a setores de Pessoas).
+- Tabela de **Minhas Solicitações** para empregados visualizarem seus pedidos de Atestados, Férias, Benefícios, etc.
+- **Mural de Avisos** para o setor interno se comunicar ativamente (Holerites disponíveis, Recessos, etc).
+
+---
+
 ## 🔎 Visualização de Dados (Monitor de Importação) — Atualizado
 
 Consulta **unificada e inteligente** para **qualquer tabela de importação** cadastrada no Oracle.
@@ -379,15 +408,22 @@ Scripts (exemplos):
   - `imp_metas.php` (Metas)
   - `imp_metas_perspec.php` (Metas Perspec)
   - `imp_metas_gap.php` (Metas GAP)
-  - `dados_visualizar.php` (monitor unificado)
+  - `dados_visualizar.php` (monitor unificado com ApexCharts)
   - `tarefas.php` (kanban)
   - `tarefas_criar_task.php` (criar task)
   - `tarefas_detalhes.php` (detalhes + comentários + anexos)
   - `usuarios.php` (admin)
+  - `crm.php` (Kanban Comercial)
+  - `wiki.php` (Base de Conhecimento)
+  - `rh.php` (Painel Departamento Pessoal)
 - `api/`
   - `api_dados.php`
   - `tasks.php` (API tarefas)
   - `api_usuarios.php`
+  - `crm.php` (API CRM)
+  - `wiki.php` (API Wiki)
+  - `rh.php` (API RH)
+  - `notif.php` (Gerenciador de Notificações Globally)
 - `processors/`
   - `processa_tabvdaprodraio.php`
   - `processa_imp_lanctocomissao.php`
@@ -426,10 +462,11 @@ Scripts (exemplos):
 
 ✅ Estável  
 🚀 Em produção  
-🧩 Arquitetura modular  
-🎨 UI Clean SaaS  
+🧩 Arquitetura modular e APIs RESTful  
+🎨 UI Clean SaaS Padronizada  
 🔐 Segurança por permissão  
-⚡ Processamento em tempo real  
+⚡ Processamento em tempo real (SSE)  
 🗂️ Kanban de Tarefas com Comentários e Anexos  
+🚀 Central Global Integrada (Wiki, CRM, RH e Notificações Toasts)
 
 ---

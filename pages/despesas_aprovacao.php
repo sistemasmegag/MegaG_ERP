@@ -2,125 +2,396 @@
 require_once __DIR__ . '/../routes/check_session.php';
 $paginaAtual = 'despesas_aprovacao';
 ?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-/* ===== Clean SaaS (escopado pra APROVAÇÃO) ===== */
-.saas-head{
+  /* ===== Clean SaaS: Aprovação de Despesas ====== */
+  .saas-head {
     border: 1px solid var(--saas-border);
-    background: linear-gradient(135deg, rgba(220,53,69,.10), rgba(220,53,69,.04)); /* danger */
+    background: linear-gradient(135deg, rgba(13, 110, 253, .08), rgba(13, 110, 253, .02));
     border-radius: 18px;
     box-shadow: var(--saas-shadow-soft);
-    padding: 18px 18px;
-    overflow:hidden;
-    position:relative;
-}
-html[data-theme="dark"] .saas-head{
-    background: linear-gradient(135deg, rgba(220,53,69,.14), rgba(255,255,255,.02));
-}
-.saas-head:before{
-    content:"";
-    position:absolute;
-    inset:-130px -190px auto auto;
-    width: 360px;
-    height: 360px;
-    background: radial-gradient(circle at 30% 30%, rgba(220,53,69,.22), transparent 60%);
-    filter: blur(6px);
-    transform: rotate(10deg);
-    pointer-events:none;
-}
-.saas-title{ font-weight: 900; letter-spacing: -.02em; margin:0; color: var(--saas-text); }
-.saas-subtitle{ margin: 6px 0 0; color: var(--saas-muted); font-size: 14px; }
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
 
-/* Chips */
-.saas-chips{ display:flex; flex-wrap:wrap; gap: 8px; margin-top: 12px; position: relative; z-index: 1; }
-.saas-chip{
-    border: 1px solid var(--saas-border);
-    background: rgba(255,255,255,.55);
+  html[data-theme="dark"] .saas-head {
+    background: linear-gradient(135deg, rgba(13, 110, 253, .15), rgba(255, 255, 255, .02));
+  }
+
+  .saas-head:before {
+    content: "";
+    position: absolute;
+    inset: -100px -150px auto auto;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle at 30% 30%, rgba(13, 110, 253, .2), transparent 60%);
+    filter: blur(8px);
+    transform: rotate(15deg);
+    pointer-events: none;
+  }
+
+  .saas-title {
+    font-weight: 900;
+    letter-spacing: -.02em;
     color: var(--saas-text);
-    border-radius: 999px;
-    padding: 8px 12px;
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing: .01em;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    cursor:pointer;
-    user-select:none;
-    transition: .16s ease;
-}
-html[data-theme="dark"] .saas-chip{ background: rgba(255,255,255,.06); }
-.saas-chip:hover{ transform: translateY(-1px); border-color: rgba(220,53,69,.25); }
-.saas-chip.active{
-    background: rgba(220,53,69,.10);
-    border-color: rgba(220,53,69,.22);
-    box-shadow: 0 10px 18px rgba(220,53,69,.10);
-}
+    margin: 0;
+  }
 
-/* Metrics */
-.saas-metrics{
-    display:grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px; margin-top: 14px; position: relative; z-index: 1;
-}
-@media (max-width: 900px){ .saas-metrics{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.saas-metric{
-    border: 1px solid var(--saas-border);
-    background: rgba(255,255,255,.55);
-    border-radius: 16px;
-    padding: 12px 12px;
-    box-shadow: var(--saas-shadow-soft);
-    backdrop-filter: blur(10px);
-}
-html[data-theme="dark"] .saas-metric{ background: rgba(255,255,255,.06); }
-.saas-metric .label{ font-size: 11px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: var(--saas-muted); }
-.saas-metric .value{ margin-top: 4px; font-size: 24px; font-weight: 900; letter-spacing: -.02em; color: var(--saas-text); line-height: 1.1; }
-.saas-metric .hint{ margin-top: 2px; font-size: 12px; color: var(--saas-muted); }
-
-/* Card SaaS */
-.saas-card{
-    background: var(--saas-surface) !important;
-    border: 1px solid var(--saas-border) !important;
-    border-radius: 18px !important;
-    box-shadow: var(--saas-shadow) !important;
-    overflow:hidden;
-    backdrop-filter: blur(10px);
-}
-.saas-card .card-header{
-    background: transparent !important;
-    border-bottom: 1px solid var(--saas-border) !important;
-}
-.saas-kicker{
+  .saas-subtitle {
+    margin: 6px 0 0;
     color: var(--saas-muted);
-    font-size: 12px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    font-weight: 900;
-}
+    font-size: 14px;
+  }
 
-/* Table wrap */
-.saas-table-wrap{
+  /* Dashboard Metrics */
+  .metrics-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .metric-card {
+    flex: 1;
+    min-width: 200px;
+    background: var(--saas-surface);
+    border: 1px solid var(--saas-border);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    box-shadow: var(--saas-shadow-soft);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  .metric-title {
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--saas-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .metric-value {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: -.02em;
+    color: var(--saas-text);
+    margin-top: 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  /* Modal Split Premium Detailed View */
+  .modal-split-body {
+    display: flex;
+    min-height: 600px;
+    padding: 0 !important;
+    background: var(--saas-surface);
+  }
+
+  .split-left {
+    flex: 1.2;
+    border-right: 1px solid var(--saas-border);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    background: rgba(17, 24, 39, .015);
+    position: relative;
+  }
+
+  html[data-theme="dark"] .split-left {
+    background: rgba(255, 255, 255, .015);
+  }
+
+  .pdf-viewer-fake {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    background: #525659;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pdf-toolbar {
+    background: #323639;
+    color: #fff;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+  }
+
+  .pdf-page {
+    background: #fff;
+    margin: auto;
+    width: 80%;
+    height: 80%;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+  }
+
+  .split-right {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    background: var(--saas-surface);
+  }
+
+  /* Details List Row */
+  .detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--saas-border);
+  }
+
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--saas-muted);
+    font-weight: 700;
+    width: 140px;
+  }
+
+  .detail-value {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--saas-text);
+    text-align: right;
+    word-break: break-word;
+  }
+
+  /* Timeline Aprovadores */
+  .timeline-aprovadores {
+    position: relative;
+    padding-left: 20px;
+    margin-top: 1rem;
+  }
+
+  .timeline-aprovadores::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: var(--saas-border);
+  }
+
+  .timeline-node {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .timeline-node::before {
+    content: "";
+    position: absolute;
+    left: -21px;
+    top: 0px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--saas-surface);
+    border: 2px solid var(--saas-border);
+    z-index: 1;
+  }
+
+  .timeline-node.active::before {
+    border-color: #0d6efd;
+    background: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, .2);
+  }
+
+  .timeline-node.done::before {
+    border-color: #10b981;
+    background: #10b981;
+  }
+
+  .timeline-card {
+    border: 1px solid var(--saas-border);
+    border-radius: 12px;
+    padding: 14px;
+    background: var(--saas-surface);
+    box-shadow: var(--saas-shadow-soft);
+    margin-left: 10px;
+  }
+
+  .timeline-card.focused {
+    border-color: rgba(13, 110, 253, .4);
+    background: rgba(13, 110, 253, .02);
+  }
+
+  /* Table Aesthetics */
+  .saas-table-card {
     background: var(--saas-surface);
     border: 1px solid var(--saas-border);
     border-radius: 18px;
     box-shadow: var(--saas-shadow);
+    margin-top: 1.5rem;
     overflow: hidden;
-}
-.saas-table-scroll{ max-height: 65vh; overflow:auto; scrollbar-width: thin; }
-.saas-table thead th{
-    position: sticky; top: 0; z-index: 2;
-    background: rgba(17,24,39,.03) !important;
-    color: var(--saas-text) !important;
-}
-html[data-theme="dark"] .saas-table thead th{ background: rgba(255,255,255,.06) !important; }
-.saas-table.table-hover tbody tr:hover{ background: rgba(220,53,69,.06) !important; }
-html[data-theme="dark"] .saas-table.table-hover tbody tr:hover{ background: rgba(220,53,69,.12) !important; }
+  }
 
-.text-muted{ color: var(--saas-muted) !important; }
-.text-dark{ color: var(--saas-text) !important; }
+  .saas-table-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--saas-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .saas-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .saas-table th {
+    padding: 1rem 1.5rem;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--saas-muted);
+    text-align: left;
+    background: rgba(17, 24, 39, .02);
+    border-bottom: 1px solid var(--saas-border);
+  }
+
+  html[data-theme="dark"] .saas-table th {
+    background: rgba(255, 255, 255, .02);
+  }
+
+  .saas-table td {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--saas-border);
+    font-size: 14px;
+    color: var(--saas-text);
+    vertical-align: middle;
+  }
+
+  .saas-table tr:hover {
+    background: rgba(13, 110, 253, .02);
+    cursor: pointer;
+  }
+
+  /* Badges / Chips */
+  .chip {
+    padding: 6px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .chip-primary {
+    background: rgba(13, 110, 253, .1);
+    color: #0d6efd;
+  }
+
+  .chip-green {
+    background: rgba(16, 185, 129, .1);
+    color: #059669;
+  }
+
+  .chip-gray {
+    background: rgba(107, 114, 128, .1);
+    color: #4b5563;
+  }
+
+  html[data-theme="dark"] .chip-primary {
+    color: #6ea8fe;
+  }
+
+  html[data-theme="dark"] .chip-green {
+    color: #34d399;
+  }
+
+  html[data-theme="dark"] .chip-gray {
+    color: #9ca3af;
+  }
+
+  /* Custom Buttons */
+  .btn-primary-custom {
+    background: #0d6efd;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 800;
+    font-size: 14px;
+    transition: .2s ease;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, .3);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary-custom:hover {
+    background: #0b5ed7;
+    transform: translateY(-1px);
+    color: #fff;
+  }
+
+  .btn-light {
+    background: var(--saas-surface);
+    border: 1px solid var(--saas-border);
+    color: var(--saas-text);
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 700;
+    transition: .2s;
+  }
+
+  .btn-light:hover {
+    background: rgba(17, 24, 39, .03);
+  }
+
+  /* Avatar / Initials */
+  .avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(13, 110, 253, .1);
+    color: #0d6efd;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .avatar-lg {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 18px;
+  }
 </style>
 
 <main class="main-content">
-  <div class="container-fluid">
+  <div class="container-fluid pb-5">
 
     <div class="d-flex align-items-center d-md-none mb-4 pb-3 border-bottom">
       <button class="mobile-toggle me-3" onclick="toggleMenu()">
@@ -129,341 +400,397 @@ html[data-theme="dark"] .saas-table.table-hover tbody tr:hover{ background: rgba
       <h4 class="m-0 fw-bold text-dark">CRM Mega G</h4>
     </div>
 
-    <div class="saas-head mb-4">
-      <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 position-relative">
+    <!-- HEADER & METRICS -->
+    <div class="saas-head">
+      <div class="d-flex justify-content-between align-items-start position-relative z-1">
         <div>
-          <h3 class="saas-title">Aprovação de Despesas</h3>
-          <p class="saas-subtitle">
-            Fila do gestor para aprovar ou reprovar despesas pendentes, com registro completo de histórico.
-          </p>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger fw-bold px-3 py-2">
-            Ações do Gestor
-          </span>
+          <h2 class="saas-title">Aprovação de Reembolsos</h2>
+          <p class="saas-subtitle">Fila do gestor para avaliar despesas corporativas.</p>
         </div>
       </div>
 
-      <div class="saas-chips" id="chipsStatus">
-        <div class="saas-chip active" data-status="">
-          <i class="bi bi-grid-3x3-gap"></i> Todas
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-title"><i class="bi bi-hourglass-top text-primary" style="font-size:12px;"></i> Na sua fila
+            (Pendente)</div>
+          <div class="metric-value text-primary"><span id="metricPendentes">0</span> &nbsp; <span
+              class="text-muted fw-normal" style="font-size:12px;">Despesas</span></div>
         </div>
-        <div class="saas-chip" data-status="P">
-          <i class="bi bi-hourglass-split"></i> Pendentes
-        </div>
-        <div class="saas-chip" data-status="A">
-          <i class="bi bi-check-circle"></i> Aprovadas
-        </div>
-        <div class="saas-chip" data-status="R">
-          <i class="bi bi-x-circle"></i> Reprovadas
-        </div>
-        <div class="saas-chip" data-status="C">
-          <i class="bi bi-slash-circle"></i> Canceladas
-        </div>
-      </div>
 
-      <div class="saas-metrics">
-        <div class="saas-metric">
-          <div class="label">Total</div>
-          <div class="value" id="mTotal">0</div>
-          <div class="hint">na fila</div>
+        <div class="metric-card">
+          <div class="metric-title"><i class="bi bi-check-circle-fill text-success" style="font-size:12px;"></i>
+            Aprovadas hoje</div>
+          <div class="metric-value" id="metricAprovadas">0</div>
         </div>
-        <div class="saas-metric">
-          <div class="label">Pendentes</div>
-          <div class="value" id="mP">0</div>
-          <div class="hint">status P</div>
-        </div>
-        <div class="saas-metric">
-          <div class="label">Aprovadas</div>
-          <div class="value" id="mA">0</div>
-          <div class="hint">status A</div>
-        </div>
-        <div class="saas-metric">
-          <div class="label">Reprovadas</div>
-          <div class="value" id="mR">0</div>
-          <div class="hint">status R</div>
+
+        <div class="metric-card">
+          <div class="metric-title"><i class="bi bi-x-circle-fill text-danger" style="font-size:12px;"></i> Reprovadas
+            hoje</div>
+          <div class="metric-value" id="metricReprovadas">0</div>
         </div>
       </div>
     </div>
 
-    <div class="card saas-card mb-3">
-      <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-2">
-          <div class="bg-danger bg-opacity-10 rounded-3 d-flex align-items-center justify-content-center" style="width:42px;height:42px;">
-            <i class="bi bi-check2-square fs-4 text-danger"></i>
-          </div>
-          <div>
-            <div class="saas-kicker">Fila do gestor</div>
-            <div class="fw-bold text-dark" style="letter-spacing:-.01em;">Aprovar / Reprovar</div>
-          </div>
-        </div>
-
-        <div class="d-flex gap-2 align-items-center">
-          <input type="text" id="fBusca" class="form-control" placeholder="Buscar por ID/Solicitante..." style="height:44px;border-radius:14px;">
-          <button class="btn btn-danger" style="height:44px;border-radius:14px;font-weight:900;" onclick="carregarFila()">
-            <i class="bi bi-search"></i>
-          </button>
+    <!-- TABLE AREA (FILA DO GESTOR) -->
+    <div class="saas-table-card">
+      <div class="saas-table-header">
+        <div style="position: relative; width: 350px;">
+          <i class="bi bi-search"
+            style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--saas-muted);"></i>
+          <input type="text" class="form-control" placeholder="Buscar solicitante ou id..."
+            style="padding-left: 40px; border-radius: 99px; font-size:14px; height:42px; border:1px solid var(--saas-border); background:var(--saas-surface); color:var(--saas-text);">
         </div>
       </div>
-
-      <div class="saas-table-wrap">
-        <div class="saas-table-scroll">
-          <table class="table table-hover mb-0 align-middle table-sm saas-table">
-            <thead>
-              <tr>
-                <th class="py-3 ps-3">ID</th>
-                <th class="py-3">Solicitante</th>
-                <th class="py-3">Data</th>
-                <th class="py-3 text-end">Valor</th>
-                <th class="py-3">Categoria</th>
-                <th class="py-3">Centro</th>
-                <th class="py-3 text-center">Status</th>
-                <th class="py-3 text-end pe-3">Ações</th>
-              </tr>
-            </thead>
-            <tbody id="tbodyFila"></tbody>
-          </table>
-        </div>
-
-        <div id="loadingFila" class="text-center p-5 text-muted" style="display:none;">
-          <div class="spinner-border text-danger mb-2" role="status"></div>
-          <p class="mb-0">Carregando fila...</p>
-        </div>
-
-        <div id="emptyFila" class="text-center p-5 text-muted" style="display:none;">
-          <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
-          <div class="fw-bold text-dark mb-1">Nenhum registro encontrado</div>
-          <div class="text-muted">Ajuste o filtro e tente novamente.</div>
-        </div>
+      <div class="table-responsive">
+        <table class="saas-table">
+          <thead>
+            <tr>
+              <th class="ps-4">Solicitante</th>
+              <th>Data</th>
+              <th>Descrição / Fornecedor</th>
+              <th class="text-end">Valor</th>
+              <th class="text-center">Status</th>
+              <th class="text-end pe-4">Avaliar</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAprovacao">
+            <tr>
+              <td colspan="6" class="text-center text-muted py-5"><i class="bi bi-hourglass-split me-2"></i> Buscando
+                pendências de aprovação...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
   </div>
 </main>
 
-<!-- Modal motivo reprovação -->
-<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content" style="border-radius:18px; border:1px solid var(--saas-border); background: var(--saas-surface); color: var(--saas-text); box-shadow: var(--saas-shadow);">
-      <div class="modal-header" style="border-bottom:1px solid var(--saas-border);">
-        <h5 class="modal-title fw-bold" style="letter-spacing:-.01em;">Reprovar despesa</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+<!-- Modal APROVAÇÃO E DETALHES -->
+<div class="modal fade" id="modalDetalhesAprovacao" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 1400px; height: 90vh;">
+    <div class="modal-content"
+      style="border-radius:24px; border:1px solid var(--saas-border); overflow:hidden; height:100%;">
+
+      <!-- HEADER DO MODAL -->
+      <div class="modal-header d-flex justify-content-between align-items-center"
+        style="border-bottom: 1px solid var(--saas-border); padding: 1rem 2rem; background: var(--saas-surface);">
+        <div class="d-flex align-items-center gap-3">
+          <button type="button"
+            class="btn btn-link text-decoration-none text-muted p-0 d-flex align-items-center gap-1 fw-bold"
+            data-bs-dismiss="modal">
+            <i class="bi bi-chevron-left"></i> Reembolsos
+          </button>
+          <span class="text-muted mx-1">/</span>
+          <span class="fw-bold text-dark">Detalhes do reembolso</span>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-light rounded-circle p-0" style="width:36px;height:36px;"><i
+              class="bi bi-pencil"></i></button>
+          <button class="btn-light rounded-circle p-0 text-danger" style="width:36px;height:36px;"><i
+              class="bi bi-trash"></i></button>
+        </div>
       </div>
-      <div class="modal-body">
-        <input type="hidden" id="rId">
-        <div class="text-muted small mb-2">Informe o motivo (obrigatório).</div>
-        <textarea class="form-control" id="rMotivo" style="min-height:120px;border-radius:14px;"></textarea>
+
+      <div class="modal-split-body flex-grow-1" style="min-height:0; overflow:hidden;">
+
+        <!-- LADO ESQUERDO: Visualizador de Anexo (Recibo/NFe) -->
+        <div class="split-left" style="overflow-y:auto;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <button class="btn btn-light btn-sm"><i class="bi bi-image"></i></button>
+            <div class="text-muted fw-bold small">4 / 4 &nbsp;&nbsp; <i class="bi bi-chevron-left"></i> &nbsp; <i
+                class="bi bi-chevron-right"></i></div>
+          </div>
+          <div class="pdf-viewer-fake flex-grow-1">
+            <div class="pdf-toolbar">
+              <div class="d-flex gap-3 align-items-center">
+                <i class="bi bi-list"></i>
+                <span>ab...</span>
+                <span>1 / 2</span>
+                <span class="px-2" style="border-left:1px solid #555; border-right:1px solid #555;">85% &nbsp; -
+                  +</span>
+              </div>
+              <div class="d-flex gap-3">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                <i class="bi bi-download"></i>
+                <i class="bi bi-printer"></i>
+              </div>
+            </div>
+            <div class="pdf-page d-flex align-items-center justify-content-center text-muted flex-column gap-2 mt-4"
+              style="background:#fff url('https://upload.wikimedia.org/wikipedia/commons/e/ec/Danfe-exemplo.jpg') no-repeat center center; background-size: cover;">
+              <!-- Fake NFe Bg -->
+            </div>
+          </div>
+        </div>
+
+        <!-- LADO DIREITO: Dados + Timeline -->
+        <div class="split-right" style="position:relative; border-left: 1px solid var(--saas-border);">
+
+          <!-- Card Top -->
+          <div
+            style="border:1px solid var(--saas-border); border-radius:16px; padding:1.5rem; background:var(--saas-surface); box-shadow:var(--saas-shadow-soft); margin-bottom:1.5rem;">
+            <div class="d-flex justify-content-between">
+              <div>
+                <span class="text-muted fw-bold text-uppercase" style="font-size:10px;">Estabelecimento</span>
+                <h4 class="fw-bold m-0" id="detAprovForn" style="letter-spacing:-.02em; color:var(--saas-text);">...
+                </h4>
+              </div>
+              <div class="text-end">
+                <span class="text-muted fw-bold text-uppercase" style="font-size:10px;">Valor da despesa</span>
+                <h4 class="fw-bold m-0" id="detAprovVal" style="letter-spacing:-.02em; color:var(--saas-text);">R$ 0,00
+                </h4>
+              </div>
+            </div>
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+              <span class="chip chip-green"><i class="bi bi-check-circle"></i> Dentro da política</span>
+              <span id="detAprovStatus"></span>
+            </div>
+          </div>
+
+          <!-- Lista de Detalhes -->
+          <div class="mb-4">
+            <div class="detail-row">
+              <div class="detail-label"><i class="bi bi-receipt text-muted border rounded p-1"></i> ID da despesa</div>
+              <div class="detail-value text-muted" id="detAprovId">EXP-000</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label"><i class="bi bi-folder2-open text-muted border rounded p-1"></i> Projeto</div>
+              <div class="detail-value text-muted">-</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label"><i class="bi bi-grid-1x2 text-muted border rounded p-1"></i> Categoria</div>
+              <div class="detail-value" id="detAprovCat">--</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label"><i class="bi bi-calendar3 text-muted border rounded p-1"></i> Data da despesa
+              </div>
+              <div class="detail-value" id="detAprovData">--</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label"><i class="bi bi-building text-muted border rounded p-1"></i> Centro de custo
+              </div>
+              <div class="detail-value" id="detAprovCC">--</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label"><i class="bi bi-calendar-check text-muted border rounded p-1"></i> Data
+                Vencimento</div>
+              <div class="detail-value" id="detAprovVenc">--</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label"><i class="bi bi-chat-left-text text-muted border rounded p-1"></i> Comentário
+              </div>
+              <div class="detail-value text-muted" id="detAprovObs">--</div>
+            </div>
+          </div>
+
+          <div style="width: 100%; height: 1px; background: var(--saas-border); margin: 2rem 0;"></div>
+
+          <h6 class="fw-bold mb-3">Status da prestação (Aprovadores)</h6>
+
+          <!-- Timeline de Aprovadores Baseado na Flash e PKG MEGAG_DESP_APROVADORES -->
+          <div class="timeline-aprovadores">
+
+            <!-- Nível 1 - Pendente/Em aprovação (Você/Gestor Direto) -->
+            <div class="timeline-node active d-flex align-items-start">
+              <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">①</span>
+              <div class="timeline-card focused flex-grow-1">
+                <span class="chip chip-primary mb-2" style="font-size:10px;">Em aprovação</span>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-small avatar-lg"><i class="bi bi-person"></i></div>
+                  <div>
+                    <div class="fw-bold text-dark" style="font-size:14px;">Michel Cardero</div>
+                    <div class="text-muted" style="font-size:12px;"><i class="bi bi-envelope"></i>
+                      michel.cardero@megag.com.br</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nível 2 - Controller -->
+            <div class="timeline-node d-flex align-items-start">
+              <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:20px;">②</span>
+              <div class="timeline-card flex-grow-1 pt-3">
+                <span class="chip chip-gray mb-2" style="font-size:10px;">Próximo a aprovar</span>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-small avatar-lg bg-light text-muted"><i class="bi bi-person"></i></div>
+                  <div>
+                    <div class="fw-bold text-dark" style="font-size:14px;">Nilson Pereira de Oliveira <span
+                        class="text-muted fw-normal" style="font-size:11px;">• Gerente Controladoria</span></div>
+                    <div class="text-muted" style="font-size:12px;"><i class="bi bi-envelope"></i>
+                      nilson.oliveira@megag.com.br</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nível 3 - Multiple (Ou) -->
+            <div class="timeline-node d-flex align-items-start">
+              <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:20px;">③</span>
+              <div class="timeline-card flex-grow-1 pt-3">
+                <span class="chip chip-gray mb-2" style="font-size:10px;">Próximo a aprovar</span>
+
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-small avatar-lg bg-light text-muted"><i class="bi bi-person"></i></div>
+                  <div>
+                    <div class="fw-bold text-dark" style="font-size:14px;">Juliana Aparecida Oliveira</div>
+                    <div class="text-muted" style="font-size:12px;"><i class="bi bi-envelope"></i> juliana@megag.com.br
+                    </div>
+                  </div>
+                </div>
+                <div class="text-center text-muted" style="font-size:10px; margin:-5px 0;">ou</div>
+                <div class="d-flex align-items-center gap-2 border-top pt-2">
+                  <div class="avatar-small avatar-lg bg-light text-muted"><i class="bi bi-person"></i></div>
+                  <div>
+                    <div class="fw-bold text-dark" style="font-size:14px;">Fabiana Silva <span
+                        class="text-muted fw-normal" style="font-size:11px;">• Coord.</span></div>
+                    <div class="text-muted" style="font-size:12px;"><i class="bi bi-envelope"></i>
+                      fabiana.silva@megag.com.br</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <div style="height: 100px;"></div> <!-- Spacer para botoes fixos -->
+
+        </div>
       </div>
-      <div class="modal-footer" style="border-top:1px solid var(--saas-border);">
-        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Fechar</button>
-        <button type="button" class="btn btn-danger rounded-pill px-4" onclick="confirmarReprovacao()">
-          <i class="bi bi-x-circle me-1"></i> Reprovar
-        </button>
+
+      <!-- FOOTER FIXO PARA APROVAÇÃO -->
+      <div class="modal-footer d-flex justify-content-between align-items-center"
+        style="border-top: 1px solid var(--saas-border); padding: 1.25rem 2rem; background: var(--saas-surface); position: absolute; bottom: 0; width: 100%;">
+        <div class="text-muted small">
+          Ao aprovar, esta despesa irá para o próximo nível da alçada ou ficará liberada para pagamento.
+        </div>
+        <div class="d-flex gap-3">
+          <button class="btn btn-danger rounded-pill px-4 fw-bold"
+            onclick="alert('Reprovando via PROCEDURE PRC_UPD_MEGAG_DESP_APROVACAO com status \'R\'')"><i
+              class="bi bi-x-circle me-1"></i> Reprovar</button>
+          <button class="btn-primary-custom rounded-pill px-5"
+            onclick="alert('Aprovando via PROCEDURE PRC_UPD_MEGAG_DESP_APROVACAO com status \'A\' ou encaminhando p/ próximo.')">Aprovar
+            <i class="bi bi-check2 ms-1"></i></button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-const escapeHtml = (str) => {
-  if (str === null || str === undefined) return '';
-  return String(str)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
-};
+  function abrirModalAprovacao(jsonEncoded) {
+    if (!jsonEncoded) return;
+    try {
+      let d = JSON.parse(decodeURIComponent(jsonEncoded));
+      document.getElementById('detAprovForn').innerText = d.FORNECEDOR || 'Despesa Corporativa';
+      document.getElementById('detAprovVal').innerText = parseFloat(d.VLRRATDESPESA || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-const formatMoney = (num) => {
-  if(num === null || num === undefined || num === '') return '-';
-  return parseFloat(num).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-};
+      let dateOnly = d.DTAINCLUSAO ? d.DTAINCLUSAO.split(' ')[0] : '';
+      document.getElementById('detAprovData').innerText = dateOnly ? new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR') : '--';
 
-const formatDate = (dateString) => {
-  if (!dateString) return '-';
-  if (String(dateString).includes('/')) return dateString;
-  const partes = String(dateString).split(' ')[0].split('-');
-  return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : dateString;
-};
+      document.getElementById('detAprovId').innerText = 'EXP-' + d.CODDESPESA;
+      document.getElementById('detAprovCC').innerText = d.CENTROCUSTO + ' | ' + (d.DESC_CC || 'Centro de Custo');
+      document.getElementById('detAprovObs').innerText = d.OBSERVACAO || '--';
 
-const renderStatus = (status) => {
-  if(status === 'P') return '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pendente</span>';
-  if(status === 'A') return '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Aprovada</span>';
-  if(status === 'R') return '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Reprovada</span>';
-  if(status === 'C') return '<span class="badge bg-secondary"><i class="bi bi-slash-circle me-1"></i>Cancelada</span>';
-  return escapeHtml(status);
-};
+      document.getElementById('detAprovCat').innerText = d.CODTIPODESPESA || '--'; // Pode expandir depois com NOME do tipo logado
 
-async function apiPost(payload){
-  const resp = await fetch('api/api_despesas.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  const json = await resp.json();
-  if(!json.sucesso) throw new Error(json.erro || 'Erro desconhecido');
-  return json;
-}
+      document.getElementById('detAprovStatus').innerHTML = parseStatusChip(d.STATUS);
 
-function updateMetrics(dados){
-  const total = dados.length;
-  let p=0,a=0,r=0;
-  dados.forEach(x => {
-    if(x.STATUS==='P') p++;
-    else if(x.STATUS==='A') a++;
-    else if(x.STATUS==='R') r++;
-  });
-  document.getElementById('mTotal').textContent = total;
-  document.getElementById('mP').textContent = p;
-  document.getElementById('mA').textContent = a;
-  document.getElementById('mR').textContent = r;
-}
-
-let currentStatus = '';
-
-(function initChips(){
-  const wrap = document.getElementById('chipsStatus');
-  if(!wrap) return;
-
-  wrap.addEventListener('click', (e) => {
-    const chip = e.target.closest('.saas-chip');
-    if(!chip) return;
-
-    currentStatus = chip.getAttribute('data-status') ?? '';
-    wrap.querySelectorAll('.saas-chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-
-    carregarFila();
-  });
-})();
-
-async function carregarFila(){
-  const tbody = document.getElementById('tbodyFila');
-  const loading = document.getElementById('loadingFila');
-  const empty = document.getElementById('emptyFila');
-
-  tbody.innerHTML = '';
-  loading.style.display = 'block';
-  empty.style.display = 'none';
-
-  try{
-    const busca = document.getElementById('fBusca').value || '';
-    const json = await apiPost({ action: 'list_approve', status: currentStatus, busca });
-    loading.style.display = 'none';
-
-    const dados = json.dados || [];
-    updateMetrics(dados);
-
-    if(!dados.length){
-      empty.style.display = 'block';
-      return;
+      new bootstrap.Modal('#modalDetalhesAprovacao').show();
+    } catch (e) {
+      console.error(e);
     }
-
-    dados.forEach(row => {
-      const tr = document.createElement('tr');
-
-      const canAct = row.STATUS === 'P';
-
-      tr.innerHTML = `
-        <td class="ps-3 text-muted small">#${row.ID}</td>
-        <td class="fw-bold">${escapeHtml(row.SOLICITANTE || '-')}</td>
-        <td>${formatDate(row.DATA_DESPESA)}</td>
-        <td class="text-end fw-bold">${formatMoney(row.VALOR)}</td>
-        <td>${escapeHtml(row.CATEGORIA || '-')}</td>
-        <td>${escapeHtml(row.CENTRO_CUSTO || '-')}</td>
-        <td class="text-center">${renderStatus(row.STATUS)}</td>
-        <td class="text-end pe-3">
-          <div class="d-inline-flex gap-1">
-            <button class="btn btn-sm btn-outline-secondary" onclick="ver(${row.ID})" title="Detalhe"><i class="bi bi-eye"></i></button>
-            <button class="btn btn-sm btn-success" ${canAct ? '' : 'disabled'} onclick="aprovar(${row.ID})" title="Aprovar"><i class="bi bi-check-lg"></i></button>
-            <button class="btn btn-sm btn-danger" ${canAct ? '' : 'disabled'} onclick="abrirReprovar(${row.ID})" title="Reprovar"><i class="bi bi-x-lg"></i></button>
-          </div>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-  }catch(e){
-    loading.style.display = 'none';
-    alert('Erro: ' + e.message);
   }
-}
 
-async function ver(id){
-  try{
-    const json = await apiPost({ action: 'detail', id });
-    const d = json.dados;
-    let txt = '';
-    txt += `Solicitante: ${d.SOLICITANTE}\n`;
-    txt += `Gestor: ${d.GESTOR}\n`;
-    txt += `Data: ${d.DATA_DESPESA}\n`;
-    txt += `Valor: ${formatMoney(d.VALOR)}\n`;
-    txt += `Categoria: ${d.CATEGORIA || '-'}\n`;
-    txt += `Centro de custo: ${d.CENTRO_CUSTO || '-'}\n`;
-    txt += `Fornecedor: ${d.FORNECEDOR || '-'}\n`;
-    txt += `Forma Pgto: ${d.FORMA_PGTO || '-'}\n`;
-    txt += `Status: ${d.STATUS}\n`;
-    txt += `Descrição: ${d.DESCRICAO || '-'}\n`;
-    if(d.MOTIVO_REPROVACAO){
-      txt += `\nMotivo reprovação:\n${d.MOTIVO_REPROVACAO}\n`;
-    }
+  function parseStatusChip(status) {
+    status = (status || 'LANCADO').toUpperCase();
+    if (status === 'LANCADO' || status === 'EM_APROVACAO' || status === 'APROVACAO') return '<span class="chip chip-primary">• Pendente Avaliação</span>';
+    if (status === 'APROVADO' || status === 'REEMBOLSADO') return '<span class="chip chip-green">• Aprovado</span>';
+    if (status === 'REJEITADO' || status === 'REPROVADO') return '<span class="chip" style="background: rgba(220,53,69,.1); color: #dc3545;">• Reprovado</span>';
+    return '<span class="chip chip-gray">• ' + status + '</span>';
+  }
 
-    const hist = json.historico || [];
-    if(hist.length){
-      txt += `\n--- Histórico ---\n`;
-      hist.forEach(h => {
-        txt += `[${h.DT_EVENTO}] ${h.USUARIO} | ${h.ACAO} | ${h.STATUS_ANTES || '-'} → ${h.STATUS_DEPOIS || '-'}\n`;
-        if(h.OBS) txt += `  Obs: ${h.OBS}\n`;
+  function getInitials(name) {
+    if (!name) return '??';
+    let parts = name.trim().split(' ');
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  async function loadApprovals() {
+    let tbody = document.getElementById('tbodyAprovacao');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-5"><i class="bi bi-hourglass-split me-2"></i> Atualizando fila...</td></tr>';
+
+    try {
+      let res = await fetch('api/api_despesas.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list_approvals' })
       });
+      let json = await res.json();
+
+      if (json.sucesso) {
+        let m = json.dados.metricas;
+        if (m) {
+          document.getElementById('metricPendentes').innerText = m.pendentes || 0;
+          document.getElementById('metricAprovadas').innerText = m.aprovadas_hoje || 0;
+          document.getElementById('metricReprovadas').innerText = m.reprovadas_hoje || 0;
+        }
+
+        let html = '';
+        if (json.dados.dados.length === 0) {
+          html = '<tr><td colspan="6" class="text-center text-muted py-5"><i class="bi bi-check-circle-fill text-success fs-4 d-block mb-2"></i> Sua fila está zerada! Bom trabalho.</td></tr>';
+        } else {
+          json.dados.dados.forEach(d => {
+            let dataStr = 'Data inválida';
+            if (d.DTAINCLUSAO) {
+              let dateOnly = d.DTAINCLUSAO.split(' ')[0];
+              dataStr = new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR');
+            }
+
+            let valFormat = parseFloat(d.VLRRATDESPESA || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            let nomeSol = d.NOME_SOLICITANTE || 'Usuário ' + d.USUARIOSOLICITANTE;
+            let iniciais = getInitials(nomeSol);
+
+            html += `
+                <tr onclick="abrirModalAprovacao('${encodeURIComponent(JSON.stringify(d))}')">
+                  <td class="ps-4">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar-small">${iniciais}</div>
+                      <div>
+                        <div class="fw-bold" style="font-size:13px; color: var(--saas-text);">${nomeSol}</div>
+                        <div class="text-muted" style="font-size:11px;">Solicitante</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-muted fw-bold">${dataStr}</td>
+                  <td>
+                    <div class="fw-bold" style="font-size:13px; letter-spacing: -0.01em; color: var(--saas-text);">${d.FORNECEDOR || 'Despesa Corporativa'}</div>
+                    <div class="text-muted" style="font-size:11.5px; margin-top: 2px;">${d.DESC_CC || 'Centro de Custo'} • EXP-${d.CODDESPESA}</div>
+                  </td>
+                  <td class="text-end fw-bold" style="font-size: 13.5px;">${valFormat}</td>
+                  <td class="text-center">${parseStatusChip(d.STATUS)}</td>
+                  <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-light p-1 px-3 d-inline-flex align-items-center gap-1"
+                      style="border-radius:8px; font-size:12px;" onclick="event.stopPropagation(); abrirModalAprovacao('${encodeURIComponent(JSON.stringify(d))}');">
+                      <i class="bi bi-box-arrow-in-right"></i> Abrir
+                    </button>
+                  </td>
+                </tr>
+                `;
+          });
+        }
+        tbody.innerHTML = html;
+      } else {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-5">Erro vindo da API: ' + json.erro + '</td></tr>';
+      }
+    } catch (e) {
+      console.error(e);
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-5">Erro de conexão com o servidor.</td></tr>';
     }
-
-    alert(txt);
-  }catch(e){
-    alert('Erro: ' + e.message);
   }
-}
 
-async function aprovar(id){
-  if(!confirm('Confirmar aprovação desta despesa?')) return;
-  try{
-    await apiPost({ action: 'approve', id });
-    await carregarFila();
-    alert('Despesa aprovada.');
-  }catch(e){
-    alert('Erro: ' + e.message);
-  }
-}
-
-function abrirReprovar(id){
-  document.getElementById('rId').value = id;
-  document.getElementById('rMotivo').value = '';
-  const modalEl = document.getElementById('rejectModal');
-  bootstrap.Modal.getOrCreateInstance(modalEl).show();
-}
-
-async function confirmarReprovacao(){
-  const id = document.getElementById('rId').value;
-  const motivo = document.getElementById('rMotivo').value.trim();
-  if(!motivo) return alert('Informe o motivo da reprovação.');
-
-  try{
-    await apiPost({ action: 'reject', id, motivo });
-    const modalEl = document.getElementById('rejectModal');
-    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
-    await carregarFila();
-    alert('Despesa reprovada.');
-  }catch(e){
-    alert('Erro: ' + e.message);
-  }
-}
-
-window.onload = () => {
-  currentStatus = 'P';
-  const wrap = document.getElementById('chipsStatus');
-  wrap.querySelectorAll('.saas-chip').forEach(c => {
-    c.classList.toggle('active', (c.getAttribute('data-status') ?? '') === 'P');
+  document.addEventListener("DOMContentLoaded", function () {
+    loadApprovals();
   });
-  carregarFila();
-};
 </script>

@@ -1,5 +1,5 @@
-// echo __FILE__; exit;
 <?php
+session_start();
 require_once __DIR__ . '/mg_api_bootstrap.php';
 
 mg_need_permission('MEGACLICK');
@@ -11,6 +11,17 @@ $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 $entity = $_GET['entity'] ?? null;
 
 header('Content-Type: application/json; charset=utf-8');
+
+// DEBUG: mostrar sessão (remover depois)
+if (isset($_GET['debug_session']) && $_GET['debug_session'] === '1') {
+    mg_json_success([
+        'session_loginid' => $_SESSION['loginid'] ?? null,
+        'session_usuario' => $_SESSION['usuario'] ?? null,
+        'session_user'    => $_SESSION['user'] ?? null,
+        'session_all_keys'=> array_keys($_SESSION ?? []),
+    ]);
+    exit;
+}
 
 try {
 
@@ -44,6 +55,14 @@ try {
             handle_files($conn, $PKG, $method);
             break;
 
+        case 'notif':
+            handle_notif($conn, $PKG, $method);
+            break;
+
+        case 'users':
+        handle_users($conn, $PKG, $method);
+        break;
+
         default:
             throw new Exception('Entity inválida.');
     }
@@ -73,6 +92,66 @@ function read_json_body(): array
     }
 
     return is_array($data) ? $data : [];
+}
+
+/**
+ * Resolve um "responsavel" (nome ou login) para LOGINID válido na consinco.ge_usuario.
+ * - Se input vazio -> retorna null
+ * - Tenta: loginid exato, depois nome exato, depois nome contém (primeiro)
+ * - Se não achar -> lança Exception
+ */
+function resolve_loginid(PDO $conn, ?string $user_in): ?string
+{
+    $v = trim((string)$user_in);
+    if ($v === '') return null;
+
+    // 1) LOGINID exato (case-insensitive)
+    $sql = "
+        SELECT loginid
+          FROM consinco.ge_usuario
+         WHERE UPPER(loginid) = UPPER(:v)
+           AND NVL(nivel, 0) <> 0
+           AND ROWNUM = 1
+    ";
+    $st = $conn->prepare($sql);
+    $st->bindParam(':v', $v);
+    $st->execute();
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    if ($row && !empty($row['LOGINID'])) return $row['LOGINID'];
+
+    // 2) NOME exato
+    $sql = "
+        SELECT loginid
+          FROM consinco.ge_usuario
+         WHERE UPPER(TRIM(nome)) = UPPER(:v)
+           AND NVL(nivel, 0) <> 0
+           AND ROWNUM = 1
+    ";
+    $st = $conn->prepare($sql);
+    $st->bindParam(':v', $v);
+    $st->execute();
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    if ($row && !empty($row['LOGINID'])) return $row['LOGINID'];
+
+    // 3) NOME contém (primeiro por nome)
+    $sql = "
+        SELECT loginid
+          FROM (
+                SELECT loginid
+                  FROM consinco.ge_usuario
+                 WHERE UPPER(nome) LIKE '%' || UPPER(:v) || '%'
+                   AND NVL(nivel, 0) <> 0
+                 ORDER BY nome
+               )
+         WHERE ROWNUM = 1
+    ";
+    $st = $conn->prepare($sql);
+    $st->bindParam(':v', $v);
+    $st->execute();
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    if ($row && !empty($row['LOGINID'])) return $row['LOGINID'];
+
+    throw new Exception('Responsável inválido/não encontrado: "' . $v . '"');
 }
 
 /**
@@ -389,7 +468,9 @@ function handle_tasks(PDO $conn, string $PKG, string $method)
         $status       = $body['status'] ?? 'TODO';
         $prioridade   = $body['prioridade'] ?? 'MED';
         $tags         = $body['tags'] ?? null;
-        $responsavel  = $body['responsavel'] ?? null;
+        $responsavel_in = $body['responsavel'] ?? null;
+        $responsavel = trim((string)$responsavel_in);
+        if ($responsavel === '') $responsavel = null;
         $data_entrega = $body['data_entrega'] ?? null;
         $criado_por   = $body['criado_por'] ?? null;
 
@@ -397,9 +478,13 @@ function handle_tasks(PDO $conn, string $PKG, string $method)
 
         $sql = "
             DECLARE
-                v_ok  VARCHAR2(1);
-                v_err VARCHAR2(4000);
-                v_id  NUMBER;
+                v_ok     VARCHAR2(1);
+                v_err    VARCHAR2(4000);
+                v_id     NUMBER;
+
+                v_ok2    VARCHAR2(1);
+                v_err2   VARCHAR2(4000);
+                v_notif  NUMBER;
             BEGIN
                 {$PKG}.proc_tasks_create(
                     p_list_id      => :p_list_id,
@@ -418,6 +503,24 @@ function handle_tasks(PDO $conn, string $PKG, string $method)
 
                 IF v_ok <> 'S' THEN
                     RAISE_APPLICATION_ERROR(-20000, v_err);
+                END IF;
+
+                -- ✅ cria notificação pro responsável (se tiver)
+                IF :p_responsavel IS NOT NULL THEN
+                    {$PKG}.proc_notif_create(
+                        p_usuario  => :p_responsavel,
+                        p_tipo     => 'TASK',
+                        p_titulo   => 'Nova task: ' || :p_titulo,
+                        p_mensagem => 'Você recebeu uma nova task (' || v_id || ').',
+                        p_task_id  => v_id,
+                        p_id       => v_notif,
+                        p_ok       => v_ok2,
+                        p_err      => v_err2
+                    );
+
+                    IF v_ok2 <> 'S' THEN
+                        RAISE_APPLICATION_ERROR(-20001, v_err2);
+                    END IF;
                 END IF;
 
                 :p_id := v_id;
@@ -963,4 +1066,310 @@ function handle_files(PDO $conn, string $PKG, string $method)
     }
 
     throw new Exception('Método não permitido para files.');
+}
+
+function handle_notif(PDO $conn, string $PKG, string $method)
+{
+    // LISTAR (GET) -> ?entity=notif&usuario=felipe
+    if ($method === 'GET') {
+
+        $usuario = trim((string)($_GET['usuario'] ?? ''));
+        if ($usuario === '') throw new Exception('Parâmetro "usuario" obrigatório.');
+
+        // 1) tenta via PKG (REF CURSOR)
+        try {
+            $sql = "BEGIN {$PKG}.proc_notif_list(
+                    p_usuario => :p_usuario,
+                    p_ok      => :p_ok,
+                    p_err     => :p_err,
+                    p_rc      => :p_rc
+                ); END;";
+
+            $stmt = $conn->prepare($sql);
+
+            $stmt->bindParam(':p_usuario', $usuario, PDO::PARAM_STR);
+
+            // ✅ buffers OUT (PDO_OCI)
+            $p_ok  = str_repeat(' ', 1);
+            $p_err = str_repeat(' ', 4000);
+
+            $stmt->bindParam(':p_ok',  $p_ok,  PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 1);
+            $stmt->bindParam(':p_err', $p_err, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 4000);
+
+            // ✅ cursor (PDO_OCI)
+            $p_rc = $conn->prepare("SELECT 1 FROM DUAL");
+            $stmt->bindParam(':p_rc', $p_rc, PDO::PARAM_STMT);
+
+            $stmt->execute();
+
+            if (trim($p_ok) !== 'S') {
+                throw new Exception(trim($p_err) ?: 'Erro ao listar notificações.');
+            }
+
+            $rows = [];
+            while ($row = $p_rc->fetch(PDO::FETCH_ASSOC)) {
+                $rows[] = $row;
+            }
+
+            mg_json_success($rows);
+            return;
+        } catch (Throwable $e) {
+            // 2) fallback seguro (SEM REFCURSOR) — evita ORA-01008 no PDO_OCI
+            $sql = "
+            SELECT
+                id,
+                usuario,
+                tipo,
+                titulo,
+                mensagem,
+                task_id,
+                lida,
+                criado_em,
+                lida_em
+            FROM megag_task_notificacoes
+            WHERE usuario = :usuario
+            ORDER BY lida ASC, criado_em DESC, id DESC
+        ";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':usuario', $usuario, PDO::PARAM_STR);
+            $stmt->execute();
+
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            mg_json_success($rows);
+            return;
+        }
+    }
+
+    // =====================================================
+    // CRIAR (POST) -> body JSON
+    // =====================================================
+    if ($method === 'POST') {
+
+        $body = read_json_body();
+
+        $usuario  = trim((string)($body['usuario'] ?? ''));
+        $tipo     = trim((string)($body['tipo'] ?? ''));
+        $titulo   = trim((string)($body['titulo'] ?? ''));
+        $mensagem = (string)($body['mensagem'] ?? '');
+        $task_id  = $body['task_id'] ?? null;
+
+        if ($usuario === '') throw new Exception('Campo "usuario" obrigatório.');
+        if ($tipo === '') throw new Exception('Campo "tipo" obrigatório.');
+        if ($titulo === '') throw new Exception('Campo "titulo" obrigatório.');
+        if (trim($mensagem) === '') throw new Exception('Campo "mensagem" obrigatório.');
+
+        $task_id_num = null;
+        if ($task_id !== null && $task_id !== '') {
+            $task_id_num = (int)$task_id;
+        }
+
+        $conn->beginTransaction();
+
+        $sql = "
+            DECLARE
+                v_ok  VARCHAR2(1);
+                v_err VARCHAR2(4000);
+                v_id  NUMBER;
+            BEGIN
+                {$PKG}.proc_notif_create(
+                    p_usuario  => :p_usuario,
+                    p_tipo     => :p_tipo,
+                    p_titulo   => :p_titulo,
+                    p_mensagem => :p_mensagem,
+                    p_task_id  => :p_task_id,
+                    p_id       => v_id,
+                    p_ok       => v_ok,
+                    p_err      => v_err
+                );
+
+                IF v_ok <> 'S' THEN
+                    RAISE_APPLICATION_ERROR(-20000, v_err);
+                END IF;
+
+                :p_id := v_id;
+            END;
+        ";
+
+        $stmt = $conn->prepare($sql);
+
+        $stmt->bindParam(':p_usuario', $usuario);
+        $stmt->bindParam(':p_tipo', $tipo);
+        $stmt->bindParam(':p_titulo', $titulo);
+        $stmt->bindValue(':p_mensagem', $mensagem, PDO::PARAM_STR);
+
+        // ✅ bind null/int correto
+        $stmt->bindValue(
+            ':p_task_id',
+            $task_id_num,
+            ($task_id_num === null ? PDO::PARAM_NULL : PDO::PARAM_INT)
+        );
+
+        $p_id = 0;
+        $stmt->bindParam(':p_id', $p_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 20);
+
+        $stmt->execute();
+        $conn->commit();
+
+        mg_json_success(['id' => (int)$p_id]);
+        return;
+    }
+
+    // =====================================================
+    // MARCAR 1 COMO LIDA -> PATCH ?entity=notif&action=read&id=123
+    // =====================================================
+    if ($method === 'PATCH' && (($_GET['action'] ?? '') === 'read')) {
+
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id <= 0) throw new Exception('Parâmetro "id" obrigatório.');
+
+        $conn->beginTransaction();
+
+        $sql = "BEGIN {$PKG}.proc_notif_mark_read(
+                    p_id => :p_id,
+                    p_ok => :p_ok,
+                    p_err => :p_err
+                ); END;";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':p_id', $id);
+
+        $p_ok  = str_repeat(' ', 1);
+        $p_err = str_repeat(' ', 4000);
+
+        $stmt->bindParam(':p_ok',  $p_ok,  PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 1);
+        $stmt->bindParam(':p_err', $p_err, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 4000);
+
+        $stmt->execute();
+
+        if (trim($p_ok) !== 'S') throw new Exception(trim($p_err) ?: 'Erro ao marcar como lida.');
+
+        $conn->commit();
+        mg_json_success(['ok' => true]);
+        return;
+    }
+
+    // =====================================================
+    // MARCAR TODAS COMO LIDAS -> PATCH ?entity=notif&action=read_all&usuario=felipe
+    // =====================================================
+    if ($method === 'PATCH' && (($_GET['action'] ?? '') === 'read_all')) {
+
+        $usuario = trim((string)($_GET['usuario'] ?? ''));
+        if ($usuario === '') throw new Exception('Parâmetro "usuario" obrigatório.');
+
+        $conn->beginTransaction();
+
+        $sql = "BEGIN {$PKG}.proc_notif_mark_all_read(
+                    p_usuario => :p_usuario,
+                    p_ok      => :p_ok,
+                    p_err     => :p_err
+                ); END;";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':p_usuario', $usuario);
+
+        $p_ok  = str_repeat(' ', 1);
+        $p_err = str_repeat(' ', 4000);
+
+        $stmt->bindParam(':p_ok',  $p_ok,  PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 1);
+        $stmt->bindParam(':p_err', $p_err, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 4000);
+
+        $stmt->execute();
+
+        if (trim($p_ok) !== 'S') throw new Exception(trim($p_err) ?: 'Erro ao marcar todas como lidas.');
+
+        $conn->commit();
+        mg_json_success(['ok' => true]);
+        return;
+    }
+
+    // =====================================================
+    // DELETE: excluir notificação
+    // DELETE /api/tasks.php?entity=notif&id=10&user=felipe
+    // =====================================================
+    if ($method === 'DELETE') {
+
+        $id   = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $user = $_GET['user'] ?? null;
+
+        if ($id <= 0) throw new Exception('Parâmetro "id" obrigatório.');
+        if (!$user) throw new Exception('Parâmetro "user" obrigatório.');
+
+        $conn->beginTransaction();
+
+        $sql = "BEGIN {$PKG}.proc_notif_delete(
+                    p_id   => :p_id,
+                    p_user => :p_user,
+                    p_ok   => :p_ok,
+                    p_err  => :p_err
+                ); END;";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':p_id', $id);
+        $stmt->bindParam(':p_user', $user);
+
+        $p_ok  = str_repeat(' ', 1);
+        $p_err = str_repeat(' ', 4000);
+
+        $stmt->bindParam(':p_ok',  $p_ok,  PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 1);
+        $stmt->bindParam(':p_err', $p_err, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 4000);
+
+        $stmt->execute();
+
+        if (trim($p_ok) !== 'S') {
+            throw new Exception(trim($p_err) ?: 'Erro ao excluir notificação.');
+        }
+
+        $conn->commit();
+        mg_json_success(['ok' => true]);
+        return;
+    }
+
+    throw new Exception('Método não permitido para notif.');
+}
+
+/**
+ * USERS (autocomplete)
+ * GET /importador/api/tasks.php?entity=users&q=fel&limit=15
+ * Retorna: [{nome, loginid}]
+ */
+function handle_users(PDO $conn, string $PKG, string $method)
+{
+    if ($method !== 'GET') {
+        throw new Exception('Método não permitido para users.');
+    }
+
+    $q = trim((string)($_GET['q'] ?? ''));
+    $limit = (int)($_GET['limit'] ?? 15);
+    if ($limit <= 0) $limit = 15;
+    if ($limit > 50) $limit = 50;
+
+    // se não digitou nada, não retorna tudo (evita carga)
+    if ($q === '' || mb_strlen($q) < 2) {
+        mg_json_success([]);
+        return;
+    }
+
+    $sql = "
+        SELECT nome, loginid
+          FROM (
+                SELECT nome, loginid
+                  FROM consinco.ge_usuario
+                 WHERE NVL(nivel, 0) <> 0
+                   AND (
+                        UPPER(loginid) LIKE '%' || UPPER(:q) || '%'
+                        OR UPPER(nome) LIKE '%' || UPPER(:q) || '%'
+                   )
+                 ORDER BY nome
+               )
+         WHERE ROWNUM <= :lim
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':q', $q, PDO::PARAM_STR);
+    $stmt->bindParam(':lim', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    mg_json_success($rows);
 }
