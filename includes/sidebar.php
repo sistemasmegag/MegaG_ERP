@@ -11,36 +11,6 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 // ============================
-// 1) Menu vem da sessão (carregado no login_action.php pela VIEW)
-// ============================
-$menuApps = $_SESSION['menu_apps'] ?? [];
-
-// Injeta módulos de teste (SaaS)
-$menuApps[] = [
-    'CODMODULO'       => 'SAAS_APPS',
-    'ORDEM_APLICACAO' => 1,
-    'APLICACAO'       => 'CRM & Leads',
-    'CODAPLICACAO'    => 'APP_CRM',
-    'LINKMENU'        => 'crm'
-];
-
-$menuApps[] = [
-    'CODMODULO'       => 'SAAS_APPS',
-    'ORDEM_APLICACAO' => 2,
-    'APLICACAO'       => 'Base de Conhecimento',
-    'CODAPLICACAO'    => 'APP_WIKI',
-    'LINKMENU'        => 'wiki'
-];
-
-$menuApps[] = [
-    'CODMODULO'       => 'SAAS_APPS',
-    'ORDEM_APLICACAO' => 3,
-    'APLICACAO'       => 'Recursos Humanos',
-    'CODAPLICACAO'    => 'APP_RH',
-    'LINKMENU'        => 'rh'
-];
-
-// ============================
 // 2) Agrupa por módulo (CODMODULO)
 // ============================
 $grupos = [];
