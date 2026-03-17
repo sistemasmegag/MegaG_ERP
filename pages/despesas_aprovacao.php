@@ -516,9 +516,10 @@ $paginaAtual = 'despesas_aprovacao';
                 <i class="bi bi-printer"></i>
               </div>
             </div>
-            <div class="pdf-page d-flex align-items-center justify-content-center text-muted flex-column gap-2 mt-4"
-              style="background:#fff url('https://upload.wikimedia.org/wikipedia/commons/e/ec/Danfe-exemplo.jpg') no-repeat center center; background-size: cover;">
-              <!-- Fake NFe Bg -->
+            <div id="visualizadorAnexoAprov" class="pdf-page d-flex align-items-center justify-content-center text-muted flex-column gap-2 mt-4"
+              style="background:#fff no-repeat center center; background-size: contain; width: 100%; height: 100%; min-height: 500px;">
+              <i class="bi bi-file-earmark-image fs-1 opacity-25"></i>
+              <span>Carregando documento...</span>
             </div>
           </div>
         </div>
@@ -588,68 +589,9 @@ $paginaAtual = 'despesas_aprovacao';
           <h6 class="fw-bold mb-3">Status da prestação (Aprovadores)</h6>
 
           <!-- Timeline de Aprovadores Baseado na Flash e PKG MEGAG_DESP_APROVADORES -->
-          <div class="timeline-aprovadores">
-
-            <!-- Nível 1 - Pendente/Em aprovação (Você/Gestor Direto) -->
-            <div class="timeline-node active d-flex align-items-start">
-              <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">①</span>
-              <div class="timeline-card focused flex-grow-1">
-                <span class="chip chip-primary mb-2" style="font-size:10px;">Em aprovação</span>
-                <div class="d-flex align-items-center gap-2">
-                  <div class="avatar-small avatar-lg"><i class="bi bi-person"></i></div>
-                  <div>
-                    <div class="fw-bold text-dark" style="font-size:14px;">Michel Cardero</div>
-                    <div class="text-muted" style="font-size:12px;"><i class="bi bi-envelope"></i>
-                      michel.cardero@megag.com.br</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Nível 2 - Controller -->
-            <div class="timeline-node d-flex align-items-start">
-              <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:20px;">②</span>
-              <div class="timeline-card flex-grow-1 pt-3">
-                <span class="chip chip-gray mb-2" style="font-size:10px;">Próximo a aprovar</span>
-                <div class="d-flex align-items-center gap-2">
-                  <div class="avatar-small avatar-lg bg-light text-muted"><i class="bi bi-person"></i></div>
-                  <div>
-                    <div class="fw-bold text-dark" style="font-size:14px;">Nilson Pereira de Oliveira <span
-                        class="text-muted fw-normal" style="font-size:11px;">• Gerente Controladoria</span></div>
-                    <div class="text-muted" style="font-size:12px;"><i class="bi bi-envelope"></i>
-                      nilson.oliveira@megag.com.br</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Nível 3 - Multiple (Ou) -->
-            <div class="timeline-node d-flex align-items-start">
-              <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:20px;">③</span>
-              <div class="timeline-card flex-grow-1 pt-3">
-                <span class="chip chip-gray mb-2" style="font-size:10px;">Próximo a aprovar</span>
-
-                <div class="d-flex align-items-center gap-2">
-                  <div class="avatar-small avatar-lg bg-light text-muted"><i class="bi bi-person"></i></div>
-                  <div>
-                    <div class="fw-bold text-dark" style="font-size:14px;">Juliana Aparecida Oliveira</div>
-                    <div class="text-muted" style="font-size:12px;"><i class="bi bi-envelope"></i> juliana@megag.com.br
-                    </div>
-                  </div>
-                </div>
-                <div class="text-center text-muted" style="font-size:10px; margin:-5px 0;">ou</div>
-                <div class="d-flex align-items-center gap-2 border-top pt-2">
-                  <div class="avatar-small avatar-lg bg-light text-muted"><i class="bi bi-person"></i></div>
-                  <div>
-                    <div class="fw-bold text-dark" style="font-size:14px;">Fabiana Silva <span
-                        class="text-muted fw-normal" style="font-size:11px;">• Coord.</span></div>
-                    <div class="text-muted" style="font-size:12px;"><i class="bi bi-envelope"></i>
-                      fabiana.silva@megag.com.br</div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
+          <div class="timeline-aprovadores" id="timelineAprov">
+             <div class="text-center py-3 text-muted"><i class="bi bi-hourglass-split"></i> Carregando histórico...</div>
+          </div>
 
           </div>
 
@@ -666,10 +608,10 @@ $paginaAtual = 'despesas_aprovacao';
         </div>
         <div class="d-flex gap-3">
           <button class="btn btn-danger rounded-pill px-4 fw-bold"
-            onclick="alert('Reprovando via PROCEDURE PRC_UPD_MEGAG_DESP_APROVACAO com status \'R\'')"><i
-              class="bi bi-x-circle me-1"></i> Reprovar</button>
+            id="btnReprovar"><i
+               class="bi bi-x-circle me-1"></i> Reprovar</button>
           <button class="btn-primary-custom rounded-pill px-5"
-            onclick="alert('Aprovando via PROCEDURE PRC_UPD_MEGAG_DESP_APROVACAO com status \'A\' ou encaminhando p/ próximo.')">Aprovar
+            id="btnAprovar">Aprovar
             <i class="bi bi-check2 ms-1"></i></button>
         </div>
       </div>
@@ -678,24 +620,138 @@ $paginaAtual = 'despesas_aprovacao';
 </div>
 
 <script>
+  let currentDespesaId = null;
+
+  async function loadHistory(id) {
+    const container = document.getElementById('timelineAprov');
+    if(!container) return;
+    try {
+        let res = await fetch('api/api_despesas.php', {
+            method: 'POST',
+            body: JSON.stringify({action: 'get_history', id: id})
+        });
+        let json = await res.json();
+        
+        if (json.sucesso && json.dados.length > 0) {
+            container.innerHTML = json.dados.map((h, i) => `
+                <div class="timeline-node ${h.STATUS === 'APROVADO' ? 'active' : ''} d-flex align-items-start mb-3">
+                  <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">${i+1}</span>
+                  <div class="timeline-card focused flex-grow-1 p-3 border rounded-3 bg-white">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                       <span class="chip ${h.STATUS === 'APROVADO' ? 'chip-green' : 'chip-red'}" style="font-size:10px;">${h.STATUS}</span>
+                       <span class="text-muted" style="font-size:10px;">${h.DTAACAO_FORMAT || h.DTAACAO}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar-small bg-primary text-white d-flex align-items-center justify-content-center" style="width:30px;height:30px;border-radius:50%;font-size:10px;">${getInitials(h.NOME_APROVADOR)}</div>
+                      <div class="flex-grow-1">
+                        <div class="fw-bold" style="font-size:13px;">${h.NOME_APROVADOR}</div>
+                        <div class="text-muted" style="font-size:11px;">Nível ${h.NIVEL_APROVACAO}</div>
+                      </div>
+                    </div>
+                    ${h.OBSERVACAO ? `<div class="mt-2 p-2 bg-light rounded small text-muted border-start border-primary border-4">${h.OBSERVACAO}</div>` : ''}
+                  </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<div class="alert alert-light border text-muted small"><i class="bi bi-info-circle me-1"></i> Nenhum histórico de aprovação registrado.</div>';
+        }
+    } catch(e) { container.innerHTML = 'Erro ao carregar histórico.'; }
+  }
+
+  async function atualizarStatus(status) {
+    if (!currentDespesaId) return;
+
+    const { value: obs } = await Swal.fire({
+      title: status === 'APROVADO' ? 'Aprovar Despesa' : 'Reprovar Despesa',
+      input: 'textarea',
+      inputLabel: 'Observação/Comentário',
+      inputPlaceholder: 'Digite aqui...',
+      showCancelButton: true,
+      confirmButtonText: 'Confirmar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (obs === undefined) return; // Cancelou
+
+    // No pacote PL/SQL o status de reprovação é comparado com 'REJEITADO'
+    const statusPkg = status === 'REPROVADO' ? 'REJEITADO' : status;
+
+    try {
+      let res = await fetch('api/api_despesas.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          action: 'update_approval',
+          id: currentDespesaId,
+          status: statusPkg,
+          pago: status === 'APROVADO' ? 'S' : 'N',
+          observacao: obs
+        })
+      });
+      let json = await res.json();
+      if (json.sucesso) {
+        Swal.fire('Sucesso', json.dados.mensagem, 'success');
+        bootstrap.Modal.getInstance(document.getElementById('modalDetalhesAprovacao')).hide();
+        loadApprovals();
+      } else {
+        Swal.fire('Erro', json.erro, 'error');
+      }
+    } catch (e) {
+      Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error');
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById('btnAprovar').onclick = () => atualizarStatus('APROVADO');
+    document.getElementById('btnReprovar').onclick = () => atualizarStatus('REPROVADO');
+    loadApprovals();
+  });
+
   function abrirModalAprovacao(jsonEncoded) {
     if (!jsonEncoded) return;
     try {
       let d = JSON.parse(decodeURIComponent(jsonEncoded));
+      currentDespesaId = d.CODDESPESA;
       document.getElementById('detAprovForn').innerText = d.FORNECEDOR || 'Despesa Corporativa';
       document.getElementById('detAprovVal').innerText = parseFloat(d.VLRRATDESPESA || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-      let dateOnly = d.DTAINCLUSAO ? d.DTAINCLUSAO.split(' ')[0] : '';
+      let dateOnly = d.DTAINCLUSAO_FORMAT ? d.DTAINCLUSAO_FORMAT.split(' ')[0] : (d.DTAINCLUSAO ? d.DTAINCLUSAO.split(' ')[0] : '');
       document.getElementById('detAprovData').innerText = dateOnly ? new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR') : '--';
 
       document.getElementById('detAprovId').innerText = 'EXP-' + d.CODDESPESA;
       document.getElementById('detAprovCC').innerText = d.CENTROCUSTO + ' | ' + (d.DESC_CC || 'Centro de Custo');
       document.getElementById('detAprovObs').innerText = d.OBSERVACAO || '--';
 
-      document.getElementById('detAprovCat').innerText = d.CODTIPODESPESA || '--'; // Pode expandir depois com NOME do tipo logado
+      document.getElementById('detAprovCat').innerText = d.DESCRICAO || '--'; 
 
       document.getElementById('detAprovStatus').innerHTML = parseStatusChip(d.STATUS);
 
+      // Tratar Anexo - Suporte a PDF e Imagens na Aprovação
+      let visualizador = document.getElementById('visualizadorAnexoAprov');
+      if (d.NOMEARQUIVO) {
+         let ext = d.NOMEARQUIVO.split('.').pop().toLowerCase();
+         let fileUrl = `uploads/${d.NOMEARQUIVO}`;
+         
+         if (ext === 'pdf') {
+            visualizador.style.backgroundImage = 'none';
+            visualizador.style.background = '#525659';
+            visualizador.innerHTML = `<iframe src="${fileUrl}" style="width:100%; height:100%; min-height:600px; border:none;"></iframe>`;
+         } else {
+            visualizador.style.backgroundImage = `url('${fileUrl}')`;
+            visualizador.style.backgroundSize = 'contain';
+            visualizador.style.backgroundRepeat = 'no-repeat';
+            visualizador.style.backgroundPosition = 'center';
+            visualizador.innerHTML = '';
+         }
+      } else {
+         visualizador.style.backgroundImage = 'none';
+         visualizador.style.background = '#f8f9fa';
+         visualizador.innerHTML = '<i class="bi bi-file-earmark-image fs-1 opacity-25"></i><span>Sem anexo</span>';
+      }
+
+      loadHistory(d.CODDESPESA);
       new bootstrap.Modal('#modalDetalhesAprovacao').show();
     } catch (e) {
       console.error(e);
@@ -743,7 +799,10 @@ $paginaAtual = 'despesas_aprovacao';
         } else {
           json.dados.dados.forEach(d => {
             let dataStr = 'Data inválida';
-            if (d.DTAINCLUSAO) {
+            if (d.DTAINCLUSAO_FORMAT) {
+               let dateOnly = d.DTAINCLUSAO_FORMAT.split(' ')[0];
+               dataStr = new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR');
+            } else if (d.DTAINCLUSAO) {
               let dateOnly = d.DTAINCLUSAO.split(' ')[0];
               dataStr = new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR');
             }

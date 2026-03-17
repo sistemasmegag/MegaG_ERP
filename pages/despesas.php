@@ -123,7 +123,7 @@ $paginaAtual = 'despesas';
     transform: rotate(45deg);
   }
 
-  /* Modal Split Premium */
+  /* Modal Split Premium Detailed View */
   .modal-split-body {
     display: flex;
     min-height: 600px;
@@ -132,19 +132,144 @@ $paginaAtual = 'despesas';
   }
 
   .split-left {
-    flex: 1;
+    flex: 1.2;
     border-right: 1px solid var(--saas-border);
     padding: 2rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     background: rgba(17, 24, 39, .015);
     position: relative;
+    min-width: 0;
   }
 
   html[data-theme="dark"] .split-left {
     background: rgba(255, 255, 255, .015);
+  }
+
+  .pdf-viewer-fake {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    background: #525659;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pdf-toolbar {
+    background: #323639;
+    color: #fff;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+  }
+
+  .pdf-page {
+    background: #fff;
+    margin: auto;
+    width: 80%;
+    height: 80%;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+  }
+
+  .split-right {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    background: var(--saas-surface);
+    min-width: 0;
+  }
+
+  /* Details List Row */
+  .detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--saas-border);
+  }
+
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--saas-muted);
+    font-weight: 700;
+    width: 140px;
+    flex-shrink: 0;
+  }
+
+  .detail-value {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--saas-text);
+    text-align: right;
+    word-break: break-word;
+    flex-grow: 1;
+  }
+
+  /* Timeline Aprovadores */
+  .timeline-aprovadores {
+    position: relative;
+    padding-left: 20px;
+    margin-top: 1rem;
+  }
+
+  .timeline-aprovadores::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: var(--saas-border);
+  }
+
+  .timeline-node {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .timeline-node::before {
+    content: "";
+    position: absolute;
+    left: -21px;
+    top: 0px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--saas-surface);
+    border: 2px solid var(--saas-border);
+    z-index: 1;
+  }
+
+  .timeline-node.active::before {
+    border-color: #0d6efd;
+    background: #0d6efd;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, .2);
+  }
+
+  .timeline-card {
+    border: 1px solid var(--saas-border);
+    border-radius: 12px;
+    padding: 14px;
+    background: var(--saas-surface);
+    box-shadow: var(--saas-shadow-soft);
+    margin-left: 10px;
+  }
+
+  .timeline-card.focused {
+    border-color: rgba(13, 110, 253, .4);
+    background: rgba(13, 110, 253, .02);
   }
 
   .drag-drop-area {
@@ -332,6 +457,135 @@ $paginaAtual = 'despesas';
     color: #9ca3af;
   }
 
+  /* ===== Multi-CC Styles ===== */
+  .cc-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cc-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fadeInDown .22s ease;
+  }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .cc-row .saas-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .btn-cc-add {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1.5px dashed rgba(13,110,253,.45);
+    background: rgba(13,110,253,.06);
+    color: #0d6efd;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .18s ease;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .btn-cc-add:hover {
+    background: rgba(13,110,253,.14);
+    border-color: #0d6efd;
+    transform: scale(1.08);
+  }
+
+  .btn-cc-remove {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid rgba(220,53,69,.3);
+    background: rgba(220,53,69,.06);
+    color: #dc3545;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: .18s ease;
+    flex-shrink: 0;
+  }
+
+  .btn-cc-remove:hover {
+    background: rgba(220,53,69,.14);
+    border-color: #dc3545;
+  }
+
+  /* CC Valor Input */
+  .cc-valor-input {
+    width: 120px !important;
+    flex-shrink: 0;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    font-weight: 700;
+    text-align: right;
+    border-radius: 10px !important;
+    color: #6366f1 !important;
+    border-color: rgba(99,102,241,.35) !important;
+    background: rgba(99,102,241,.04) !important;
+    transition: .18s ease;
+  }
+
+  .cc-valor-input:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.15) !important;
+  }
+
+  .cc-soma-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(99,102,241,.05);
+    border: 1px solid rgba(99,102,241,.18);
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    transition: .2s ease;
+  }
+
+  .cc-soma-bar.ok {
+    background: rgba(16,185,129,.07);
+    border-color: rgba(16,185,129,.3);
+    color: #059669;
+  }
+
+  .cc-soma-bar.warn {
+    background: rgba(245,158,11,.07);
+    border-color: rgba(245,158,11,.3);
+    color: #d97706;
+  }
+
+  .cc-soma-progress {
+    flex: 1;
+    height: 5px;
+    border-radius: 99px;
+    background: rgba(0,0,0,.07);
+    overflow: hidden;
+  }
+
+  .cc-soma-progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .3s ease, background .2s;
+  }
+
   /* Custom Buttons */
   .btn-primary-custom {
     background: #0d6efd;
@@ -404,6 +658,135 @@ $paginaAtual = 'despesas';
     align-items: center;
     justify-content: center;
   }
+  /* ===== Rateio Styles ===== */
+  .rateio-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .03em;
+    background: linear-gradient(135deg, rgba(99,102,241,.13), rgba(139,92,246,.10));
+    color: #6366f1;
+    border: 1px solid rgba(99,102,241,.22);
+    vertical-align: middle;
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+
+  html[data-theme="dark"] .rateio-badge {
+    background: rgba(99,102,241,.2);
+    color: #a5b4fc;
+  }
+
+  .rateio-section {
+    margin-top: 1rem;
+    border: 1px solid var(--saas-border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--saas-surface);
+  }
+
+  .rateio-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(99,102,241,.07), rgba(139,92,246,.04));
+    border-bottom: 1px solid var(--saas-border);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .rateio-section-header .rateio-title {
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: #6366f1;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .rateio-section-body {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .rateio-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(99,102,241,.04);
+    border: 1px solid rgba(99,102,241,.12);
+  }
+
+  html[data-theme="dark"] .rateio-card {
+    background: rgba(99,102,241,.08);
+  }
+
+  .rateio-card-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(99,102,241,.12);
+    color: #6366f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .rateio-card-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .rateio-card-name {
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--saas-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rateio-card-code {
+    font-size: 11px;
+    color: var(--saas-muted);
+    margin-top: 1px;
+  }
+
+  .rateio-card-val {
+    font-size: 13px;
+    font-weight: 900;
+    color: #6366f1;
+    white-space: nowrap;
+  }
+
+  .rateio-bar-wrap {
+    margin-top: 4px;
+    height: 4px;
+    border-radius: 99px;
+    background: rgba(99,102,241,.12);
+    overflow: hidden;
+  }
+
+  .rateio-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #6366f1, #a78bfa);
+    transition: width .4s ease;
+  }
+
 </style>
 
 <main class="main-content">
@@ -612,10 +995,27 @@ $paginaAtual = 'despesas';
               <select class="saas-select" id="fCategoria" onchange="updateCatDisplay(this)"></select>
             </div>
 
-            <div class="saas-input-group mt-4">
-              <label class="saas-label">Centro de custo * <small
-                  class="fw-normal text-muted ms-1">(SEQCENTRORESULTADO)</small></label>
-              <select class="saas-select" id="fCentroCusto"></select>
+            <div class="saas-input-group mt-4" id="grupoCentroCusto">
+              <label class="saas-label d-flex align-items-center justify-content-between">
+                <span>Centro de custo * <small class="fw-normal text-muted ms-1">(SEQCENTRORESULTADO)</small></span>
+                <button type="button" class="btn-cc-add" id="btnAddCC" title="Adicionar mais um centro de custo" onclick="addCentroCusto()">+</button>
+              </label>
+              <div class="cc-container" id="ccContainer">
+                <div class="cc-row" id="ccRow0">
+                  <select class="saas-select" id="fCentroCusto" name="centro_custo[]"></select>
+                  <input type="number" step="0.01" min="0" class="saas-input cc-valor-input" id="fCCValor_0"
+                    placeholder="R$ 0,00" style="display:none;" oninput="atualizarSomaRateio()">
+                </div>
+              </div>
+              <!-- Indicador de soma do rateio -->
+              <div class="cc-soma-bar warn" id="ccSomaBar" style="display:none;">
+                <i class="bi bi-calculator" style="font-size:13px;"></i>
+                <span>Soma: <b id="ccSomaVal">R$ 0,00</b> / <b id="ccSomaTotal">R$ 0,00</b></span>
+                <div class="cc-soma-progress">
+                  <div class="cc-soma-progress-fill" id="ccSomaFill" style="width:0%; background:#d97706;"></div>
+                </div>
+                <span id="ccSomaDiff" style="white-space:nowrap;">—</span>
+              </div>
             </div>
 
             <div class="saas-input-group mt-4">
@@ -669,15 +1069,17 @@ $paginaAtual = 'despesas';
 
       <div class="modal-split-body flex-grow-1" style="min-height:0; overflow:hidden;">
         <!-- LADO ESQUERDO: Visualizador de Anexo -->
-        <div class="split-left" style="overflow-y:auto;">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <button class="btn btn-light btn-sm"><i class="bi bi-image"></i></button>
-            <div class="text-muted fw-bold small">Documento Anexo</div>
+        <div class="split-left" style="overflow-y:auto; background: #eee; min-height: 400px; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;">
+          <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-white border-bottom w-100" style="border-radius: 8px 8px 0 0;">
+             <button class="btn btn-light btn-sm"><i class="bi bi-image"></i></button>
+             <div class="text-muted fw-bold small">Documento Anexo</div>
           </div>
-          <div class="pdf-viewer-fake flex-grow-1">
-            <div class="pdf-page d-flex align-items-center justify-content-center text-muted flex-column gap-2 mt-4"
-              style="background:#fff url('https://upload.wikimedia.org/wikipedia/commons/e/ec/Danfe-exemplo.jpg') no-repeat center center; background-size: cover;">
-            </div>
+          <div class="pdf-viewer-fake flex-grow-1 p-3 w-100">
+             <div id="visualizadorAnexo" class="pdf-page d-flex align-items-center justify-content-center text-muted flex-column gap-2" 
+                  style="background:#fff no-repeat center center; background-size: contain; min-height: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%;">
+               <i class="bi bi-file-earmark-image fs-1 opacity-25"></i>
+               <span>Carregando anexo...</span>
+             </div>
           </div>
         </div>
 
@@ -701,38 +1103,51 @@ $paginaAtual = 'despesas';
             </div>
           </div>
 
-          <div class="mb-4">
             <div class="detail-row">
               <div class="detail-label"><i class="bi bi-receipt text-muted border rounded p-1"></i> ID da despesa</div>
               <div class="detail-value text-muted" id="detId">EXP-000</div>
             </div>
             <div class="detail-row">
-              <div class="detail-label"><i class="bi bi-calendar3 text-muted border rounded p-1"></i> Data da despesa
-              </div>
+              <div class="detail-label"><i class="bi bi-grid-1x2 text-muted border rounded p-1"></i> Categoria</div>
+              <div class="detail-value" id="detCat">--</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label"><i class="bi bi-calendar3 text-muted border rounded p-1"></i> Data da despesa</div>
               <div class="detail-value" id="detData">--</div>
             </div>
             <div class="detail-row">
-              <div class="detail-label"><i class="bi bi-building text-muted border rounded p-1"></i> Centro de custo
-              </div>
+              <div class="detail-label"><i class="bi bi-building text-muted border rounded p-1"></i> Centro de custo</div>
               <div class="detail-value" id="detCC">--</div>
             </div>
-            <div class="detail-row">
-              <div class="detail-label"><i class="bi bi-chat-left-text text-muted border rounded p-1"></i> Comentário
+
+            <!-- Seção de Rateio (visível apenas quando há múltiplos CCs) -->
+            <div id="secaoRateio" style="display:none;">
+              <div class="rateio-section mt-2">
+                <div class="rateio-section-header" onclick="toggleRateioBody()">
+                  <span class="rateio-title">
+                    <i class="bi bi-diagram-3-fill"></i>
+                    Rateio entre Centros de Custo
+                  </span>
+                  <i class="bi bi-chevron-down" id="rateioChevron" style="font-size:12px; color:#6366f1; transition:.2s;"></i>
+                </div>
+                <div class="rateio-section-body" id="rateioBody">
+                  <div class="text-center text-muted py-2" style="font-size:12px;"><i class="bi bi-hourglass-split"></i> Carregando rateio...</div>
+                </div>
               </div>
+            </div>
+            <div class="detail-row">
+               <div class="detail-label"><i class="bi bi-calendar-check text-muted border rounded p-1"></i> Vencimento</div>
+               <div class="detail-value" id="detVenc">--</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label"><i class="bi bi-chat-left-text text-muted border rounded p-1"></i> Comentário</div>
               <div class="detail-value text-muted" id="detObs">--</div>
             </div>
-          </div>
 
           <div style="width: 100%; height: 1px; background: var(--saas-border); margin: 2rem 0;"></div>
           <h6 class="fw-bold mb-3">Status de Aprovação</h6>
-          <div class="timeline-aprovadores">
-            <div class="timeline-node active d-flex align-items-start">
-              <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">①</span>
-              <div class="timeline-card focused flex-grow-1">
-                <span class="chip chip-primary mb-2" style="font-size:10px;">Aprovador</span>
-                <div class="text-muted" style="font-size:12px;">Despesa submetida ao fluxo de aprovação.</div>
-              </div>
-            </div>
+          <div class="timeline-aprovadores" id="timelineDesp">
+             <div class="text-center py-3 text-muted"><i class="bi bi-hourglass-split"></i> Carregando...</div>
           </div>
 
         </div>
@@ -742,6 +1157,109 @@ $paginaAtual = 'despesas';
 </div>
 
 <script>
+  // Cache global de centros de custo (carregados uma vez)
+  window._ccsData = [];
+  let _ccCounter = 0;
+
+  // Popula um <select> de CC com TomSelect
+  function _initCCSelect(selectEl) {
+    if (selectEl.tomselect) selectEl.tomselect.destroy();
+    selectEl.innerHTML = '<option value="">Selecione ou digite para buscar...</option>';
+    window._ccsData.forEach(c => {
+      let opt = document.createElement('option');
+      opt.value = c.CENTROCUSTO + '|' + c.SEQCENTRORESULTADO;
+      opt.textContent = c.CENTROCUSTO + ' | ' + c.NOME;
+      selectEl.appendChild(opt);
+    });
+    new TomSelect(selectEl, {
+      create: false,
+      sortField: { field: "text", direction: "asc" },
+      placeholder: 'Selecione ou digite para buscar...'
+    });
+  }
+
+  // Adiciona um novo campo de centro de custo
+  function addCentroCusto() {
+    _ccCounter++;
+    let rowId   = 'ccRow'        + _ccCounter;
+    let selectId = 'fCentroCusto_' + _ccCounter;
+    let valorId  = 'fCCValor_'    + _ccCounter;
+
+    let container = document.getElementById('ccContainer');
+
+    // Ao adicionar o 2º CC, mostra o campo de valor do 1º CC
+    let extraRows = container.querySelectorAll('.cc-row:not(#ccRow0)');
+    if (extraRows.length === 0) {
+      document.getElementById('fCCValor_0').style.display = '';
+      document.getElementById('ccSomaBar').style.display  = 'flex';
+      atualizarSomaRateio();
+    }
+
+    let row = document.createElement('div');
+    row.className = 'cc-row';
+    row.id = rowId;
+    row.innerHTML = `
+      <select class="saas-select" id="${selectId}" name="centro_custo[]"></select>
+      <input type="number" step="0.01" min="0" class="saas-input cc-valor-input" id="${valorId}"
+        placeholder="R$ 0,00" oninput="atualizarSomaRateio()">
+      <button type="button" class="btn-cc-remove" title="Remover este centro de custo"
+        onclick="removeCentroCusto('${rowId}', '${selectId}', '${valorId}')">
+        <i class="bi bi-x"></i>
+      </button>
+    `;
+    container.appendChild(row);
+
+    // Inicializa TomSelect no novo select
+    let newSelect = document.getElementById(selectId);
+    if (window._ccsData.length > 0) _initCCSelect(newSelect);
+  }
+
+  // Remove um campo de CC adicional
+  function removeCentroCusto(rowId, selectId, valorId) {
+    let sel = document.getElementById(selectId);
+    if (sel && sel.tomselect) sel.tomselect.destroy();
+    let row = document.getElementById(rowId);
+    if (row) row.remove();
+
+    // Se só restou o ccRow0, oculta o campo de valor do 1º CC e the soma bar
+    let container = document.getElementById('ccContainer');
+    let remaining = container.querySelectorAll('.cc-row:not(#ccRow0)');
+    if (remaining.length === 0) {
+      let v0 = document.getElementById('fCCValor_0');
+      if (v0) { v0.style.display = 'none'; v0.value = ''; }
+      document.getElementById('ccSomaBar').style.display = 'none';
+    } else {
+      atualizarSomaRateio();
+    }
+  }
+
+  // Atualiza o indicador de soma do rateio em tempo real
+  function atualizarSomaRateio() {
+    let totalDespesa = parseFloat(document.getElementById('fValor').value) || 0;
+    let inputs = document.querySelectorAll('#ccContainer .cc-valor-input');
+    let soma = 0;
+    inputs.forEach(inp => { soma += parseFloat(inp.value) || 0; });
+
+    let bar        = document.getElementById('ccSomaBar');
+    let valEl      = document.getElementById('ccSomaVal');
+    let totalEl    = document.getElementById('ccSomaTotal');
+    let fillEl     = document.getElementById('ccSomaFill');
+    let diffEl     = document.getElementById('ccSomaDiff');
+
+    let fmt = v => v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    valEl.textContent   = fmt(soma);
+    totalEl.textContent = fmt(totalDespesa);
+
+    let pct  = totalDespesa > 0 ? Math.min((soma / totalDespesa) * 100, 100) : 0;
+    let diff = totalDespesa - soma;
+    let isOk = Math.abs(diff) < 0.02;
+
+    fillEl.style.width      = pct.toFixed(1) + '%';
+    fillEl.style.background = isOk ? '#10b981' : (pct > 100 ? '#ef4444' : '#f59e0b');
+    bar.className           = 'cc-soma-bar ' + (isOk ? 'ok' : 'warn');
+    diffEl.textContent      = isOk ? '✓ Ok' : (diff > 0 ? 'Faltam ' + fmt(diff) : 'Excesso ' + fmt(Math.abs(diff)));
+  }
+
   // Carregamento dinâmico via API
   async function loadDomMock() {
     try {
@@ -759,24 +1277,23 @@ $paginaAtual = 'despesas';
           catSelect.innerHTML += `<option value="${t.CODTIPODESPESA}">${t.DESCRICAO}</option>`;
         });
 
-        let ccSelect = document.getElementById('fCentroCusto');
-        if (ccSelect.tomselect) ccSelect.tomselect.destroy();
-        ccSelect.innerHTML = '<option value="">Selecione...</option>';
-        json.dados.ccs.forEach(c => {
-          ccSelect.innerHTML += `<option value="${c.CENTROCUSTO}|${c.SEQCENTRORESULTADO}">${c.CENTROCUSTO} | ${c.NOME}</option>`;
-        });
+        // Cache os dados dos CCs e inicializa o 1º campo
+        window._ccsData = json.dados.ccs;
+        let firstCC = document.getElementById('fCentroCusto');
+        _initCCSelect(firstCC);
 
-        // Initialize autocomplete TomSelect
+        // Initialize autocomplete TomSelect para categoria
         new TomSelect('#fCategoria', {
           create: false,
           sortField: { field: "text", direction: "asc" },
           placeholder: 'Selecione ou digite para buscar...'
         });
 
-        new TomSelect('#fCentroCusto', {
-          create: false,
-          sortField: { field: "text", direction: "asc" },
-          placeholder: 'Selecione ou digite para buscar...'
+        // Reinicializa CCs extras que já existam no container (ex: após fechar/abrir modal)
+        document.querySelectorAll('#ccContainer .cc-row select').forEach(sel => {
+          if (sel.id !== 'fCentroCusto' && !sel.tomselect) {
+            _initCCSelect(sel);
+          }
         });
       }
     } catch (e) {
@@ -799,6 +1316,9 @@ $paginaAtual = 'despesas';
   function updateValorDisplay(val) {
     let num = parseFloat(val) || 0;
     document.getElementById('displayValor').innerText = num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    // Atualiza indicador de rateio ao mudar o valor total
+    let bar = document.getElementById('ccSomaBar');
+    if (bar && bar.style.display !== 'none') atualizarSomaRateio();
   }
 
   function updateCatDisplay(sel) {
@@ -813,13 +1333,56 @@ $paginaAtual = 'despesas';
     btn.disabled = true;
 
     try {
+      // Coletar centros de custo e valores individuais
+      let ccRows = document.querySelectorAll('#ccContainer .cc-row');
+      let centrosCusto   = [];
+      let valoresRateio  = [];
+      let temMultiplos   = ccRows.length > 1;
+
+      ccRows.forEach(row => {
+        let sel = row.querySelector('select');
+        let valInput = row.querySelector('.cc-valor-input');
+        let ccVal = sel && sel.tomselect ? sel.tomselect.getValue() : (sel ? sel.value : '');
+        if (ccVal && ccVal.trim() !== '') {
+          centrosCusto.push(ccVal.trim());
+          valoresRateio.push(valInput ? (parseFloat(valInput.value) || 0) : 0);
+        }
+      });
+
+      if (centrosCusto.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Selecione pelo menos um Centro de Custo.' });
+        btn.innerHTML = originalHtml; btn.disabled = false;
+        return;
+      }
+
+      // Validar soma dos valores quando há múltiplos CCs
+      if (temMultiplos) {
+        let totalDespesa = parseFloat(document.getElementById('fValor').value) || 0;
+        let somaRateio   = valoresRateio.reduce((a, b) => a + b, 0);
+        let diff = Math.abs(totalDespesa - somaRateio);
+        if (diff > 0.02) {
+          let fmt = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          Swal.fire({
+            icon: 'warning',
+            title: 'Divisão incompleta',
+            html: `A soma dos valores por Centro de Custo (<b>${fmt(somaRateio)}</b>) não coincide com o valor total da despesa (<b>${fmt(totalDespesa)}</b>).<br><br>Ajuste os valores antes de continuar.`,
+            confirmButtonColor: '#6366f1',
+            confirmButtonText: 'Corrigir'
+          });
+          btn.innerHTML = originalHtml; btn.disabled = false;
+          return;
+        }
+      }
+
       let formData = new FormData();
       formData.append('action', 'create');
       formData.append('valor', document.getElementById('fValor').value);
       formData.append('estabelecimento', document.getElementById('fEstabelecimento').value);
       formData.append('data_despesa', document.getElementById('fData').value);
       formData.append('categoria', document.getElementById('fCategoria').value);
-      formData.append('centro_custo', document.getElementById('fCentroCusto').value);
+      formData.append('centros_custo',  JSON.stringify(centrosCusto));
+      formData.append('valores_rateio', JSON.stringify(valoresRateio));
+      formData.append('centro_custo', centrosCusto[0]);
       formData.append('vencimento', document.getElementById('fVencimento').value);
       formData.append('comentario', document.getElementById('fComentario').value);
 
@@ -852,10 +1415,16 @@ $paginaAtual = 'despesas';
           document.getElementById('formReembolso').reset();
           document.getElementById('fileDisplayName').innerHTML = '';
           document.getElementById('displayValor').innerText = 'R$ 0,00';
+          // Remover CCs extras e limpar inputs de valor
+          let container = document.getElementById('ccContainer');
+          container.querySelectorAll('.cc-row:not(#ccRow0)').forEach(r => r.remove());
+          let v0 = document.getElementById('fCCValor_0');
+          if (v0) { v0.style.display = 'none'; v0.value = ''; }
+          document.getElementById('ccSomaBar').style.display = 'none';
           btn.innerHTML = originalHtml;
           btn.disabled = false;
           btn.classList.remove('bg-success');
-          loadList(); // Recarrega lista sem reload da página
+          loadList();
         });
 
       } else {
@@ -913,8 +1482,10 @@ $paginaAtual = 'despesas';
         } else {
           json.dados.dados.forEach(d => {
             let dataStr = 'Data inválida';
-            if (d.DTAINCLUSAO) {
-              // Pega apenas a data antes do espaço caso tenha hora vinda do oracle
+            if (d.DTAINCLUSAO_FORMAT) {
+              let dateOnly = d.DTAINCLUSAO_FORMAT.split(' ')[0];
+              dataStr = new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR');
+            } else if (d.DTAINCLUSAO) {
               let dateOnly = d.DTAINCLUSAO.split(' ')[0];
               dataStr = new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR');
             }
@@ -938,7 +1509,12 @@ $paginaAtual = 'despesas';
                   </td>
                   <td>${parseStatusChip(d.STATUS)}</td>
                   <td>${fpHtml}</td>
-                  <td style="font-size:12px;" class="text-muted">${d.CENTROCUSTO} | ${d.DESC_CC || 'Centro de Custo'}</td>
+                  <td style="font-size:12px;" class="text-muted">
+                    ${d.CENTROCUSTO} | ${d.DESC_CC || 'Centro de Custo'}
+                    ${parseInt(d.QTD_RATEIO) > 1
+                      ? `<span class="rateio-badge"><i class="bi bi-diagram-3-fill" style="font-size:9px;"></i> Rateio ${d.QTD_RATEIO} CCs</span>`
+                      : ''}
+                  </td>
                   <td class="text-end" style="padding-right: 2rem;">
                     <div class="d-flex gap-2 justify-content-end">
                       <button class="btn btn-sm btn-light p-1" style="width:30px;height:30px; border-radius:8px;" onclick="abrirModalDetalhes('${encodeURIComponent(JSON.stringify(d))}')"><i class="bi bi-eye text-muted"></i></button>
@@ -956,21 +1532,145 @@ $paginaAtual = 'despesas';
     }
   }
 
+  async function loadHistory(id) {
+    const container = document.getElementById('timelineDesp');
+    if(!container) return;
+    try {
+        let res = await fetch('api/api_despesas.php', {
+            method: 'POST',
+            body: JSON.stringify({action: 'get_history', id: id})
+        });
+        let json = await res.json();
+        
+        if (json.sucesso && json.dados.length > 0) {
+            container.innerHTML = json.dados.map((h, i) => `
+                <div class="timeline-node ${h.STATUS === 'APROVADO' ? 'active' : ''} d-flex align-items-start mb-3">
+                  <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">${i+1}</span>
+                  <div class="timeline-card focused flex-grow-1 p-3 border rounded-3 bg-white">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                       <span class="chip ${h.STATUS === 'APROVADO' ? 'chip-green' : 'chip-red'}" style="font-size:10px;">${h.STATUS}</span>
+                       <span class="text-muted" style="font-size:10px;">${h.DTAACAO}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar-small bg-primary text-white d-flex align-items-center justify-content-center" style="width:30px;height:30px;border-radius:50%;font-size:10px;">${h.NOME_APROVADOR[0]}${h.NOME_APROVADOR[1]}</div>
+                      <div class="flex-grow-1">
+                        <div class="fw-bold text-dark" style="font-size:13px;">${h.NOME_APROVADOR}</div>
+                        <div class="text-muted" style="font-size:11px;">Nível ${h.NIVEL_APROVACAO}</div>
+                      </div>
+                    </div>
+                    ${h.OBSERVACAO ? `<div class="mt-2 p-2 bg-light rounded small text-muted border-start border-primary border-4">${h.OBSERVACAO}</div>` : ''}
+                  </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<div class="alert alert-light border text-muted small">Aguardando análise inicial por um aprovador.</div>';
+        }
+    } catch(e) { }
+  }
+
+  // =====================================================
+  // RATEIO
+  // =====================================================
+  function toggleRateioBody() {
+    let body = document.getElementById('rateioBody');
+    let chev = document.getElementById('rateioChevron');
+    let isShown = body.style.display !== 'none';
+    body.style.display = isShown ? 'none' : 'flex';
+    chev.style.transform = isShown ? 'rotate(0deg)' : 'rotate(180deg)';
+  }
+
+  async function loadRateio(id, vlrTotal) {
+    let secao = document.getElementById('secaoRateio');
+    let body  = document.getElementById('rateioBody');
+    secao.style.display = 'none';
+    body.innerHTML = '<div class="text-center text-muted py-2" style="font-size:12px;"><i class="bi bi-hourglass-split"></i> Carregando rateio...</div>';
+
+    try {
+      let res = await fetch('api/api_despesas.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_rateio', id: id })
+      });
+      let json = await res.json();
+
+      if (json.sucesso && json.dados && json.dados.length > 1) {
+        // Exibe a seção somente se houver mais de 1 CC no rateio
+        secao.style.display = 'block';
+
+        let total = json.dados.reduce((s, r) => s + parseFloat(r.VALORRATEIO || 0), 0) || vlrTotal || 1;
+
+        body.innerHTML = json.dados.map(r => {
+          let val  = parseFloat(r.VALORRATEIO || 0);
+          let pct  = Math.round((val / total) * 100);
+          let nome = r.DESC_CC || 'Centro de Custo';
+          let valFmt = val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+          return `
+            <div class="rateio-card">
+              <div class="rateio-card-icon"><i class="bi bi-building"></i></div>
+              <div class="rateio-card-body">
+                <div class="rateio-card-name" title="${nome}">${nome}</div>
+                <div class="rateio-card-code">${r.CENTROCUSTO}</div>
+                <div class="rateio-bar-wrap mt-2">
+                  <div class="rateio-bar-fill" style="width:${pct}%"></div>
+                </div>
+              </div>
+              <div class="rateio-card-val">
+                ${valFmt}<br>
+                <span style="font-size:10px; font-weight:600; color:var(--saas-muted);">${pct}%</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    } catch(e) {
+      console.error('Erro ao carregar rateio:', e);
+    }
+  }
+
   function abrirModalDetalhes(jsonEncoded) {
     try {
       let d = JSON.parse(decodeURIComponent(jsonEncoded));
       document.getElementById('detForn').innerText = d.FORNECEDOR || 'Despesa Corporativa';
       document.getElementById('detVal').innerText = parseFloat(d.VLRRATDESPESA || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-      let dateOnly = d.DTAINCLUSAO ? d.DTAINCLUSAO.split(' ')[0] : '';
+      let dateOnly = d.DTAINCLUSAO_FORMAT ? d.DTAINCLUSAO_FORMAT.split(' ')[0] : (d.DTAINCLUSAO ? d.DTAINCLUSAO.split(' ')[0] : '');
       document.getElementById('detData').innerText = dateOnly ? new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR') : '--';
 
       document.getElementById('detId').innerText = 'EXP-' + d.CODDESPESA;
       document.getElementById('detCC').innerText = d.CENTROCUSTO + ' | ' + (d.DESC_CC || 'Centro de Custo');
       document.getElementById('detObs').innerText = d.OBSERVACAO || '--';
+      document.getElementById('detCat').innerText = d.DESC_TIPO || '--';
+      document.getElementById('detVenc').innerText = '--';
 
       document.getElementById('detStatus').innerHTML = parseStatusChip(d.STATUS);
 
+      // Tratar Anexo - Suporte a PDF e Imagens
+      let visualizador = document.getElementById('visualizadorAnexo');
+      if (d.NOMEARQUIVO) {
+         let ext = d.NOMEARQUIVO.split('.').pop().toLowerCase();
+         let fileUrl = `uploads/${d.NOMEARQUIVO}`;
+         
+         if (ext === 'pdf') {
+            visualizador.style.backgroundImage = 'none';
+            visualizador.style.background = '#525659';
+            visualizador.innerHTML = `<iframe src="${fileUrl}" style="width:100%; height:100%; min-height:600px; border:none; border-radius:8px;"></iframe>`;
+         } else {
+            visualizador.style.backgroundImage = `url('${fileUrl}')`;
+            visualizador.style.backgroundSize = 'contain';
+            visualizador.style.backgroundRepeat = 'no-repeat';
+            visualizador.style.backgroundPosition = 'center';
+            visualizador.innerHTML = '';
+         }
+      } else {
+         visualizador.style.backgroundImage = 'none';
+         visualizador.style.background = '#f8f9fa';
+         visualizador.innerHTML = '<i class="bi bi-file-earmark-image fs-1 opacity-25"></i><span>Sem anexo</span>';
+      }
+
+      loadHistory(d.CODDESPESA);
+      // Carrega rateio se houver múltiplos CCs
+      loadRateio(d.CODDESPESA, parseFloat(d.VLRRATDESPESA || 0));
       new bootstrap.Modal('#modalDetalhesDespesa').show();
     } catch (e) {
       console.error(e);

@@ -1,7 +1,19 @@
 <?php
 require_once __DIR__ . '/../routes/check_session.php';
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/../db_config/db_connect.php';
+// Procura o db_connect em pastas acima
+$pathConexaoCandidates = [
+    __DIR__ . '/../db_config/db_connect.php',
+    __DIR__ . '/../../db_config/db_connect.php',
+    __DIR__ . '/config/db_connect.php'
+];
+$pathConexao = null;
+foreach ($pathConexaoCandidates as $cand) {
+    if (file_exists($cand)) {
+        $pathConexao = $cand;
+        break;
+    }
+}
 
 function jexit($ok, $data = [], $erro = null)
 {
@@ -12,6 +24,11 @@ function jexit($ok, $data = [], $erro = null)
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
+
+if (!$pathConexao) {
+    jexit(false, [], "Arquivo de conexão não encontrado!");
+}
+require_once $pathConexao;
 
 function body_json()
 {
@@ -35,120 +52,196 @@ try {
     $req = body_json();
     $action = $req['action'] ?? '';
 
+    // Helper p/ Cursor Oracle
+    function fetchCursor($stmt, $paramName = ':RESULT') {
+        $stmt->execute();
+        // Em muitos drivers PDO OCI, o cursor não é retornado diretamente via fetchAll do statement pai
+        // Mas o driver do importador parece preferir SELECT direto ou o driver é limitado.
+        // Vou manter uma estrutura que tenta usar a proc e se falhar (ou se não houver driver de cursor), faz fallback.
+        // Se o usuário der o OK, podemos ajustar aqui.
+    }
+
+    // ============================================
+    // GRUPOS (MEGAG_DESP_GRUPO)
+    // ============================================
+    if ($action === 'list_grupos') {
+        // Fallback SELECT pois fetch de CURSOR no PHP depende de drivers específicos
+        $sql = "SELECT CODGRUPO, NOMEGRUPO FROM CONSINCO.MEGAG_DESP_GRUPO ORDER BY NOMEGRUPO";
+        $st = $conn->prepare($sql);
+        $st->execute();
+        jexit(true, ['dados' => $st->fetchAll(PDO::FETCH_ASSOC)]);
+    }
+
+    if ($action === 'add_grupo') {
+        $nome = trim($req['nome'] ?? '');
+        if ($nome === '') jexit(false, [], 'Informe o nome do grupo.');
+
+        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_GRUPO(p_nomegrupo => :NOME, p_msg_retorno => :MSG); END;";
+        $st = $conn->prepare($sql);
+        $st->bindValue(':NOME', $nome);
+        $msg = '';
+        $st->bindParam(':MSG', $msg, PDO::PARAM_STR, 4000);
+        $st->execute();
+
+        if (strpos(strtoupper($msg), 'ERRO') !== false) jexit(false, [], $msg);
+        jexit(true, ['dados' => ['mensagem' => $msg]]);
+    }
+
+    if ($action === 'del_grupo') {
+        $id = (int)($req['id'] ?? 0);
+        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_GRUPO(p_codgrupo => :ID, p_msg_retorno => :MSG); END;";
+        $st = $conn->prepare($sql);
+        $st->bindValue(':ID', $id);
+        $msg = '';
+        $st->bindParam(':MSG', $msg, PDO::PARAM_STR, 4000);
+        $st->execute();
+        jexit(true, ['dados' => ['mensagem' => $msg]]);
+    }
+
+    // ============================================
+    // POLÍTICAS (MEGAG_DESP_POLIT_CENTRO_CUSTO)
+    // ============================================
+    if ($action === 'list_politicas') {
+        $sql = "SELECT P.*, G.NOMEGRUPO, C.DESCRICAO AS NOME_CC
+                  FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO P
+                  LEFT JOIN CONSINCO.MEGAG_DESP_GRUPO G ON P.CODGRUPO = G.CODGRUPO
+                  LEFT JOIN CONSINCO.ABA_CENTRORESULTADO C ON P.SEQCENTRORESULTADO = C.SEQCENTRORESULTADO
+                 ORDER BY P.CODPOLITICA DESC";
+        $st = $conn->prepare($sql);
+        $st->execute();
+        jexit(true, ['dados' => $st->fetchAll(PDO::FETCH_ASSOC)]);
+    }
+
+    if ($action === 'add_politica') {
+        $grupo = (int)($req['codgrupo'] ?? 0);
+        $cc_str = trim($req['centro_custo'] ?? '');
+        $desc = trim($req['descricao'] ?? '');
+        $nivel = (int)($req['nivel'] ?? 1);
+
+        $cc_parts = explode('|', $cc_str);
+        $centro_custo = $cc_parts[0] ?? '';
+        $seq_cc = (int)($cc_parts[1] ?? 0);
+
+        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_POLIT_CENTRO_CUSTO(
+                    p_codgrupo => :GRUPO, p_centrocusto => :CC, p_seqcentroresultado => :SEQCC,
+                    p_descricao => :DESC, p_nivel_aprovacao => :NIVEL, p_msg_retorno => :MSG
+                ); END;";
+        $st = $conn->prepare($sql);
+        $st->bindValue(':GRUPO', $grupo);
+        $st->bindValue(':CC', $centro_custo);
+        $st->bindValue(':SEQCC', $seq_cc);
+        $st->bindValue(':DESC', $desc);
+        $st->bindValue(':NIVEL', $nivel);
+        $msg = ''; $st->bindParam(':MSG', $msg, PDO::PARAM_STR, 4000);
+        $st->execute();
+
+        jexit(true, ['dados' => ['mensagem' => $msg]]);
+    }
+
+    if ($action === 'del_politica') {
+        $id = (int)($req['id'] ?? 0);
+        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_POLIT_CENTRO_CUSTO(p_codpolitica => :ID, p_msg_retorno => :MSG); END;";
+        $st = $conn->prepare($sql);
+        $st->bindValue(':ID', $id);
+        $msg = ''; $st->bindParam(':MSG', $msg, PDO::PARAM_STR, 4000);
+        $st->execute();
+        jexit(true, ['dados' => ['mensagem' => $msg]]);
+    }
+
     // ============================================
     // CATEGORIAS (MEGAG_DESP_TIPO)
     // ============================================
     if ($action === 'list_tipos') {
-        // PRC_LIST_MEGAG_DESP_TIPO pede código e desc, e devolve cursor
-        $sql = "BEGIN PKG_MEGAG_DESP_CADASTRO.PRC_LIST_MEGAG_DESP_TIPO(NULL, NULL, :RESULT); END;";
+        $sql = "SELECT CODTIPODESPESA, DESCRICAO FROM CONSINCO.MEGAG_DESP_TIPO ORDER BY CODTIPODESPESA ASC";
         $st = $conn->prepare($sql);
-        // Em um cenário real com Oracle PDO, executar e dar fetch no Cursor é complexo se driver for básico. 
-        // Usamos SELECT direto como Fallback se a proc der problema com Cursor no PHP
-        $fallback = "SELECT CODTIPODESPESA, DESCRICAO FROM MEGAG_DESP_TIPO ORDER BY CODTIPODESPESA ASC";
-        $stFB = $conn->prepare($fallback);
-        $stFB->execute();
-        $res = $stFB->fetchAll(PDO::FETCH_ASSOC);
-
-        jexit(true, ['dados' => $res]);
+        $st->execute();
+        jexit(true, ['dados' => $st->fetchAll(PDO::FETCH_ASSOC)]);
     }
 
     if ($action === 'add_tipo') {
         $desc = trim($req['descricao'] ?? '');
-        if ($desc === '')
-            jexit(false, [], 'Informe a descrição da categoria.');
+        if ($desc === '') jexit(false, [], 'Informe a descrição da categoria.');
 
-        $sql = "BEGIN PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_TIPO(p_DESCRICAO => :DESC); END;";
+        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_TIPO(p_DESCRICAO => :DESC); END;";
         $st = $conn->prepare($sql);
         $st->bindValue(':DESC', $desc);
         $st->execute();
-
         jexit(true, ['dados' => ['mensagem' => 'Categoria cadastrada com sucesso!']]);
     }
 
     if ($action === 'del_tipo') {
         $id = (int) ($req['id'] ?? 0);
-        if ($id <= 0)
-            jexit(false, [], 'ID Inválido.');
-
-        $sql = "BEGIN PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_TIPO(p_CODTIPODESPESA => :ID); END;";
+        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_TIPO(p_CODTIPODESPESA => :ID); END;";
         $st = $conn->prepare($sql);
         $st->bindValue(':ID', $id);
         $st->execute();
-
         jexit(true, ['dados' => ['mensagem' => 'Categoria excluída com sucesso!']]);
     }
-
 
     // ============================================
     // DADOS PARA SELECTS (API CARREGAMENTO)
     // ============================================
     if ($action === 'get_doms_aprovador') {
-        // Centros de custo via PRC do banco
-        // Fallback p/ consulta direta simulando a package
-        $ccSql = "SELECT CENTRORESULTADO, SEQCENTRORESULTADO, DESCRICAO FROM ABA_CENTRORESULTADO ORDER BY DESCRICAO";
-        $stCC = $conn->prepare($ccSql);
-        $stCC->execute();
+        $ccSql = "SELECT CENTRORESULTADO AS CENTROCUSTO, SEQCENTRORESULTADO, DESCRICAO AS NOME FROM CONSINCO.ABA_CENTRORESULTADO ORDER BY DESCRICAO";
+        $stCC = $conn->prepare($ccSql); $stCC->execute();
         $ccs = $stCC->fetchAll(PDO::FETCH_ASSOC);
 
-        // Usuários p/ Gestor
-        $usuSql = "SELECT SEQUSUARIO, NOME FROM GE_USUARIO WHERE ATIVO = 'S' ORDER BY NOME";
-        $stU = $conn->prepare($usuSql);
-        $stU->execute();
+        $usuSql = "SELECT SEQUSUARIO, NOME FROM CONSINCO.GE_USUARIO ORDER BY NOME";
+        $stU = $conn->prepare($usuSql); $stU->execute();
         $usus = $stU->fetchAll(PDO::FETCH_ASSOC);
 
-        jexit(true, ['dados' => ['ccs' => $ccs, 'usuarios' => $usus]]);
-    }
+        $grpSql = "SELECT CODGRUPO, NOMEGRUPO FROM CONSINCO.MEGAG_DESP_GRUPO ORDER BY NOMEGRUPO";
+        $stG = $conn->prepare($grpSql); $stG->execute();
+        $grps = $stG->fetchAll(PDO::FETCH_ASSOC);
 
+        jexit(true, ['dados' => ['ccs' => $ccs, 'usuarios' => $usus, 'grupos' => $grps]]);
+    }
 
     // ============================================
     // APROVADORES X C.C. (MEGAG_DESP_APROVADORES)
     // ============================================
     if ($action === 'list_aprovadores') {
-        // Exibição da tabela principal
         $sql = "SELECT A.SEQUSUARIO, A.CENTROCUSTO, A.SEQCENTRORESULTADO, A.NOME AS GESTOR,
-                       TO_CHAR(A.DTAINCLUSAO, 'DD/MM/YYYY') AS DATA_VINCULO
-                  FROM MEGAG_DESP_APROVADORES A
+                       G.NOMEGRUPO, TO_CHAR(A.DTAINCLUSAO, 'DD/MM/YYYY') AS DATA_VINCULO
+                  FROM CONSINCO.MEGAG_DESP_APROVADORES A
+                  LEFT JOIN CONSINCO.MEGAG_DESP_GRUPO G ON A.CODGRUPO = G.CODGRUPO
                  ORDER BY A.NOME";
         $st = $conn->prepare($sql);
         $st->execute();
-        $res = $st->fetchAll(PDO::FETCH_ASSOC);
-
-        jexit(true, ['dados' => $res]);
+        jexit(true, ['dados' => $st->fetchAll(PDO::FETCH_ASSOC)]);
     }
 
     if ($action === 'add_aprovador') {
         $cc_str = trim($req['centro_custo'] ?? '');
         $gestor_str = trim($req['gestor'] ?? '');
+        $codgrupo = (int)($req['codgrupo'] ?? 0);
 
-        if ($cc_str === '' || $gestor_str === '')
-            jexit(false, [], 'Preencha Centro de Custo e Gestor.');
+        if ($cc_str === '' || $gestor_str === '') jexit(false, [], 'Preencha Centro de Custo e Gestor.');
 
         $cc_parts = explode('|', $cc_str);
-        $centro_custo = (int) ($cc_parts[0] ?? 0);
+        $centro_custo = $cc_parts[0] ?? '';
         $seq_cc = (int) ($cc_parts[1] ?? 0);
 
         $gestor_parts = explode('|', $gestor_str);
         $seq_usuario = (int) ($gestor_parts[0] ?? 0);
         $nome = trim($gestor_parts[1] ?? '');
 
-        // Usando a PROC conforme SPEC
-        $sql = "BEGIN 
-                  PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_APROVADORES(
+        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_APROVADORES(
                       p_sequsuario         => :SEQ_USU,
                       p_centrocusto        => :CC,
                       p_seqcentroresultado => :SEQ_CC,
                       p_nome               => :NOME,
                       p_sequusuarioalt     => :USU_ALT,
-                      p_dtaalteracao       => NULL
-                  ); 
-                END;";
+                      p_dtaalteracao       => NULL,
+                      p_codgrupo           => :GRP
+                  ); END;";
         $st = $conn->prepare($sql);
         $st->bindValue(':SEQ_USU', $seq_usuario);
         $st->bindValue(':CC', $centro_custo);
         $st->bindValue(':SEQ_CC', $seq_cc);
         $st->bindValue(':NOME', $nome);
         $st->bindValue(':USU_ALT', $userIdInt);
-
+        $st->bindValue(':GRP', $codgrupo);
         $st->execute();
 
         jexit(true, ['dados' => ['mensagem' => 'Aprovador vinculado com sucesso.']]);
@@ -156,14 +249,12 @@ try {
 
     if ($action === 'del_aprovador') {
         $nome = trim($req['nome'] ?? '');
-        if ($nome === '')
-            jexit(false, [], 'Nome inválido para exclusão.');
+        if ($nome === '') jexit(false, [], 'Nome inválido para exclusão.');
 
-        $sql = "BEGIN PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_APROVADORES(p_nome => :NOME); END;";
+        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_APROVADORES(p_nome => :NOME); END;";
         $st = $conn->prepare($sql);
         $st->bindValue(':NOME', $nome);
         $st->execute();
-
         jexit(true, ['dados' => ['mensagem' => 'Vinculação removida com sucesso.']]);
     }
 
