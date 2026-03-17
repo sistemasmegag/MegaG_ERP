@@ -116,15 +116,85 @@ if (!function_exists('renderMenuIconFromModulo')) {
     function renderMenuIconFromModulo($codModulo)
     {
         $codModulo = strtoupper(trim((string)$codModulo));
-
         if ($codModulo === 'SAAS_APPS') return '<i class="bi bi-rocket-takeoff-fill me-2"></i>';
-        if ($codModulo === 'UPLOAD') return '<i class="bi bi-cloud-arrow-up-fill me-2"></i>';
-        if ($codModulo === 'DADOS')  return '<i class="bi bi-table me-2"></i>';
-        if ($codModulo === 'ADMIN')  return '<i class="bi bi-shield-lock-fill me-2"></i>';
-
+        if ($codModulo === 'UPLOAD')    return '<i class="bi bi-cloud-arrow-up-fill me-2"></i>';
+        if ($codModulo === 'DADOS')     return '<i class="bi bi-table me-2"></i>';
+        if ($codModulo === 'ADMIN')     return '<i class="bi bi-shield-lock-fill me-2"></i>';
         return '<i class="bi bi-dot me-2"></i>';
     }
 }
+
+// ============================
+// 3.1) Icone por item (CODAPLICACAO ou LINKMENU)
+// ============================
+if (!function_exists('renderMenuIcon')) {
+    function renderMenuIcon($codModulo, $codApp = '', $linkMenu = '')
+    {
+        $codApp   = strtoupper(trim((string)$codApp));
+        $linkMenu = strtolower(trim((string)$linkMenu));
+        $mod      = strtoupper(trim((string)$codModulo));
+
+        // Mapa por CODAPLICACAO
+        $mapaCodApp = [
+            'APP_DESP_LANC'      => 'bi-cash-coin',
+            'APP_DESP_GERENCIAR' => 'bi-check2-square',
+            'APP_DESP_CONFIG'    => 'bi-gear-fill',
+            'APP_DESP'           => 'bi-receipt',
+            'APP_TAREFAS'        => 'bi-kanban-fill',
+            'APP_TASK'           => 'bi-kanban-fill',
+            'APP_CRM'            => 'bi-diagram-3-fill',
+            'APP_WIKI'           => 'bi-book-half',
+            'APP_RH'             => 'bi-person-badge-fill',
+            'APP_USUARIOS'       => 'bi-shield-lock-fill',
+            'APP_CONFIG'         => 'bi-gear-fill',
+            'APP_CHAMADOS'       => 'bi-headset',
+        ];
+        if ($codApp !== '' && isset($mapaCodApp[$codApp])) {
+            return '<i class="bi ' . $mapaCodApp[$codApp] . ' me-2"></i>';
+        }
+
+        // Mapa por LINKMENU (slug normalizado)
+        $mapaLink = [
+            'despesas'            => 'bi-cash-coin',
+            'gerenciar_despesas'  => 'bi-check2-square',
+            'config_despesas'     => 'bi-gear-fill',
+            'tarefas'             => 'bi-kanban-fill',
+            'tarefas_criar_task'  => 'bi-plus-square-fill',
+            'tarefas_detalhes'    => 'bi-card-text',
+            'cargas'              => 'bi-box-arrow-in-down',
+            'comissoes'           => 'bi-currency-dollar',
+            'imp_metas'           => 'bi-bullseye',
+            'imp_metas_gap'       => 'bi-graph-down-arrow',
+            'imp_metas_faixa'     => 'bi-bar-chart-steps',
+            'imp_metas_perspec'   => 'bi-binoculars-fill',
+            'imp_bi_metas'        => 'bi-bar-chart-fill',
+            'bi_metas_perspect'   => 'bi-eye-fill',
+            'imp_tabvdaprodraio'  => 'bi-rulers',
+            'imp_lanctocomissao'  => 'bi-cash-stack',
+            'dados_visualizar'    => 'bi-table',
+            'chamados'            => 'bi-headset',
+            'usuarios'            => 'bi-people-fill',
+            'crm'                 => 'bi-diagram-3-fill',
+            'wiki'                => 'bi-book-half',
+            'rh'                  => 'bi-person-badge-fill',
+        ];
+        if ($linkMenu !== '' && isset($mapaLink[$linkMenu])) {
+            return '<i class="bi ' . $mapaLink[$linkMenu] . ' me-2"></i>';
+        }
+
+        // Fallback por modulo
+        if ($mod === 'SAAS_APPS') return '<i class="bi bi-rocket-takeoff-fill me-2"></i>';
+        if ($mod === 'UPLOAD')    return '<i class="bi bi-cloud-arrow-up-fill me-2"></i>';
+        if ($mod === 'DADOS')     return '<i class="bi bi-table me-2"></i>';
+        if ($mod === 'ADMIN')     return '<i class="bi bi-shield-lock-fill me-2"></i>';
+        if ($mod === 'DESPESAS')  return '<i class="bi bi-receipt me-2"></i>';
+        if ($mod === 'TAREFAS')   return '<i class="bi bi-kanban-fill me-2"></i>';
+        if ($mod === 'CHAMADOS')  return '<i class="bi bi-headset me-2"></i>';
+
+        return '<i class="bi bi-circle me-2" style="font-size:9px; opacity:.5;"></i>';
+    }
+}
+
 
 // ============================
 // 3.1) Normaliza LINKMENU vindo da VIEW
@@ -228,7 +298,7 @@ if (!function_exists('normalizeLinkMenu')) {
                 data-bs-target="#<?php echo $collapseId; ?>"
                 aria-expanded="<?php echo $hasActive ? 'true' : 'false'; ?>"
                 style="cursor:pointer; user-select:none;">
-                <?php echo renderMenuIconFromModulo($codModulo); ?>
+                <?php echo renderMenuIcon($codModulo); ?>
                 <?php echo htmlspecialchars($tituloModulo, ENT_QUOTES, 'UTF-8'); ?>
             </div>
 
@@ -259,8 +329,8 @@ if (!function_exists('normalizeLinkMenu')) {
                         // Active
                         $isActive = ($paginaAtual === $linkMenu);
 
-                        // Ícone (fallback por módulo)
-                        $icoHtml = renderMenuIconFromModulo($codModulo);
+                        // Ícone por item (prioridade: codApp > linkMenu > modulo)
+                        $icoHtml = renderMenuIcon($codModulo, $codApp, $linkMenu);
 
                         $classes = 'nav-link';
                         if ($isActive) $classes .= ' active';
