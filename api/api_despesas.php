@@ -68,7 +68,40 @@ try {
         $stCc->execute();
         $ccs = $stCc->fetchAll(PDO::FETCH_ASSOC);
 
+        // Lista equivalente ao que a PRC_LIST_MEGAG_DESP_FORNECEDOR expõe.
+        // Mantido em SELECT direto para evitar limitações de REF CURSOR no driver PDO OCI.
+
         jexit(true, ['dados' => ['tipos' => $tipos, 'ccs' => $ccs]]);
+    }
+
+    if ($action === 'search_fornecedores') {
+        $q = trim((string)($req['q'] ?? ''));
+        if (strlen($q) < 2) {
+            jexit(true, ['dados' => []]);
+        }
+
+        $sql = "
+            SELECT *
+              FROM (
+                    SELECT SEQPESSOA,
+                           NOMERAZAO,
+                           FANTASIA
+                      FROM CONSINCO.GE_PESSOA
+                     WHERE TRIM(NOMERAZAO) IS NOT NULL
+                       AND (
+                            UPPER(NOMERAZAO) LIKE UPPER(:Q)
+                            OR UPPER(NVL(FANTASIA, '')) LIKE UPPER(:Q)
+                       )
+                     ORDER BY NOMERAZAO
+              )
+             WHERE ROWNUM <= 30
+        ";
+        $stForn = $conn->prepare($sql);
+        $like = '%' . $q . '%';
+        $stForn->bindValue(':Q', $like);
+        $stForn->execute();
+
+        jexit(true, ['dados' => $stForn->fetchAll(PDO::FETCH_ASSOC)]);
     }
 
     // ============================================
@@ -140,13 +173,14 @@ try {
                       p_PAGO                 => 'N',
                       p_VLRRATDESPESA        => :VLR,
                       p_FORNECEDOR           => :FORN,
-                      p_CODARQUIVO           => NULL,
                       p_NOMEARQUIVO          => :NOMEARQ,
                       p_OBSERVACAO           => :OBS,
                       p_SEQCENTRORESULTADO   => :SEQCC,
                       p_CENTROCUSTO          => :CC,
                       p_STATUS               => 'LANCADO',
                       p_DESCRICAOCENTROCUSTO => NULL,
+                      p_DTAVENCIMENTO        => TO_DATE(:VENC, 'YYYY-MM-DD'),
+                      p_DTADESPESA           => TO_DATE(:DTADESP, 'YYYY-MM-DD'),
                       p_CODDESPESA_OUT       => :OUT_ID
                   );
                 END;";
@@ -160,6 +194,8 @@ try {
         $st->bindValue(':OBS', $obs);
         $st->bindValue(':SEQCC', $seq_cc);
         $st->bindValue(':CC', $centro_custo);
+        $st->bindValue(':VENC', $venc !== '' ? $venc : null);
+        $st->bindValue(':DTADESP', $data !== '' ? $data : null);
 
         $out_id = 0;
         $st->bindParam(':OUT_ID', $out_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
@@ -289,9 +325,12 @@ try {
 
         $sql = "SELECT D.*, 
                        TO_CHAR(D.DTAINCLUSAO, 'YYYY-MM-DD HH24:MI:SS') as DTAINCLUSAO_FORMAT,
+                       TO_CHAR(D.DTAVENCIMENTO, 'YYYY-MM-DD') as DTAVENCIMENTO_FORMAT,
+                       TO_CHAR(D.DTADESPESA, 'YYYY-MM-DD') as DTADESPESA_FORMAT,
                        (SELECT DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.CENTRORESULTADO = D.CENTROCUSTO AND ROWNUM = 1) as DESC_CC,
                        (SELECT DESCRICAO FROM CONSINCO.MEGAG_DESP_TIPO T WHERE T.CODTIPODESPESA = D.CODTIPODESPESA AND ROWNUM = 1) as DESC_TIPO,
-                       (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_RATEIO R WHERE R.CODDESPESA = D.CODDESPESA) as QTD_RATEIO
+                       (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_RATEIO R WHERE R.CODDESPESA = D.CODDESPESA) as QTD_RATEIO,
+                       (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_APROVACAO A WHERE A.CODDESPESA = D.CODDESPESA) as QTD_APROVACOES
                 FROM CONSINCO.MEGAG_DESP D 
                 WHERE D.USUARIOSOLICITANTE = :U 
                 ORDER BY D.DTAINCLUSAO DESC";
@@ -310,8 +349,15 @@ try {
             'reprovado_valor' => 0
         ];
 
-        foreach ($rows as $r) {
+        foreach ($rows as &$r) {
             $v = (float) $r['VLRRATDESPESA'];
+            
+            // LÓGICA DE STATUS DINÂMICO:
+            // Se o status é 'LANCADO' mas já existem registros de aprovação, consideramos 'EM_APROVACAO'
+            if ($r['STATUS'] === 'LANCADO' && (int)$r['QTD_APROVACOES'] > 0) {
+                $r['STATUS'] = 'EM_APROVACAO';
+            }
+
             $metrics['total']++;
             $metrics['total_valor'] += $v;
 
@@ -334,24 +380,68 @@ try {
     if ($action === 'list_approvals') {
         $usr_aprovador = is_numeric($user) ? (int) $user : 1;
 
-        $sql = "SELECT desp.*,
-                       TO_CHAR(desp.DTAINCLUSAO, 'YYYY-MM-DD HH24:MI:SS') as DTAINCLUSAO_FORMAT,
-                       (SELECT NOME FROM CONSINCO.GE_USUARIO U WHERE U.SEQUSUARIO = desp.USUARIOSOLICITANTE AND ROWNUM = 1) as NOME_SOLICITANTE,
-                       (SELECT DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.CENTRORESULTADO = desp.CENTROCUSTO AND ROWNUM = 1) as DESC_CC,
-                       (SELECT DESCRICAO FROM CONSINCO.MEGAG_DESP_TIPO T WHERE T.CODTIPODESPESA = desp.CODTIPODESPESA AND ROWNUM = 1) as DESC_TIPO
+        // Query direta adaptada da lógica da procedure para evitar erros de cursor no driver pdo_oci
+        $sql = "WITH CC_DESPESA AS (
+                    SELECT CODDESPESA, CENTROCUSTO FROM CONSINCO.MEGAG_DESP_RATEIO
+                    UNION
+                    SELECT d.CODDESPESA, d.CENTROCUSTO FROM CONSINCO.MEGAG_DESP d
+                    WHERE NOT EXISTS (SELECT 1 FROM CONSINCO.MEGAG_DESP_RATEIO r WHERE r.CODDESPESA = d.CODDESPESA)
+                )
+                SELECT DISTINCT 
+                       desp.*,
+                       (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_APROVACAO A WHERE A.CODDESPESA = desp.CODDESPESA) as QTD_APROVACOES
                 FROM CONSINCO.MEGAG_DESP desp
-                INNER JOIN CONSINCO.MEGAG_DESP_APROVADORES aprov
-                   ON desp.CENTROCUSTO = aprov.CENTROCUSTO
-                WHERE (desp.STATUS = 'LANCADO' OR desp.STATUS = 'EM_APROVACAO' OR desp.STATUS = 'APROVACAO')
-                  AND aprov.SEQUSUARIO = :U
+                JOIN CC_DESPESA cc ON cc.CODDESPESA = desp.CODDESPESA
+                JOIN CONSINCO.MEGAG_DESP_APROVADORES a ON a.CENTROCUSTO = cc.CENTROCUSTO
+                JOIN CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p ON p.CODGRUPO = a.CODGRUPO AND p.CENTROCUSTO = a.CENTROCUSTO
+                WHERE desp.STATUS NOT IN ('APROVADO', 'REJEITADO')
+                  AND desp.USUARIOSOLICITANTE <> :U
+                  AND a.SEQUSUARIO = :U
+                  AND NOT EXISTS (
+                      SELECT 1 FROM CONSINCO.MEGAG_DESP_APROVACAO apr
+                      WHERE apr.CODDESPESA = cc.CODDESPESA
+                        AND apr.CENTROCUSTO = cc.CENTROCUSTO
+                        AND apr.USUARIOAPROVADOR = :U
+                  )
+                  AND p.NIVEL_APROVACAO <= (
+                      SELECT NVL(MAX(apr_nivel.NIVEL_APROVACAO), 0) + 1
+                      FROM CONSINCO.MEGAG_DESP_APROVACAO apr_nivel
+                      WHERE apr_nivel.CODDESPESA = cc.CODDESPESA
+                        AND apr_nivel.CENTROCUSTO = cc.CENTROCUSTO
+                        AND apr_nivel.STATUS = 'APROVADO'
+                  )
                 ORDER BY desp.DTAINCLUSAO DESC";
+        
         $st = $conn->prepare($sql);
         $st->execute([':U' => $usr_aprovador]);
         $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
+        // Enriquecer os dados com descrições (conforme esperado pelo frontend)
+        foreach ($rows as &$r) {
+            // Lógica de Status Dinâmico
+            if ($r['STATUS'] === 'LANCADO' && (int)$r['QTD_APROVACOES'] > 0) {
+                $r['STATUS'] = 'EM_APROVACAO';
+            }
+
+            $r['DTAINCLUSAO_FORMAT'] = date('Y-m-d H:i:s', strtotime($r['DTAINCLUSAO'] ?? ''));
+            
+            // Busca nome do solicitante
+            $stUsr = $conn->prepare("SELECT NOME FROM CONSINCO.GE_USUARIO WHERE SEQUSUARIO = :S AND ROWNUM = 1");
+            $stUsr->execute([':S' => $r['USUARIOSOLICITANTE']]);
+            $r['NOME_SOLICITANTE'] = $stUsr->fetchColumn() ?: 'Usuário';
+
+            // Busca descrição do Centro de Custo
+            $stCc = $conn->prepare("SELECT DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO WHERE CENTRORESULTADO = :C AND ROWNUM = 1");
+            $stCc->execute([':C' => $r['CENTROCUSTO']]);
+            $r['DESC_CC'] = $stCc->fetchColumn() ?: 'Centro de Custo';
+
+            // A categoria já vem no campo DESCRICAO da tabela MEGAG_DESP
+            $r['DESC_TIPO'] = $r['DESCRICAO'];
+        }
+
         $metrics = [
             'pendentes' => count($rows),
-            'aprovadas_hoje' => 0, // Mockado por enquanto até haver log de ação
+            'aprovadas_hoje' => 0, 
             'reprovadas_hoje' => 0
         ];
 
@@ -397,19 +487,30 @@ try {
     // TRILHA DE AUDITORIA / HISTÓRICO (ITEM 3)
     // ============================================
     if ($action === 'get_history') {
-        $id = (int)($req['id'] ?? 0);
-        if (!$id) jexit(false, [], 'ID inválido.');
+        // Tenta pegar o ID de todas as fontes possíveis para garantir
+        $id_desp = 0;
+        if (isset($req['id'])) $id_desp = (int)$req['id'];
+        elseif (isset($_POST['id'])) $id_desp = (int)$_POST['id'];
+        elseif (isset($_GET['id'])) $id_desp = (int)$_GET['id'];
+
+        if (!$id_desp) jexit(false, [], 'ID da despesa não fornecido.');
 
         $sql = "SELECT H.*, 
+                       H.CODDESPESA,
+                       H.NIVEL_APROVACAO,
                        TO_CHAR(H.DTAACAO, 'DD/MM/YYYY HH24:MI') as DTAACAO_FORMAT,
                        U.NOME as NOME_APROVADOR
                   FROM CONSINCO.MEGAG_DESP_APROVACAO H
                   LEFT JOIN CONSINCO.GE_USUARIO U ON H.USUARIOAPROVADOR = U.SEQUSUARIO
                  WHERE H.CODDESPESA = :ID
                  ORDER BY H.DTAACAO ASC";
+        
         $st = $conn->prepare($sql);
-        $st->execute([':ID' => $id]);
-        jexit(true, ['dados' => $st->fetchAll(PDO::FETCH_ASSOC)]);
+        $st->execute([':ID' => $id_desp]);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Retorna sucesso com os dados encontrados
+        jexit(true, ['dados' => $rows]);
     }
 
     // ============================================

@@ -164,6 +164,11 @@ Módulo completo de **solicitação, acompanhamento e aprovação hierárquica**
   - Categoria (`MEGAG_DESP_TIPO`) com **TomSelect autocomplete**
   - Centro de Custo com **TomSelect autocomplete**
   - Data de Vencimento, Comentário/Observação
+- Campo **Estabelecimento / Fornecedor** com **autocomplete sob demanda**
+  - consulta assÃ­ncrona enquanto o usuÃ¡rio digita
+  - busca iniciada a partir de 2 letras
+  - limite de resultados por requisiÃ§Ã£o para evitar travamento com muitos fornecedores
+  - mensagens de apoio no campo: digite mais caracteres, buscando, nenhum resultado
 - Upload de anexo com preview (PDF = iframe, imagem = background)
 
 #### 🏢 Múltiplos Centros de Custo (Rateio)
@@ -201,6 +206,7 @@ Módulo completo de **solicitação, acompanhamento e aprovação hierárquica**
 | Action | Descrição |
 |---|---|
 | `get_doms` | Lista categorias e centros de custo para os selects |
+| `search_fornecedores` | Busca fornecedores sob demanda para o autocomplete de estabelecimento |
 | `create` | Cria nova despesa + arquivo + rateio por CC |
 | `list_mine` | Lista despesas do usuário logado com métricas e contagem de rateio |
 | `list_approvals` | Lista despesas pendentes de aprovação para o aprovador logado |
@@ -225,6 +231,7 @@ Procedures principais:
 | `PRC_UPD_MEGAG_DESP_APROVACAO` | Aprovar / Rejeitar despesa com hierarquia |
 | `PRC_LIST_MEGAG_DESP_APROVACAO` | Listar despesas pendentes de aprovação |
 | `PRC_INS_MEGAG_DESP_ARQUIVO` | Inserir arquivo na tabela de anexos |
+| `PRC_LIST_MEGAG_DESP_FORNECEDOR` | Base de fornecedores utilizada no campo Estabelecimento |
 | `PRC_LIST_MEGAG_DESP_CENTRO_CUSTO` | Listar centros de custo disponíveis |
 
 ---

@@ -383,6 +383,10 @@ $paginaAtual = 'despesas_config';
                 <select class="saas-select" id="fPolCc"></select>
             </div>
             <div class="mb-3">
+                <label class="saas-label">Usuário da Política</label>
+                <select class="saas-select" id="fPolUsuario"></select>
+            </div>
+            <div class="mb-3">
                 <label class="saas-label">Descrição da Regra</label>
                 <input type="text" class="saas-input" id="fPolDesc" placeholder="Ex: Aprovação Nível 1">
             </div>
@@ -391,7 +395,7 @@ $paginaAtual = 'despesas_config';
                 <input type="number" class="saas-input" id="fPolNivel" value="1">
             </div>`;
             new bootstrap.Modal('#modalConfig').show();
-            carregarDomDinamico('fPolCc', 'fPolGrupo');
+            carregarDomDinamico('fPolCc', 'fPolGrupo', 'fPolUsuario');
         } else if (tipo === 'Aprovador') {
             title.innerHTML = 'Vincular Aprovador';
             body.innerHTML = `
@@ -492,6 +496,7 @@ $paginaAtual = 'despesas_config';
                 action: 'add_politica',
                 codgrupo: document.getElementById('fPolGrupo').value,
                 centro_custo: document.getElementById('fPolCc').value,
+                sequsuario: (document.getElementById('fPolUsuario').value.split('|')[0] || ''),
                 descricao: document.getElementById('fPolDesc').value,
                 nivel: document.getElementById('fPolNivel').value
             };
@@ -556,7 +561,7 @@ $paginaAtual = 'despesas_config';
                 tb.innerHTML = j.dados?.map(p => `<tr>
                     <td class="text-muted small">${p.NOMEGRUPO || 'N/A'}</td>
                     <td><div class="fw-bold">${p.CENTROCUSTO}</div><div class="small text-muted">${p.NOME_CC}</div></td>
-                    <td>${p.DESCRICAO}</td>
+                    <td><div>${p.DESCRICAO}</div><div class="small text-muted">${p.NOME_USUARIO || 'Usuário não identificado'}</div></td>
                     <td><span class="badge bg-light text-dark">Nível ${p.NIVEL_APROVACAO}</span></td>
                     <td><button class="btn btn-sm btn-light p-1 text-danger" onclick="deletarItem('del_politica', ${p.CODPOLITICA})"><i class="bi bi-trash"></i></button></td>
                 </tr>`).join('') || '';

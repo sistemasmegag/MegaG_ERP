@@ -127,13 +127,15 @@ PROCEDURE PRC_INS_MEGAG_DESP(
     p_PAGO                	IN MEGAG_DESP.PAGO%TYPE DEFAULT 'N',
     p_VLRRATDESPESA       	IN MEGAG_DESP.VLRRATDESPESA%TYPE,
     p_FORNECEDOR          	IN MEGAG_DESP.FORNECEDOR%TYPE DEFAULT NULL,
-	p_CODARQUIVO 			IN MEGAG_DESP.CODARQUIVO%TYPE DEFAULT NULL,
     p_NOMEARQUIVO         	IN MEGAG_DESP.NOMEARQUIVO%TYPE DEFAULT NULL,
     p_OBSERVACAO          	IN MEGAG_DESP.OBSERVACAO%TYPE DEFAULT NULL,
     p_SEQCENTRORESULTADO  	IN MEGAG_DESP.SEQCENTRORESULTADO%TYPE,
     p_CENTROCUSTO         	IN MEGAG_DESP.CENTROCUSTO%TYPE,
     p_STATUS              	IN MEGAG_DESP.STATUS%TYPE DEFAULT 'LANCADO',
 	p_DESCRICAOCENTROCUSTO  IN MEGAG_DESP.DESCRICAOCENTROCUSTO%TYPE DEFAULT NULL,
+	p_CODPOLITICA           IN MEGAG_DESP.CODPOLITICA%TYPE DEFAULT NULL,
+	p_DTAVENCIMENTO			IN MEGAG_DESP.DTAVENCIMENTO%TYPE DEFAULT NULL,
+	p_DTADESPESA			IN MEGAG_DESP.DTADESPESA%TYPE DEFAULT NULL,
     p_CODDESPESA_OUT        OUT MEGAG_DESP.CODDESPESA%TYPE
 )
 IS
@@ -157,13 +159,15 @@ BEGIN
         PAGO,
         VLRRATDESPESA,
         FORNECEDOR,
-		CODARQUIVO,
         NOMEARQUIVO,
         OBSERVACAO,
         SEQCENTRORESULTADO,
         CENTROCUSTO,
         STATUS,
-		DESCRICAOCENTROCUSTO
+		DESCRICAOCENTROCUSTO,
+		CODPOLITICA,
+		DTAVENCIMENTO,
+		DTADESPESA
     )
     VALUES(
         p_USUARIOSOLICITANTE,
@@ -172,13 +176,15 @@ BEGIN
         p_PAGO,
         p_VLRRATDESPESA,
         p_FORNECEDOR,
-		p_CODARQUIVO,
         p_NOMEARQUIVO,
         p_OBSERVACAO,
         p_SEQCENTRORESULTADO,
         p_CENTROCUSTO,
         p_STATUS,
-		p_DESCRICAOCENTROCUSTO
+		p_DESCRICAOCENTROCUSTO,
+		p_CODPOLITICA,
+		p_DTAVENCIMENTO,
+		p_DTADESPESA
     )
     RETURNING CODDESPESA INTO p_CODDESPESA_OUT;
 
@@ -191,6 +197,7 @@ END PRC_INS_MEGAG_DESP;
 
 --SELECT
 PROCEDURE PRC_LIST_MEGAG_DESP(
+	p_CODDESPESA		 IN MEGAG_DESP.CODDESPESA%TYPE,
     p_USUARIOSOLICITANTE IN MEGAG_DESP.USUARIOSOLICITANTE%TYPE, -- Sempre obrigatório
     p_DESCRICAO          IN MEGAG_DESP.DESCRICAO%TYPE DEFAULT NULL,
     p_STATUS             IN MEGAG_DESP.STATUS%TYPE DEFAULT NULL, --'LANCADO','APROVACAO','APROVADO','REJEITADO'
@@ -202,10 +209,11 @@ BEGIN
         SELECT *
           FROM MEGAG_DESP
          WHERE USUARIOSOLICITANTE = p_USUARIOSOLICITANTE
+           AND (p_CODDESPESA IS NULL OR CODDESPESA = p_CODDESPESA)
            -- Filtro de Descrição: Busca parcial e case-insensitive
            AND (p_DESCRICAO IS NULL OR UPPER(DESCRICAO) LIKE '%' || UPPER(p_DESCRICAO) || '%')
            -- Filtro de Status: Busca exata ('LANCADO','APROVACAO','APROVADO','REJEITADO')
-           AND (p_STATUS IS NOT NULL OR STATUS = p_STATUS)
+           AND (p_STATUS IS NULL OR STATUS = p_STATUS)
          ORDER BY DTAINCLUSAO DESC;
 END PRC_LIST_MEGAG_DESP;
 
@@ -217,13 +225,14 @@ PROCEDURE PRC_UPD_MEGAG_DESP(
     p_DESCRICAO          	IN MEGAG_DESP.DESCRICAO%TYPE,
     p_VLRRATDESPESA      	IN MEGAG_DESP.VLRRATDESPESA%TYPE,
     p_FORNECEDOR         	IN MEGAG_DESP.FORNECEDOR%TYPE,
-	p_CODARQUIVO			IN MEGAG_DESP.CODARQUIVO%TYPE,
     p_NOMEARQUIVO        	IN MEGAG_DESP.NOMEARQUIVO%TYPE,
     p_OBSERVACAO         	IN MEGAG_DESP.OBSERVACAO%TYPE,
     p_SEQCENTRORESULTADO 	IN MEGAG_DESP.SEQCENTRORESULTADO%TYPE,
     p_CENTROCUSTO        	IN MEGAG_DESP.CENTROCUSTO%TYPE,
     p_STATUS             	IN MEGAG_DESP.STATUS%TYPE,
-	p_DESCRICAOCENTROCUSTO  IN MEGAG_DESP.DESCRICAOCENTROCUSTO%TYPE
+	p_DESCRICAOCENTROCUSTO  IN MEGAG_DESP.DESCRICAOCENTROCUSTO%TYPE,
+	p_DTAVENCIMENTO			IN MEGAG_DESP.DTAVENCIMENTO%TYPE DEFAULT NULL,
+	p_DTADESPESA			IN MEGAG_DESP.DTADESPESA%TYPE DEFAULT NULL
 )
 IS
 BEGIN
@@ -233,20 +242,22 @@ BEGIN
            DESCRICAO          	= p_DESCRICAO,
            VLRRATDESPESA      	= p_VLRRATDESPESA,
            FORNECEDOR         	= p_FORNECEDOR,
-		   CODARQUIVO			= p_CODARQUIVO,
            NOMEARQUIVO        	= p_NOMEARQUIVO,
            OBSERVACAO         	= p_OBSERVACAO,
            SEQCENTRORESULTADO 	= p_SEQCENTRORESULTADO,
            CENTROCUSTO        	= p_CENTROCUSTO,
            STATUS             	= p_STATUS,
 		   DESCRICAOCENTROCUSTO = p_DESCRICAOCENTROCUSTO,
-           DTAALTERACAO       	= SYSDATE
+           DTAALTERACAO       	= SYSDATE,
+		   DTAVENCIMENTO 		= p_DTAVENCIMENTO,
+		   DTADESPESA 			= p_DTADESPESA
      WHERE CODDESPESA = p_CODDESPESA
      AND STATUS = 'LANCADO';
 
 IF SQL%NOTFOUND THEN
         RAISE_APPLICATION_ERROR(-20001, 'ATUALIZAÇÃO NEGADA: Registro já passou pela aprovação do gestor.');
     END IF;
+	COMMIT;
 
 EXCEPTION
     WHEN OTHERS THEN
@@ -456,16 +467,32 @@ PROCEDURE PRC_LIST_MEGAG_DESP_APROVACAO(
 ) AS
     v_existe NUMBER;
 BEGIN
-    -- Verifica se o usuário é um aprovador em pelo menos 1 CC
+    -- Verifica se o usuário é aprovador
     SELECT COUNT(*)
     INTO v_existe
     FROM MEGAG_DESP_APROVADORES
     WHERE SEQUSUARIO = p_sequsuario;
 
     IF v_existe > 0 THEN
-        -- Lista despesas Lançadas/Pendentes que o usuário tem direito e é a vez dele na hierarquia
+
         OPEN p_cursor FOR
-        SELECT DISTINCT
+        WITH CC_DESPESA AS (
+            -- COM RATEIO
+            SELECT CODDESPESA, CENTROCUSTO
+            FROM MEGAG_DESP_RATEIO
+
+            UNION
+
+            -- SEM RATEIO
+            SELECT d.CODDESPESA, d.CENTROCUSTO
+            FROM MEGAG_DESP d
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM MEGAG_DESP_RATEIO r
+                WHERE r.CODDESPESA = d.CODDESPESA
+            )
+        )
+        SELECT DISTINCT 
                desp.CODDESPESA,
                desp.USUARIOSOLICITANTE,
                desp.CODTIPODESPESA,
@@ -482,36 +509,33 @@ BEGIN
                desp.CENTROCUSTO,
                desp.STATUS
         FROM MEGAG_DESP desp
-        INNER JOIN MEGAG_DESP_RATEIO r
-            ON r.CODDESPESA = desp.CODDESPESA
-        INNER JOIN MEGAG_DESP_APROVADORES a
-            ON a.CENTROCUSTO = r.CENTROCUSTO
-        INNER JOIN MEGAG_DESP_POLIT_CENTRO_CUSTO p
-            ON p.CODGRUPO = a.CODGRUPO AND p.CENTROCUSTO = a.CENTROCUSTO
-        -- Pode ser que a aplicação tenha outros status intermediários além de LANCADO
+        JOIN CC_DESPESA cc 
+            ON cc.CODDESPESA = desp.CODDESPESA
+        JOIN MEGAG_DESP_APROVADORES a 
+            ON a.CENTROCUSTO = cc.CENTROCUSTO
+        JOIN MEGAG_DESP_POLIT_CENTRO_CUSTO p 
+            ON p.CODGRUPO = a.CODGRUPO 
+           AND p.CENTROCUSTO = a.CENTROCUSTO
         WHERE desp.STATUS NOT IN ('APROVADO', 'REJEITADO')
-          -- 1 Não listar se a despesa foi feita pelo próprio usuário logado
           AND desp.USUARIOSOLICITANTE <> p_sequsuario
-          -- Filtra para cruzar com o usuário logado
           AND a.SEQUSUARIO = p_sequsuario
-          -- Bloqueia centros de custo do rateio que o usuário JÁ aprovou ou rejeitou
           AND NOT EXISTS (
               SELECT 1 FROM MEGAG_DESP_APROVACAO apr
-              WHERE apr.CODDESPESA = r.CODDESPESA
-                AND apr.CENTROCUSTO = r.CENTROCUSTO
+              WHERE apr.CODDESPESA = cc.CODDESPESA
+                AND apr.CENTROCUSTO = cc.CENTROCUSTO
                 AND apr.USUARIOAPROVADOR = p_sequsuario
           )
-          -- 2 A despesa só aparece se for a vez do nível dele para este Rateio
           AND p.NIVEL_APROVACAO <= (
               SELECT NVL(MAX(apr_nivel.NIVEL_APROVACAO), 0) + 1
               FROM MEGAG_DESP_APROVACAO apr_nivel
-              WHERE apr_nivel.CODDESPESA = desp.CODDESPESA
-                AND apr_nivel.CENTROCUSTO = r.CENTROCUSTO
+              WHERE apr_nivel.CODDESPESA = cc.CODDESPESA
+                AND apr_nivel.CENTROCUSTO = cc.CENTROCUSTO
                 AND apr_nivel.STATUS = 'APROVADO'
-          );
+          )
+        ORDER BY desp.DTAINCLUSAO DESC;
+
     ELSE
-        -- 3 Retorna cursor vazio com as MESMAS colunas
-        OPEN p_cursor FOR
+        OPEN p_cursor FOR 
             SELECT desp.CODDESPESA,
                    desp.USUARIOSOLICITANTE,
                    desp.CODTIPODESPESA,
@@ -527,7 +551,7 @@ BEGIN
                    desp.SEQCENTRORESULTADO,
                    desp.CENTROCUSTO,
                    desp.STATUS
-            FROM MEGAG_DESP desp
+            FROM MEGAG_DESP desp 
             WHERE 1 = 0;
     END IF;
 
@@ -553,47 +577,56 @@ PROCEDURE PRC_UPD_MEGAG_DESP_APROVACAO(
     v_total_respostas    NUMBER;
     v_processou_algo     NUMBER := 0;
 
-    -- Cursor: todos os CCs que o usuário pode aprovar e ainda não aprovou
     CURSOR c_cc_pendentes IS
-        SELECT r.CENTROCUSTO, p.NIVEL_APROVACAO
-        FROM MEGAG_DESP_RATEIO r
+        WITH CC_DESPESA AS (
+            SELECT CODDESPESA, CENTROCUSTO
+            FROM MEGAG_DESP_RATEIO
+
+            UNION
+
+            SELECT d.CODDESPESA, d.CENTROCUSTO
+            FROM MEGAG_DESP d
+            WHERE NOT EXISTS (
+                SELECT 1 FROM MEGAG_DESP_RATEIO r
+                WHERE r.CODDESPESA = d.CODDESPESA
+            )
+        )
+        SELECT cc.CENTROCUSTO, p.NIVEL_APROVACAO
+        FROM CC_DESPESA cc
         JOIN MEGAG_DESP_APROVADORES a
-          ON a.CENTROCUSTO = r.CENTROCUSTO
+          ON a.CENTROCUSTO = cc.CENTROCUSTO
         JOIN MEGAG_DESP_POLIT_CENTRO_CUSTO p
           ON p.CODGRUPO = a.CODGRUPO
-          AND p.CENTROCUSTO = a.CENTROCUSTO
-        WHERE r.CODDESPESA = p_coddespesa
+         AND p.CENTROCUSTO = a.CENTROCUSTO
+        WHERE cc.CODDESPESA = p_coddespesa
           AND a.SEQUSUARIO = p_sequsuario
           AND NOT EXISTS (
               SELECT 1 FROM MEGAG_DESP_APROVACAO apr
-              WHERE apr.CODDESPESA = r.CODDESPESA
-                AND apr.CENTROCUSTO = r.CENTROCUSTO
+              WHERE apr.CODDESPESA = cc.CODDESPESA
+                AND apr.CENTROCUSTO = cc.CENTROCUSTO
                 AND apr.USUARIOAPROVADOR = p_sequsuario
           );
+
 BEGIN
-    -- 1- Lock da despesa para concorrência e checagem de status
+    -- LOCK
     SELECT USUARIOSOLICITANTE, STATUS
     INTO v_solicitante, v_status_atual
     FROM MEGAG_DESP
     WHERE CODDESPESA = p_coddespesa
     FOR UPDATE;
 
-    -- Trava de segurança: Se a despesa já foi finalizada, aborta.
     IF v_status_atual IN ('APROVADO', 'REJEITADO') THEN
-        p_msg_retorno := 'Atenção: Esta despesa já encontra-se finalizada (' || v_status_atual || ').';
+        p_msg_retorno := 'Erro: Despesa já finalizada';
         RETURN;
     END IF;
 
-    -- 2- Impedir auto aprovação
     IF v_solicitante = p_sequsuario THEN
-        p_msg_retorno := 'Erro: solicitante não pode aprovar própria despesa';
+        p_msg_retorno := 'Erro: Solicitante não pode aprovar';
         RETURN;
     END IF;
 
-    -- 3- Loop em todos os centros de custo pendentes do usuário
     FOR v_cc IN c_cc_pendentes LOOP
 
-        -- Validar hierarquia apenas dentro daquele CC
         SELECT NVL(MAX(NIVEL_APROVACAO),0)
         INTO v_max_nivel_aprovado
         FROM MEGAG_DESP_APROVACAO
@@ -601,10 +634,8 @@ BEGIN
           AND CENTROCUSTO = v_cc.CENTROCUSTO
           AND STATUS = 'APROVADO';
 
-        -- Se o nível do usuário está liberado
         IF v_cc.NIVEL_APROVACAO <= v_max_nivel_aprovado + 1 THEN
 
-            -- 4- Registrar aprovação/reprovação
             INSERT INTO MEGAG_DESP_APROVACAO(
                 CODDESPESA,
                 CENTROCUSTO,
@@ -626,7 +657,6 @@ BEGIN
 
             v_processou_algo := 1;
 
-            -- 5- Rejeição imediata se status for REJEITADO
             IF p_status = 'REJEITADO' THEN
                 UPDATE MEGAG_DESP
                 SET STATUS = 'REJEITADO',
@@ -636,31 +666,40 @@ BEGIN
                 p_msg_retorno := 'Despesa rejeitada';
                 RETURN;
             END IF;
+
         END IF;
 
     END LOOP;
 
-    -- 6- Se nada processou, usuário não podia aprovar
     IF v_processou_algo = 0 THEN
-        p_msg_retorno := 'Você já aprovou, ou os setores aguardam aprovadores de níveis inferiores.';
+        p_msg_retorno := 'Erro: Sem permissão ou fora da ordem de aprovação';
         RETURN;
     END IF;
 
-    -- 7- Contar total de assinaturas necessárias
-    SELECT COUNT(*)
+    SELECT COUNT(*) 
     INTO v_total_aprovadores
-    FROM MEGAG_DESP_RATEIO r
-    JOIN MEGAG_DESP_APROVADORES a
-      ON a.CENTROCUSTO = r.CENTROCUSTO
-    WHERE r.CODDESPESA = p_coddespesa;
+    FROM (
+        SELECT DISTINCT cc.CENTROCUSTO, a.SEQUSUARIO
+        FROM (
+            SELECT CODDESPESA, CENTROCUSTO FROM MEGAG_DESP_RATEIO
+            UNION
+            SELECT d.CODDESPESA, d.CENTROCUSTO
+            FROM MEGAG_DESP d
+            WHERE NOT EXISTS (
+                SELECT 1 FROM MEGAG_DESP_RATEIO r
+                WHERE r.CODDESPESA = d.CODDESPESA
+            )
+        ) cc
+        JOIN MEGAG_DESP_APROVADORES a
+          ON a.CENTROCUSTO = cc.CENTROCUSTO
+        WHERE cc.CODDESPESA = p_coddespesa
+    );
 
-    -- 8- Contar respostas registradas
     SELECT COUNT(*)
     INTO v_total_respostas
     FROM MEGAG_DESP_APROVACAO
     WHERE CODDESPESA = p_coddespesa;
 
-    -- 9- Finalizar despesa se todos aprovaram
     IF v_total_respostas >= v_total_aprovadores THEN
         UPDATE MEGAG_DESP
         SET STATUS = 'APROVADO',
@@ -670,12 +709,12 @@ BEGIN
 
         p_msg_retorno := 'Despesa aprovada por todos!';
     ELSE
-        p_msg_retorno := 'Aprovação registrada. Aguardando demais aprovadores';
+        p_msg_retorno := 'Aguardando demais aprovadores';
     END IF;
 
 EXCEPTION
     WHEN OTHERS THEN
-        p_msg_retorno := 'Erro inesperado: ' || SQLERRM;
+        p_msg_retorno := 'Erro: ' || SQLERRM;
         ROLLBACK;
 END PRC_UPD_MEGAG_DESP_APROVACAO;
 
@@ -773,17 +812,17 @@ END PRC_DEL_MEGAG_DESP_ARQUIVO;
 --insert
 PROCEDURE PRC_INS_MEGAG_DESP_POLIT_CENTRO_CUSTO(
     p_codgrupo           IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CODGRUPO%TYPE,
+    p_sequsuario		 IN MEGAG_DESP_POLIT_CENTRO_CUSTO.SEQUSUARIO%TYPE,
     p_centrocusto        IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CENTROCUSTO%TYPE,
-    p_seqcentroresultado IN MEGAG_DESP_POLIT_CENTRO_CUSTO.SEQCENTRORESULTADO%TYPE,
     p_descricao          IN MEGAG_DESP_POLIT_CENTRO_CUSTO.DESCRICAO%TYPE,
     p_nivel_aprovacao    IN MEGAG_DESP_POLIT_CENTRO_CUSTO.NIVEL_APROVACAO%TYPE,
     p_msg_retorno        OUT VARCHAR2
 ) AS
 BEGIN
     INSERT INTO MEGAG_DESP_POLIT_CENTRO_CUSTO(
-        CODGRUPO, CENTROCUSTO, SEQCENTRORESULTADO, DESCRICAO, DTAINCLUSAO, NIVEL_APROVACAO
+        CODGRUPO, SEQUSUARIO, CENTROCUSTO, DESCRICAO, DTAINCLUSAO, NIVEL_APROVACAO
     ) VALUES (
-        p_codgrupo, p_centrocusto, p_seqcentroresultado, p_descricao, SYSDATE, p_nivel_aprovacao
+        p_codgrupo, p_sequsuario, p_centrocusto, p_descricao, SYSDATE, p_nivel_aprovacao
     );
 
     p_msg_retorno := 'Inclusão realizada com sucesso.';
@@ -802,7 +841,7 @@ BEGIN
                p.CODGRUPO,
                g.NOMEGRUPO,
                p.CENTROCUSTO,
-               p.SEQCENTRORESULTADO,
+               p.SEQUSUARIO,
                p.DESCRICAO,
                p.DTAINCLUSAO,
                p.NIVEL_APROVACAO
@@ -815,8 +854,8 @@ END;
 PROCEDURE PRC_UPD_MEGAG_DESP_POLIT_CENTRO_CUSTO(
     p_codpolitica        IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CODPOLITICA%TYPE,
     p_codgrupo           IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CODGRUPO%TYPE,
+    p_sequsuario 	     IN MEGAG_DESP_POLIT_CENTRO_CUSTO.SEQUSUARIO%TYPE,
     p_centrocusto        IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CENTROCUSTO%TYPE,
-    p_seqcentroresultado IN MEGAG_DESP_POLIT_CENTRO_CUSTO.SEQCENTRORESULTADO%TYPE,
     p_descricao          IN MEGAG_DESP_POLIT_CENTRO_CUSTO.DESCRICAO%TYPE,
     p_nivel_aprovacao    IN MEGAG_DESP_POLIT_CENTRO_CUSTO.NIVEL_APROVACAO%TYPE,
     p_msg_retorno        OUT VARCHAR2
@@ -825,7 +864,7 @@ BEGIN
     UPDATE MEGAG_DESP_POLIT_CENTRO_CUSTO
     SET CODGRUPO = p_codgrupo,
         CENTROCUSTO = p_centrocusto,
-        SEQCENTRORESULTADO = p_seqcentroresultado,
+        SEQUSUARIO = p_sequsuario,
         DESCRICAO = p_descricao,
         NIVEL_APROVACAO = p_nivel_aprovacao
     WHERE CODPOLITICA = p_codpolitica;
@@ -997,5 +1036,178 @@ BEGIN
     DELETE FROM MEGAG_DESP_RATEIO
     WHERE CODRATEIO = p_codrateio;
 END PRC_DEL_MEGAG_DESP_RATEIO;
+
+/* ==================================================
+   FILE: FornecAuxCRUD.sql
+================================================== */
+PROCEDURE PRC_INS_MEGAG_DESP_FORNEC_AUX (
+	p_codfornecaux		 IN MEGAG_DESP_FORNEC_AUX.CODFORNECAUX%TYPE,
+    p_nomerazao          IN MEGAG_DESP_FORNEC_AUX.NOMERAZAO%TYPE,
+    p_fantasia           IN MEGAG_DESP_FORNEC_AUX.FANTASIA%TYPE,
+    p_logradouro         IN MEGAG_DESP_FORNEC_AUX.LOGRADOURO%TYPE,
+    p_bairro             IN MEGAG_DESP_FORNEC_AUX.BAIRRO%TYPE,
+    p_cidade             IN MEGAG_DESP_FORNEC_AUX.CIDADE%TYPE,
+    p_uf                 IN MEGAG_DESP_FORNEC_AUX.UF%TYPE,
+    p_cep                IN MEGAG_DESP_FORNEC_AUX.CEP%TYPE,
+    p_fisicajuridica     IN MEGAG_DESP_FORNEC_AUX.FISICAJURIDICA%TYPE,
+    p_nrocgccpf          IN MEGAG_DESP_FORNEC_AUX.NROCGCCPF%TYPE,
+    p_digcgccpf          IN MEGAG_DESP_FORNEC_AUX.DIGCGCCPF%TYPE,
+    p_foneddd1           IN MEGAG_DESP_FORNEC_AUX.FONEDDD1%TYPE,
+    p_fonenro1           IN MEGAG_DESP_FORNEC_AUX.FONENRO1%TYPE,
+    p_datahoraalteracao  IN MEGAG_DESP_FORNEC_AUX.DATAHORAALTERACAO%TYPE,
+    p_msg_retorno        OUT VARCHAR2
+) AS
+BEGIN
+    INSERT INTO MEGAG_DESP_FORNEC_AUX (
+        NOMERAZAO,
+        FANTASIA,
+        LOGRADOURO,
+        BAIRRO,
+        CIDADE,
+        UF,
+        CEP,
+        FISICAJURIDICA,
+        NROCGCCPF,
+        DIGCGCCPF,
+        FONEDDD1,
+        FONENRO1,
+        DTAHORAINCLUSAO,
+        DATAHORAALTERACAO
+    )
+    VALUES (
+        p_nomerazao,
+        p_fantasia,
+        p_logradouro,
+        p_bairro,
+        p_cidade,
+        p_uf,
+        p_cep,
+        p_fisicajuridica,
+        p_nrocgccpf,
+        p_digcgccpf,
+        p_foneddd1,
+        p_fonenro1,
+        SYSDATE,
+        p_datahoraalteracao
+    );
+
+    p_msg_retorno := 'Registro inserido com sucesso';
+	COMMIT;
+
+EXCEPTION
+    WHEN DUP_VAL_ON_INDEX THEN
+        ROLLBACK;
+        p_msg_retorno := 'Erro: registro já existe (PK ou UNIQUE)';
+    WHEN OTHERS THEN
+        ROLLBACK;
+        p_msg_retorno := 'Erro: ' || SQLERRM;
+END PRC_INS_MEGAG_DESP_FORNEC_AUX;
+
+PROCEDURE PRC_LIST_MEGAG_DESP_FORNEC_AUX (
+    p_cursor OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT
+			CODFORNECAUX,
+            NOMERAZAO,
+            FANTASIA,
+            LOGRADOURO,
+            BAIRRO,
+            CIDADE,
+            UF,
+            CEP,
+            FISICAJURIDICA,
+            NROCGCCPF,
+            DIGCGCCPF,
+            FONEDDD1,
+            FONENRO1,
+            DTAHORAINCLUSAO,
+            DATAHORAALTERACAO
+        FROM MEGAG_DESP_FORNEC_AUX;
+END PRC_LIST_MEGAG_DESP_FORNEC_AUX;
+
+PROCEDURE PRC_UPD_MEGAG_DESP_FORNEC_AUX (
+	p_codfornecaux		 IN MEGAG_DESP_FORNEC_AUX.CODFORNECAUX%TYPE,
+    p_nomerazao          IN MEGAG_DESP_FORNEC_AUX.NOMERAZAO%TYPE,
+    p_fantasia           IN MEGAG_DESP_FORNEC_AUX.FANTASIA%TYPE,
+    p_logradouro         IN MEGAG_DESP_FORNEC_AUX.LOGRADOURO%TYPE,
+    p_bairro             IN MEGAG_DESP_FORNEC_AUX.BAIRRO%TYPE,
+    p_cidade             IN MEGAG_DESP_FORNEC_AUX.CIDADE%TYPE,
+    p_uf                 IN MEGAG_DESP_FORNEC_AUX.UF%TYPE,
+    p_cep                IN MEGAG_DESP_FORNEC_AUX.CEP%TYPE,
+    p_fisicajuridica     IN MEGAG_DESP_FORNEC_AUX.FISICAJURIDICA%TYPE,
+    p_nrocgccpf          IN MEGAG_DESP_FORNEC_AUX.NROCGCCPF%TYPE,
+    p_digcgccpf          IN MEGAG_DESP_FORNEC_AUX.DIGCGCCPF%TYPE,
+    p_foneddd1           IN MEGAG_DESP_FORNEC_AUX.FONEDDD1%TYPE,
+    p_fonenro1           IN MEGAG_DESP_FORNEC_AUX.FONENRO1%TYPE,
+    p_msg_retorno        OUT VARCHAR2
+) AS
+    v_existe NUMBER;
+BEGIN
+    SELECT COUNT(*)
+    INTO v_existe
+    FROM MEGAG_DESP_FORNEC_AUX
+    WHERE CODFORNECAUX = p_codfornecaux;
+
+    IF v_existe = 0 THEN
+        p_msg_retorno := 'Registro não encontrado';
+        RETURN;
+    END IF;
+	COMMIT;
+
+    UPDATE MEGAG_DESP_FORNEC_AUX
+    SET
+        NOMERAZAO         = p_nomerazao,
+        FANTASIA          = p_fantasia,
+        LOGRADOURO        = p_logradouro,
+        BAIRRO            = p_bairro,
+        CIDADE            = p_cidade,
+        UF                = p_uf,
+        CEP               = p_cep,
+        FISICAJURIDICA    = p_fisicajuridica,
+        NROCGCCPF         = p_nrocgccpf,
+        DIGCGCCPF         = p_digcgccpf,
+        FONEDDD1          = p_foneddd1,
+        FONENRO1          = p_fonenro1,
+        DATAHORAALTERACAO = SYSDATE
+    WHERE CODFORNECAUX = p_codfornecaux;
+
+    COMMIT;
+
+    p_msg_retorno := 'Registro atualizado com sucesso';
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        p_msg_retorno := 'Erro: ' || SQLERRM;
+END PRC_UPD_MEGAG_DESP_FORNEC_AUX;
+
+PROCEDURE PRC_DEL_MEGAG_DESP_FORNEC_AUX (
+    p_codfornecaux IN MEGAG_DESP_FORNEC_AUX.CODFORNECAUX%TYPE,
+    p_msg_retorno    OUT VARCHAR2
+) AS
+    v_existe NUMBER;
+BEGIN
+    SELECT COUNT(*)
+    INTO v_existe
+    FROM MEGAG_DESP_FORNEC_AUX
+    WHERE CODFORNECAUX = p_codfornecaux;
+
+    IF v_existe = 0 THEN
+        p_msg_retorno := 'Registro não encontrado';
+        RETURN;
+    END IF;
+
+    DELETE FROM MEGAG_DESP_FORNEC_AUX
+    WHERE CODFORNECAUX = p_codfornecaux;
+
+    COMMIT;
+
+    p_msg_retorno := 'Registro excluído com sucesso';
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        p_msg_retorno := 'Erro: ' || SQLERRM;
+END PRC_DEL_MEGAG_DESP_FORNEC_AUX;
 
 END PKG_MEGAG_DESP_CADASTRO;

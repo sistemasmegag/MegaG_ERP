@@ -981,7 +981,7 @@ $paginaAtual = 'despesas';
             <div class="saas-input-group">
               <label class="saas-label">Estabelecimento * <small
                   class="fw-normal text-muted ms-1">(FORNECEDOR)</small></label>
-              <input type="text" class="saas-input" placeholder="Onde foi a despesa?" id="fEstabelecimento">
+              <select class="saas-select" id="fEstabelecimento" placeholder="Digite para buscar o fornecedor..."></select>
             </div>
 
             <div class="saas-input-group mt-4">
@@ -1271,8 +1271,11 @@ $paginaAtual = 'despesas';
       let json = await res.json();
       if (json.sucesso) {
         let catSelect = document.getElementById('fCategoria');
+        let fornSelect = document.getElementById('fEstabelecimento');
         if (catSelect.tomselect) catSelect.tomselect.destroy();
+        if (fornSelect.tomselect) fornSelect.tomselect.destroy();
         catSelect.innerHTML = '<option value="">Selecione...</option>';
+        fornSelect.innerHTML = '<option value="">Digite ao menos 2 letras para buscar...</option>';
         json.dados.tipos.forEach(t => {
           catSelect.innerHTML += `<option value="${t.CODTIPODESPESA}">${t.DESCRICAO}</option>`;
         });
@@ -1287,6 +1290,59 @@ $paginaAtual = 'despesas';
           create: false,
           sortField: { field: "text", direction: "asc" },
           placeholder: 'Selecione ou digite para buscar...'
+        });
+
+        new TomSelect('#fEstabelecimento', {
+          create: false,
+          valueField: 'value',
+          labelField: 'text',
+          searchField: ['text', 'value'],
+          maxOptions: 30,
+          preload: false,
+          loadThrottle: 300,
+          placeholder: 'Digite ao menos 2 letras para buscar...',
+          shouldLoad: function(query) {
+            return query.length >= 2;
+          },
+          render: {
+            no_results: function(data, escape) {
+              if (!data.input || data.input.length < 2) {
+                return `<div class="no-results">Digite ao menos 2 letras para buscar.</div>`;
+              }
+              return `<div class="no-results">Nenhum fornecedor encontrado para "${escape(data.input)}".</div>`;
+            },
+            loading: function() {
+              return `<div class="px-3 py-2 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>Buscando fornecedores...</div>`;
+            }
+          },
+          load: async function(query, callback) {
+            try {
+              let res = await fetch('api/api_despesas.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'search_fornecedores', q: query })
+              });
+              let json = await res.json();
+              if (!json.sucesso) {
+                callback();
+                return;
+              }
+
+              let itens = (json.dados || []).map(f => {
+                let nome = (f.NOMERAZAO || '').trim();
+                let fantasia = (f.FANTASIA || '').trim();
+                return {
+                  value: nome,
+                  text: fantasia && fantasia !== nome ? `${nome} (${fantasia})` : nome
+                };
+              }).filter(f => f.value);
+
+              callback(itens);
+            } catch (e) {
+              console.error('Erro ao buscar fornecedores:', e);
+              callback();
+            }
+          }
         });
 
         // Reinicializa CCs extras que já existam no container (ex: após fechar/abrir modal)
@@ -1374,10 +1430,22 @@ $paginaAtual = 'despesas';
         }
       }
 
+      let fornecedorSelect = document.getElementById('fEstabelecimento');
+      let fornecedor = fornecedorSelect && fornecedorSelect.tomselect
+        ? fornecedorSelect.tomselect.getValue()
+        : fornecedorSelect.value;
+
+      if (!fornecedor || !fornecedor.trim()) {
+        Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Selecione um estabelecimento/fornecedor.' });
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+        return;
+      }
+
       let formData = new FormData();
       formData.append('action', 'create');
       formData.append('valor', document.getElementById('fValor').value);
-      formData.append('estabelecimento', document.getElementById('fEstabelecimento').value);
+      formData.append('estabelecimento', fornecedor);
       formData.append('data_despesa', document.getElementById('fData').value);
       formData.append('categoria', document.getElementById('fCategoria').value);
       formData.append('centros_custo',  JSON.stringify(centrosCusto));
@@ -1413,6 +1481,9 @@ $paginaAtual = 'despesas';
         }).then(() => {
           bootstrap.Modal.getInstance(document.getElementById('modalNovaDespesa')).hide();
           document.getElementById('formReembolso').reset();
+          if (document.getElementById('fEstabelecimento').tomselect) {
+            document.getElementById('fEstabelecimento').tomselect.clear();
+          }
           document.getElementById('fileDisplayName').innerHTML = '';
           document.getElementById('displayValor').innerText = 'R$ 0,00';
           // Remover CCs extras e limpar inputs de valor
@@ -1446,6 +1517,14 @@ $paginaAtual = 'despesas';
     if (status === 'APROVADO' || status === 'REEMBOLSADO') return '<span class="chip chip-green">• Reembolsado</span>';
     if (status === 'REJEITADO' || status === 'REPROVADO') return '<span class="chip" style="background: rgba(220,53,69,.1); color: #dc3545;">• Reprovado</span>';
     return '<span class="chip chip-gray">• ' + status + '</span>';
+  }
+
+  function formatDateBr(dateStr) {
+    if (!dateStr) return '--';
+    let normalized = String(dateStr).trim().substring(0, 10);
+    let parts = normalized.split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return String(dateStr).trim();
   }
 
   async function loadList() {
@@ -1489,6 +1568,7 @@ $paginaAtual = 'despesas';
               let dateOnly = d.DTAINCLUSAO.split(' ')[0];
               dataStr = new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR');
             }
+            dataStr = formatDateBr(d.DTADESPESA_FORMAT || d.DTAINCLUSAO_FORMAT || d.DTADESPESA || d.DTAINCLUSAO);
 
             let valFormat = parseFloat(d.VLRRATDESPESA || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -1636,12 +1716,14 @@ $paginaAtual = 'despesas';
 
       let dateOnly = d.DTAINCLUSAO_FORMAT ? d.DTAINCLUSAO_FORMAT.split(' ')[0] : (d.DTAINCLUSAO ? d.DTAINCLUSAO.split(' ')[0] : '');
       document.getElementById('detData').innerText = dateOnly ? new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR') : '--';
+      document.getElementById('detData').innerText = formatDateBr(d.DTADESPESA_FORMAT || d.DTAINCLUSAO_FORMAT || d.DTADESPESA || d.DTAINCLUSAO);
 
       document.getElementById('detId').innerText = 'EXP-' + d.CODDESPESA;
       document.getElementById('detCC').innerText = d.CENTROCUSTO + ' | ' + (d.DESC_CC || 'Centro de Custo');
       document.getElementById('detObs').innerText = d.OBSERVACAO || '--';
       document.getElementById('detCat').innerText = d.DESC_TIPO || '--';
       document.getElementById('detVenc').innerText = '--';
+      document.getElementById('detVenc').innerText = formatDateBr(d.DTAVENCIMENTO_FORMAT || d.DTAVENCIMENTO);
 
       document.getElementById('detStatus').innerHTML = parseStatusChip(d.STATUS);
 

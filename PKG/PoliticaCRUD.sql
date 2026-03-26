@@ -1,17 +1,17 @@
 --insert
 CREATE OR REPLACE PROCEDURE PRC_INS_MEGAG_DESP_POLIT_CENTRO_CUSTO(
     p_codgrupo           IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CODGRUPO%TYPE,
+    p_sequsuario         IN MEGAG_DESP_POLIT_CENTRO_CUSTO.SEQUSUARIO%TYPE,
     p_centrocusto        IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CENTROCUSTO%TYPE,
-    p_seqcentroresultado IN MEGAG_DESP_POLIT_CENTRO_CUSTO.SEQCENTRORESULTADO%TYPE,
     p_descricao          IN MEGAG_DESP_POLIT_CENTRO_CUSTO.DESCRICAO%TYPE,
     p_nivel_aprovacao    IN MEGAG_DESP_POLIT_CENTRO_CUSTO.NIVEL_APROVACAO%TYPE,
     p_msg_retorno        OUT VARCHAR2
 ) AS
 BEGIN
     INSERT INTO MEGAG_DESP_POLIT_CENTRO_CUSTO(
-        CODGRUPO, CENTROCUSTO, SEQCENTRORESULTADO, DESCRICAO, DTAINCLUSAO, NIVEL_APROVACAO
+        CODGRUPO, SEQUSUARIO, CENTROCUSTO, DESCRICAO, DTAINCLUSAO, NIVEL_APROVACAO
     ) VALUES (
-        p_codgrupo, p_centrocusto, p_seqcentroresultado, p_descricao, SYSDATE, p_nivel_aprovacao
+        p_codgrupo, p_sequsuario, p_centrocusto, p_descricao, SYSDATE, p_nivel_aprovacao
     );
 
     p_msg_retorno := 'Inclusão realizada com sucesso.';
@@ -31,7 +31,7 @@ BEGIN
                p.CODGRUPO,
                g.NOMEGRUPO,
                p.CENTROCUSTO,
-               p.SEQCENTRORESULTADO,
+               p.SEQUSUARIO,
                p.DESCRICAO,
                p.DTAINCLUSAO,
                p.NIVEL_APROVACAO
@@ -45,8 +45,8 @@ END;
 CREATE OR REPLACE PROCEDURE PRC_UPD_MEGAG_DESP_POLIT_CENTRO_CUSTO(
     p_codpolitica        IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CODPOLITICA%TYPE,
     p_codgrupo           IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CODGRUPO%TYPE,
+    p_sequsuario         IN MEGAG_DESP_POLIT_CENTRO_CUSTO.SEQUSUARIO%TYPE,
     p_centrocusto        IN MEGAG_DESP_POLIT_CENTRO_CUSTO.CENTROCUSTO%TYPE,
-    p_seqcentroresultado IN MEGAG_DESP_POLIT_CENTRO_CUSTO.SEQCENTRORESULTADO%TYPE,
     p_descricao          IN MEGAG_DESP_POLIT_CENTRO_CUSTO.DESCRICAO%TYPE,
     p_nivel_aprovacao    IN MEGAG_DESP_POLIT_CENTRO_CUSTO.NIVEL_APROVACAO%TYPE,
     p_msg_retorno        OUT VARCHAR2
@@ -55,7 +55,7 @@ BEGIN
     UPDATE MEGAG_DESP_POLIT_CENTRO_CUSTO
     SET CODGRUPO = p_codgrupo,
         CENTROCUSTO = p_centrocusto,
-        SEQCENTRORESULTADO = p_seqcentroresultado,
+        SEQUSUARIO = p_sequsuario,
         DESCRICAO = p_descricao,
         NIVEL_APROVACAO = p_nivel_aprovacao
     WHERE CODPOLITICA = p_codpolitica;

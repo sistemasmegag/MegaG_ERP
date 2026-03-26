@@ -102,10 +102,11 @@ try {
     // POLÍTICAS (MEGAG_DESP_POLIT_CENTRO_CUSTO)
     // ============================================
     if ($action === 'list_politicas') {
-        $sql = "SELECT P.*, G.NOMEGRUPO, C.DESCRICAO AS NOME_CC
+        $sql = "SELECT P.*, G.NOMEGRUPO, C.DESCRICAO AS NOME_CC, U.NOME AS NOME_USUARIO
                   FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO P
                   LEFT JOIN CONSINCO.MEGAG_DESP_GRUPO G ON P.CODGRUPO = G.CODGRUPO
-                  LEFT JOIN CONSINCO.ABA_CENTRORESULTADO C ON P.SEQCENTRORESULTADO = C.SEQCENTRORESULTADO
+                  LEFT JOIN CONSINCO.ABA_CENTRORESULTADO C ON P.CENTROCUSTO = C.CENTRORESULTADO
+                  LEFT JOIN CONSINCO.GE_USUARIO U ON P.SEQUSUARIO = U.SEQUSUARIO
                  ORDER BY P.CODPOLITICA DESC";
         $st = $conn->prepare($sql);
         $st->execute();
@@ -115,21 +116,25 @@ try {
     if ($action === 'add_politica') {
         $grupo = (int)($req['codgrupo'] ?? 0);
         $cc_str = trim($req['centro_custo'] ?? '');
+        $seq_usuario = (int)($req['sequsuario'] ?? 0);
         $desc = trim($req['descricao'] ?? '');
         $nivel = (int)($req['nivel'] ?? 1);
 
         $cc_parts = explode('|', $cc_str);
         $centro_custo = $cc_parts[0] ?? '';
-        $seq_cc = (int)($cc_parts[1] ?? 0);
+
+        if (!$grupo || !$centro_custo || !$seq_usuario) {
+            jexit(false, [], 'Informe grupo, centro de custo e usuário da política.');
+        }
 
         $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_POLIT_CENTRO_CUSTO(
-                    p_codgrupo => :GRUPO, p_centrocusto => :CC, p_seqcentroresultado => :SEQCC,
+                    p_codgrupo => :GRUPO, p_sequsuario => :SEQ_USUARIO, p_centrocusto => :CC,
                     p_descricao => :DESC, p_nivel_aprovacao => :NIVEL, p_msg_retorno => :MSG
                 ); END;";
         $st = $conn->prepare($sql);
         $st->bindValue(':GRUPO', $grupo);
+        $st->bindValue(':SEQ_USUARIO', $seq_usuario);
         $st->bindValue(':CC', $centro_custo);
-        $st->bindValue(':SEQCC', $seq_cc);
         $st->bindValue(':DESC', $desc);
         $st->bindValue(':NIVEL', $nivel);
         $msg = ''; $st->bindParam(':MSG', $msg, PDO::PARAM_STR, 4000);
