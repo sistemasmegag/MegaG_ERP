@@ -1,4 +1,8 @@
 <?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+  @session_start();
+}
+$usuarioAtual = (string)($_SESSION['usuario'] ?? '');
 $space_id = isset($_GET['space_id']) ? (int)$_GET['space_id'] : 0;
 $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
 ?>
@@ -524,7 +528,7 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
           </div>
           <div class="actions">
             <button class="saas-theme-toggle" id="btnTheme">🌙 <span id="themeLabel">Dark</span></button>
-            <a class="btnx" id="btnBack" href="/importador/tarefas.php">← Voltar</a>
+            <a class="btnx" id="btnBack" href="index.php?page=tarefas">← Voltar</a>
             <button class="btnx primary" id="btnCreate">Criar</button>
           </div>
         </div>
@@ -546,7 +550,7 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
             </div>
             <div class="field">
               <label>Criado por</label>
-              <input id="fCriadoPor" placeholder="Ex: Felipe" />
+              <input id="fCriadoPor" placeholder="Ex: Felipe" value="<?php echo htmlspecialchars($usuarioAtual, ENT_QUOTES, 'UTF-8'); ?>" />
             </div>
           </div>
 
@@ -662,7 +666,8 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
   </div>
 
   <script>
-    const API = '/importador/api/tasks.php';
+    const API = 'api/tasks.php';
+    const CURRENT_TASK_USER = <?php echo json_encode($usuarioAtual, JSON_UNESCAPED_UNICODE); ?>;
     const PRE_SPACE_ID = <?= (int)$space_id ?>;
     const PRE_LIST_ID = <?= (int)$list_id ?>;
 
@@ -743,7 +748,7 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
     }
 
     async function loadSpaces() {
-      const spaces = await apiGet(`${API}?entity=spaces&only_active=S`);
+      const spaces = await apiGet(`${API}?entity=spaces&only_active=S&user=${encodeURIComponent(CURRENT_TASK_USER)}`);
       const sel = $('spaceSelect');
       sel.innerHTML = '';
 
@@ -778,7 +783,7 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
         return;
       }
 
-      const lists = await apiGet(`${API}?entity=lists&space_id=${spaceId}`);
+      const lists = await apiGet(`${API}?entity=lists&space_id=${spaceId}&user=${encodeURIComponent(CURRENT_TASK_USER)}`);
 
       const opt0 = document.createElement('option');
       opt0.value = '';
@@ -831,7 +836,7 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
         if (spaceId) qs.set('space_id', spaceId);
         if (list_id) qs.set('list_id', list_id);
 
-        location.href = `/importador/index.php?page=tarefas_detalhes&${qs.toString()}`;
+        location.href = `index.php?page=tarefas_detalhes&${qs.toString()}`;
       } catch (e) {
         showMsg(e.message, false);
       }
@@ -862,9 +867,9 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
       qs.set('page', 'tarefas');
       if (PRE_SPACE_ID) qs.set('space_id', PRE_SPACE_ID);
       if (PRE_LIST_ID) qs.set('list_id', PRE_LIST_ID);
-      $('btnBack').href = '/importador/index.php?' + qs.toString();
+      $('btnBack').href = 'index.php?' + qs.toString();
 
-      $('fCriadoPor').value = 'Felipe'; // ajuste depois pra sessão
+      $('fCriadoPor').value = $('fCriadoPor').value || CURRENT_TASK_USER;
       await loadSpaces();
       updateFormPreview();
     })();

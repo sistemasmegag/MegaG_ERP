@@ -1,4 +1,8 @@
 <?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    @session_start();
+}
+$usuarioAtual = (string)($_SESSION['usuario'] ?? '');
 ?>
 <!doctype html>
 <html lang="pt-br" data-theme="light">
@@ -432,7 +436,7 @@
             align-items: center;
             justify-content: center;
             padding: 16px;
-            z-index: 9999;
+            z-index: 10020;
         }
 
         .modal {
@@ -1046,6 +1050,9 @@
 </head>
 
 <body>
+    <script>
+        window.CURRENT_TASK_USER = <?php echo json_encode($usuarioAtual, JSON_UNESCAPED_UNICODE); ?>;
+    </script>
     <div class="main-content">
         <div class="wrap">
 
@@ -1121,7 +1128,7 @@
                             </div>
                             <div class="field">
                                 <label>Usuário</label>
-                                <input id="userDefault" placeholder="Ex: Felipe" />
+                                <input id="userDefault" placeholder="Ex: Felipe" value="<?php echo htmlspecialchars($usuarioAtual, ENT_QUOTES, 'UTF-8'); ?>" />
                             </div>
                         </div>
 
@@ -1136,7 +1143,7 @@
                             </div>
                             <div class="field">
                                 <label>Criado por</label>
-                                <input id="spaceCriadoPor" placeholder="Ex: Felipe" />
+                                <input id="spaceCriadoPor" placeholder="Ex: Felipe" value="<?php echo htmlspecialchars($usuarioAtual, ENT_QUOTES, 'UTF-8'); ?>" />
                             </div>
                             <div class="field" style="flex:0;min-width:220px">
                                 <button class="btnx primary" id="btnCreateSpace" style="width:100%; justify-content:center;">Criar Space</button>
@@ -1156,7 +1163,11 @@
                             </div>
                             <div class="field">
                                 <label>Criado por</label>
-                                <input id="listCriadoPor" placeholder="Ex: Felipe" />
+                                <input id="listCriadoPor" placeholder="Ex: Felipe" value="<?php echo htmlspecialchars($usuarioAtual, ENT_QUOTES, 'UTF-8'); ?>" />
+                            </div>
+                            <div class="field">
+                                <label>Participantes da List</label>
+                                <input id="listParticipantes" placeholder="Ex: PLINIOS, FELIPE" />
                             </div>
                             <div class="field" style="flex:0;min-width:220px">
                                 <button class="btnx primary" id="btnCreateList" style="width:100%; justify-content:center;">Criar List</button>
@@ -1172,45 +1183,18 @@
                         <div class="context-eyebrow">Resumo</div>
                         <div class="card-title" style="margin-bottom:8px;">Saude da list selecionada</div>
                         <div class="hint" style="margin-top:0;">Leitura rapida da fila para decidir onde concentrar o trabalho primeiro.</div>
-                        <div class="metric-grid" style="margin-top:18px;">
-                            <div class="metric-card todo">
-                                <span>TODO</span>
-                                <strong id="summaryTodo">0</strong>
-                            </div>
-                            <div class="metric-card doing">
-                                <span>DOING</span>
-                                <strong id="summaryDoing">0</strong>
-                            </div>
-                            <div class="metric-card done">
-                                <span>DONE</span>
-                                <strong id="summaryDone">0</strong>
-                            </div>
+                        <div class="metric-grid" id="summaryMetrics" style="margin-top:18px;">
                             <div class="metric-card total">
                                 <span>Total</span>
                                 <strong id="countTotal">0</strong>
                             </div>
                         </div>
                         <ul class="tip-list">
-                            <li>Mude o status direto no card para reorganizar o fluxo sem sair do quadro.</li>
-                            <li>Use "Nova Task" para criar itens ja vinculados a list atualmente selecionada.</li>
-                            <li>Crie um novo space so quando a frente for realmente diferente; senao, prefira separar por lists.</li>
+                            <li>Esta visao destaca a task mais critica de cada status para manter a leitura leve.</li>
+                            <li>Use "Ver mais" para abrir o quadro completo em tela cheia.</li>
+                            <li>Novos status ficam vinculados somente a list atual.</li>
                         </ul>
                         <div class="card-title" style="display:none;">Resumo da List</div>
-
-                        <div class="row">
-                            <div class="field">
-                                <label>TODO</label>
-                                <div class="pill" id="countTodo">0</div>
-                            </div>
-                            <div class="field">
-                                <label>DOING</label>
-                                <div class="pill" id="countDoing">0</div>
-                            </div>
-                            <div class="field">
-                                <label>DONE</label>
-                                <div class="pill" id="countDone">0</div>
-                            </div>
-                        </div>
 
                         <div class="hr"></div>
 
@@ -1329,7 +1313,7 @@
     </div>
 
     <script>
-        const API = '/importador/api/tasks.php';
+        const API = 'api/tasks.php';
         const $ = (id) => document.getElementById(id);
         let draggingTaskId = null;
         let draggingTaskStatus = null;
@@ -1383,7 +1367,7 @@
         }
 
         function user() {
-            return ($('userDefault').value || '').trim() || 'web';
+            return ($('userDefault').value || '').trim() || window.CURRENT_TASK_USER || 'web';
         }
 
         function selectedText(id, fallback) {
@@ -1473,7 +1457,7 @@
 
         // Loaders
         async function loadSpaces() {
-            const spaces = await apiGet(`${API}?entity=spaces&only_active=S`);
+            const spaces = await apiGet(`${API}?entity=spaces&only_active=S&user=${encodeURIComponent(user())}`);
             const sel = $('spaceSelect');
             sel.innerHTML = '';
 
@@ -1512,7 +1496,7 @@
                 return;
             }
 
-            const lists = await apiGet(`${API}?entity=lists&space_id=${spaceId}`);
+            const lists = await apiGet(`${API}?entity=lists&space_id=${spaceId}&user=${encodeURIComponent(user())}`);
 
             const opt0 = document.createElement('option');
             opt0.value = '';
@@ -1543,7 +1527,7 @@
                 renderKanban([]);
                 return;
             }
-            const tasks = await apiGet(`${API}?entity=tasks&list_id=${listId}`);
+            const tasks = await apiGet(`${API}?entity=tasks&list_id=${listId}&user=${encodeURIComponent(user())}`);
             renderKanban(tasks || []);
         }
 
@@ -1555,13 +1539,13 @@
             };
             tasks.forEach(t => (by[(t.STATUS ?? t.status ?? 'TODO')] || by.TODO).push(t));
 
-            $('pillTodo').textContent = by.TODO.length;
-            $('pillDoing').textContent = by.DOING.length;
-            $('pillDone').textContent = by.DONE.length;
+            if ($('pillTodo')) $('pillTodo').textContent = by.TODO.length;
+            if ($('pillDoing')) $('pillDoing').textContent = by.DOING.length;
+            if ($('pillDone')) $('pillDone').textContent = by.DONE.length;
 
-            $('countTodo').textContent = by.TODO.length;
-            $('countDoing').textContent = by.DOING.length;
-            $('countDone').textContent = by.DONE.length;
+            if ($('countTodo')) $('countTodo').textContent = by.TODO.length;
+            if ($('countDoing')) $('countDoing').textContent = by.DOING.length;
+            if ($('countDone')) $('countDone').textContent = by.DONE.length;
             if ($('summaryTodo')) $('summaryTodo').textContent = by.TODO.length;
             if ($('summaryDoing')) $('summaryDoing').textContent = by.DOING.length;
             if ($('summaryDone')) $('summaryDone').textContent = by.DONE.length;
@@ -1690,7 +1674,7 @@
             const listId = $('listSelect').value || '';
 
             btnE.href =
-                `/importador/index.php?page=tarefas_detalhes` +
+                `index.php?page=tarefas_detalhes` +
                 `&task_id=${encodeURIComponent(id)}` +
                 `&space_id=${encodeURIComponent(spaceId)}` +
                 `&list_id=${encodeURIComponent(listId)}`;
@@ -1747,6 +1731,7 @@
             const nome = ($('listNome').value || '').trim();
             const ordem = parseInt($('listOrdem').value || '0', 10);
             const criado_por = ($('listCriadoPor').value || '').trim();
+            const participantes = ($('listParticipantes').value || '').trim();
 
             if (!space_id) return showMsg('Selecione um Space.', false);
             if (!nome) return showMsg('Informe nome da List.', false);
@@ -1756,10 +1741,12 @@
                 space_id,
                 nome,
                 ordem,
-                criado_por
+                criado_por,
+                participantes
             });
             showMsg(`List criada (id=${r.id}).`, true);
             $('listNome').value = '';
+            $('listParticipantes').value = '';
             await loadLists();
         }
 
@@ -1782,7 +1769,7 @@
             $('mDescricao').value = '';
             $('mStatus').value = 'TODO';
             $('mPrioridade').value = 'MED';
-            $('mResponsavel').value = '';
+            $('mResponsavel').value = user();
             $('mEntrega').value = '';
             $('mTags').value = '';
             openModal();
@@ -1933,7 +1920,7 @@
             const spaceId = $('spaceSelect').value || '';
             const listId = $('listSelect').value || '';
             location.href =
-                `/importador/index.php?page=tarefas_criar_tasks` +
+                `index.php?page=tarefas_criar_tasks` +
                 `&space_id=${encodeURIComponent(spaceId)}` +
                 `&list_id=${encodeURIComponent(listId)}`;
         });
@@ -1945,7 +1932,9 @@
             try {
                 const savedTheme = localStorage.getItem('megag_theme');
                 setTheme(savedTheme || 'light');
-                $('userDefault').value = $('userDefault').value || 'Felipe';
+                $('userDefault').value = $('userDefault').value || window.CURRENT_TASK_USER || '';
+                $('spaceCriadoPor').value = $('spaceCriadoPor').value || user();
+                $('listCriadoPor').value = $('listCriadoPor').value || user();
                 await loadSpaces();
             } catch (e) {
                 showMsg(e.message, false);
@@ -1953,6 +1942,7 @@
         })();
     </script>
 
+    <script src="assets/js/tasks-kanban-enhancements.js"></script>
 </body>
 
 </html>

@@ -481,6 +481,47 @@ $paginaAtual = 'despesas';
     min-width: 0;
   }
 
+  .cc-rateio-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .cc-rateio-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    border: 1px solid rgba(99, 102, 241, .18);
+    background: rgba(99, 102, 241, .06);
+  }
+
+  .cc-rateio-toggle button {
+    border: 0;
+    background: transparent;
+    color: var(--saas-muted);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    border-radius: 999px;
+    padding: 7px 12px;
+    transition: .18s ease;
+  }
+
+  .cc-rateio-toggle button.active {
+    background: #6366f1;
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(99, 102, 241, .25);
+  }
+
+  .cc-rateio-hint {
+    font-size: 11px;
+    color: var(--saas-muted);
+    font-weight: 700;
+  }
+
   .btn-cc-add {
     width: 36px;
     height: 36px;
@@ -584,6 +625,14 @@ $paginaAtual = 'despesas';
     height: 100%;
     border-radius: 99px;
     transition: width .3s ease, background .2s;
+  }
+
+  .cc-soma-extra {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--saas-muted);
+    font-weight: 700;
+    white-space: nowrap;
   }
 
   /* Custom Buttons */
@@ -950,6 +999,7 @@ $paginaAtual = 'despesas';
                   Estabelecimento</h5>
                 <div class="mt-2"><span class="chip chip-gray"
                     style="font-size:10px; padding:3px 10px; font-weight:800;">• Pendente</span></div>
+                <span id="ccSomaExtra" class="cc-soma-extra"></span>
               </div>
             </div>
             <div class="value-display">
@@ -998,7 +1048,13 @@ $paginaAtual = 'despesas';
             <div class="saas-input-group mt-4" id="grupoCentroCusto">
               <label class="saas-label d-flex align-items-center justify-content-between">
                 <span>Centro de custo * <small class="fw-normal text-muted ms-1">(SEQCENTRORESULTADO)</small></span>
-                <button type="button" class="btn-cc-add" id="btnAddCC" title="Adicionar mais um centro de custo" onclick="addCentroCusto()">+</button>
+                <div class="cc-rateio-toolbar">
+                  <div class="cc-rateio-toggle" id="ccRateioToggle" style="display:none;">
+                    <button type="button" id="btnRateioValor" class="active" onclick="setRateioMode('valor')">R$</button>
+                    <button type="button" id="btnRateioPercentual" onclick="setRateioMode('percentual')">%</button>
+                  </div>
+                  <button type="button" class="btn-cc-add" id="btnAddCC" title="Adicionar mais um centro de custo" onclick="addCentroCusto()">+</button>
+                </div>
               </label>
               <div class="cc-container" id="ccContainer">
                 <div class="cc-row" id="ccRow0">
@@ -1007,6 +1063,7 @@ $paginaAtual = 'despesas';
                     placeholder="R$ 0,00" style="display:none;" oninput="atualizarSomaRateio()">
                 </div>
               </div>
+              <div class="cc-rateio-hint" id="ccRateioHint" style="display:none;">Defina quanto cada centro participa. Em %, a soma deve fechar em 100%.</div>
               <!-- Indicador de soma do rateio -->
               <div class="cc-soma-bar warn" id="ccSomaBar" style="display:none;">
                 <i class="bi bi-calculator" style="font-size:13px;"></i>
@@ -1160,6 +1217,35 @@ $paginaAtual = 'despesas';
   // Cache global de centros de custo (carregados uma vez)
   window._ccsData = [];
   let _ccCounter = 0;
+  let _rateioMode = 'valor';
+
+  function getRateioMode() {
+    return _rateioMode === 'percentual' ? 'percentual' : 'valor';
+  }
+
+  function setRateioMode(mode) {
+    _rateioMode = mode === 'percentual' ? 'percentual' : 'valor';
+
+    let btnValor = document.getElementById('btnRateioValor');
+    let btnPerc = document.getElementById('btnRateioPercentual');
+    if (btnValor) btnValor.classList.toggle('active', _rateioMode === 'valor');
+    if (btnPerc) btnPerc.classList.toggle('active', _rateioMode === 'percentual');
+
+    document.querySelectorAll('#ccContainer .cc-valor-input').forEach(inp => {
+      inp.placeholder = _rateioMode === 'percentual' ? '% 0,00' : 'R$ 0,00';
+      inp.step = '0.01';
+      inp.min = '0';
+    });
+
+    let hint = document.getElementById('ccRateioHint');
+    if (hint) {
+      hint.textContent = _rateioMode === 'percentual'
+        ? 'Defina quanto cada centro participa em %. A soma deve fechar em 100%.'
+        : 'Defina quanto cada centro participa em R$. A soma deve fechar no valor total da despesa.';
+    }
+
+    atualizarSomaRateio();
+  }
 
   // Popula um <select> de CC com TomSelect
   function _initCCSelect(selectEl) {
@@ -1192,6 +1278,10 @@ $paginaAtual = 'despesas';
     if (extraRows.length === 0) {
       document.getElementById('fCCValor_0').style.display = '';
       document.getElementById('ccSomaBar').style.display  = 'flex';
+      let toggle = document.getElementById('ccRateioToggle');
+      let hint = document.getElementById('ccRateioHint');
+      if (toggle) toggle.style.display = 'inline-flex';
+      if (hint) hint.style.display = 'block';
       atualizarSomaRateio();
     }
 
@@ -1212,6 +1302,7 @@ $paginaAtual = 'despesas';
     // Inicializa TomSelect no novo select
     let newSelect = document.getElementById(selectId);
     if (window._ccsData.length > 0) _initCCSelect(newSelect);
+    setRateioMode(getRateioMode());
   }
 
   // Remove um campo de CC adicional
@@ -1228,6 +1319,11 @@ $paginaAtual = 'despesas';
       let v0 = document.getElementById('fCCValor_0');
       if (v0) { v0.style.display = 'none'; v0.value = ''; }
       document.getElementById('ccSomaBar').style.display = 'none';
+      let toggle = document.getElementById('ccRateioToggle');
+      let hint = document.getElementById('ccRateioHint');
+      if (toggle) toggle.style.display = 'none';
+      if (hint) hint.style.display = 'none';
+      setRateioMode('valor');
     } else {
       atualizarSomaRateio();
     }
@@ -1261,6 +1357,55 @@ $paginaAtual = 'despesas';
   }
 
   // Carregamento dinâmico via API
+  function atualizarSomaRateio() {
+    let totalDespesa = parseFloat(document.getElementById('fValor').value) || 0;
+    let inputs = document.querySelectorAll('#ccContainer .cc-valor-input');
+    let soma = 0;
+    inputs.forEach(inp => { soma += parseFloat(inp.value) || 0; });
+
+    let bar     = document.getElementById('ccSomaBar');
+    let valEl   = document.getElementById('ccSomaVal');
+    let totalEl = document.getElementById('ccSomaTotal');
+    let fillEl  = document.getElementById('ccSomaFill');
+    let diffEl  = document.getElementById('ccSomaDiff');
+    let extraEl = document.getElementById('ccSomaExtra');
+    let modo    = getRateioMode();
+
+    let fmt = v => v.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    let fmtPct = v => `${Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+    let pct = 0;
+    let diff = 0;
+    let isOk = false;
+
+    if (modo === 'percentual') {
+      valEl.textContent = fmtPct(soma);
+      totalEl.textContent = '100,00%';
+      pct = Math.min(soma, 100);
+      diff = 100 - soma;
+      isOk = Math.abs(diff) < 0.05;
+      if (extraEl) {
+        let equivalente = totalDespesa > 0 ? (totalDespesa * (soma / 100)) : 0;
+        extraEl.textContent = `Equivale a ${fmt(equivalente)}`;
+      }
+    } else {
+      valEl.textContent = fmt(soma);
+      totalEl.textContent = fmt(totalDespesa);
+      pct = totalDespesa > 0 ? Math.min((soma / totalDespesa) * 100, 100) : 0;
+      diff = totalDespesa - soma;
+      isOk = Math.abs(diff) < 0.02;
+      if (extraEl) extraEl.textContent = '';
+    }
+
+    fillEl.style.width = pct.toFixed(1) + '%';
+    fillEl.style.background = isOk ? '#10b981' : (pct > 100 ? '#ef4444' : '#f59e0b');
+    bar.className = 'cc-soma-bar ' + (isOk ? 'ok' : 'warn');
+    diffEl.textContent = isOk
+      ? 'OK'
+      : (diff > 0
+          ? 'Faltam ' + (modo === 'percentual' ? fmtPct(diff) : fmt(diff))
+          : 'Excesso ' + (modo === 'percentual' ? fmtPct(Math.abs(diff)) : fmt(Math.abs(diff))));
+  }
+
   async function loadDomMock() {
     try {
       let res = await fetch('api/api_despesas.php', {

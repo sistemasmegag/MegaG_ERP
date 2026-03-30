@@ -36,6 +36,29 @@ function body_json()
     return is_array($j) ? $j : [];
 }
 
+function resolve_politica_despesa(PDO $conn, int $centroCusto): int
+{
+    $sql = "SELECT DISTINCT CODPOLITICA
+              FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO
+             WHERE CENTROCUSTO = :CC
+             ORDER BY CODPOLITICA";
+    $st = $conn->prepare($sql);
+    $st->bindValue(':CC', $centroCusto);
+    $st->execute();
+    $rows = $st->fetchAll(PDO::FETCH_COLUMN);
+
+    if (!$rows) {
+        throw new Exception('Nenhuma política de aprovação encontrada para o centro de custo informado.');
+    }
+
+    $rows = array_values(array_unique(array_map('intval', $rows)));
+    if (count($rows) > 1) {
+        throw new Exception('Existe mais de uma política vinculada a este centro de custo. Ajuste a configuração antes de lançar a despesa.');
+    }
+
+    return (int) $rows[0];
+}
+
 try {
     if (empty($_SESSION['logado']) || empty($_SESSION['usuario'])) {
         jexit(false, [], 'Sessão expirada. Faça login novamente.');
@@ -145,6 +168,7 @@ try {
         $cc_parts = explode('|', $centros_custo_raw[0]);
         $centro_custo = (int) ($cc_parts[0] ?? 0);
         $seq_cc = (int) ($cc_parts[1] ?? 0);
+        $cod_politica = resolve_politica_despesa($conn, $centro_custo);
 
         // USUARIO logado: para testes, enviamos 1 se não for numero
         $usr_solicitante = is_numeric($user) ? (int) $user : 1;
@@ -179,6 +203,7 @@ try {
                       p_CENTROCUSTO          => :CC,
                       p_STATUS               => 'LANCADO',
                       p_DESCRICAOCENTROCUSTO => NULL,
+                      p_CODPOLITICA          => :CODPOL,
                       p_DTAVENCIMENTO        => TO_DATE(:VENC, 'YYYY-MM-DD'),
                       p_DTADESPESA           => TO_DATE(:DTADESP, 'YYYY-MM-DD'),
                       p_CODDESPESA_OUT       => :OUT_ID
@@ -194,6 +219,7 @@ try {
         $st->bindValue(':OBS', $obs);
         $st->bindValue(':SEQCC', $seq_cc);
         $st->bindValue(':CC', $centro_custo);
+        $st->bindValue(':CODPOL', $cod_politica);
         $st->bindValue(':VENC', $venc !== '' ? $venc : null);
         $st->bindValue(':DTADESP', $data !== '' ? $data : null);
 

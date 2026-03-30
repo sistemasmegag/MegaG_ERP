@@ -1,433 +1,260 @@
-# Mega G ERP 🚀
+# Mega G ERP
 
-Sistema web desenvolvido em **PHP** para automação, importação de planilhas Excel e gestão operacional integrada ao **Oracle (ERP Consinco)**.
+Sistema web em `PHP` integrado ao `Oracle / Consinco`, com foco em operacao interna, importacoes, tarefas, despesas, permissoes e modulos corporativos.
 
-O projeto hoje contempla:
+## Visao Geral
 
-- 📊 Importações BI / Metas / Vendas (SSE)
-- 💰 Importação de Comissões (SSE)
-- 📦 Importação de Cargas/Metas Operacional (SSE)
-- 📉 GAP / Faixas / Perspectivas (SSE)
-- 🔎 Monitor de Importação Unificado (consulta dinâmica por tabela)
-- 🔐 Controle de Usuários e Permissões
-- 🗂️ **Módulo de Tarefas (Kanban + Detalhes + Comentários + Anexos)**
-- 🚀 **Aplicativos SaaS (CRM, Wiki Corporativa e RH/DP)**
-- 🔔 **Sistema de Notificações Global (Toasts + Painel Inteligente)**
-- 📈 **Analytics Avançado com ApexCharts no Dashboard de Dados**
-- 💸 **Módulo de Reembolsos / Despesas Corporativas** ← _novo_
-- 🏠 **Home Central Pessoal** com KPIs, prioridades, radar de despesas e atalhos dinâmicos
-- 🎨 UI **Clean SaaS** (tema dark/light, tokens CSS centralizados, glassmorphism)
+O projeto atualmente contempla:
 
-![Status do Projeto](https://img.shields.io/badge/Status-Em%20Produ%C3%A7%C3%A3o-brightgreen)
-![PHP](https://img.shields.io/badge/PHP-7.4%20|%208.x-blue)
-![Oracle](https://img.shields.io/badge/Database-Oracle-red)
-![Bootstrap](https://img.shields.io/badge/Frontend-Bootstrap%205-purple)
+- Importacoes BI / Metas / Vendas / Comissoes / Cargas
+- Dashboard principal com `Home Central Pessoal`
+- Modulo de tarefas em estilo kanban
+- Modulo de reembolsos / despesas corporativas
+- Gestao de aprovadores, grupos e politicas de despesas
+- CRM, Wiki, RH e notificacoes globais
+- UI padronizada no estilo `Clean SaaS`
 
-👨‍💻 Desenvolvido por:  
-**Felipe Fernando Gonçalves**  
-Dev Full Stack
+## Principais Entregas Desta Rodada
 
----
+### Home / Dashboard
 
-## ✨ Destaques (Clean SaaS UI)
+Arquivo principal:
 
-O sistema foi padronizado com layout **Clean SaaS**, focado em usabilidade, clareza e performance:
-
-- 🌗 **Tema Dark/Light**
-  - Persistência via `localStorage`
-  - Tokens CSS globais (compatível com Bootstrap 5)
-- 🧭 **Sidebar moderna**
-  - Busca rápida
-  - Item ativo por página
-  - Mobile overlay + tecla ESC
-- 🧱 **Componentes SaaS**
-  - Cards com sombras suaves
-  - Badges e chips
-  - Tabelas com cabeçalho sticky
-  - Modais elegantes para detalhe/log
-- 📊 **Monitor unificado**
-  - Consulta dinâmica sem reload
-  - Contadores em tempo real
-  - Logs completos sem truncamento
-  - Renderização dinâmica de colunas
-  - **Diferencial:** Gráficos estáticos interativos gerados sob os dados (ApexCharts).
-- 🔔 **Ecossistema de Notificação**
-  - Painel global no Footer com divisão de "Lido/Não Lido".
-  - Notificações Toasts (popups de não-bloqueio) avisando do tráfego.
-  - Sinos com badge counter rodando de forma invisível via polling longo.
-- 🏠 **Home / Central Pessoal**
-  - Hero com KPIs rápidos de tarefas, recados e atalhos
-  - Bloco de prioridades do dia
-  - Radar de despesas com resumo financeiro e últimas solicitações
-  - Busca de atalhos usando permissões carregadas na sessão
-  - Fallback seguro: quando não há dados reais, a home usa dados mock para não quebrar
-
----
-
-## 📋 Funcionalidades
-
-### 📊 Dashboard
-- Visão geral do sistema
-- KPIs rápidos do usuário logado
-- Prioridades do dia com dados reais do módulo de tarefas
-- Radar de despesas com resumo de status e volume financeiro
-- Atalhos dinâmicos montados a partir de `$_SESSION['menu_apps']`
-- Recados/notificações recentes do usuário
-
-Página:
 - `pages/home.php`
 
-Fontes de dados da home:
-- `$_SESSION['usuario']` → saudação e contexto do usuário
-- `$_SESSION['menu_apps']` → atalhos e módulos liberados
-- `megag_task_tasks` → prioridades e métricas de tarefas
-- `megag_task_notificacoes` → recados recentes
-- `CONSINCO.MEGAG_DESP` → radar de despesas e últimas solicitações
-
----
-
-### 📦 Importação de Cargas/Metas (Operacional)
-- Upload `.xls` / `.xlsx`
-- Processamento **linha a linha**
-- Log em tempo real via **SSE**
-- Persistência em:
-  - `MEGAG_IMP_SETORMETACAPAC`
-- Status:
-  - `S` (Sucesso)
-  - `E` (Erro)
-  - `P` (Pendente)
-
-Processador:
-- `processar.php`
-
----
-
-### 💰 Importação de Comissões
-- Upload `.xls` / `.xlsx`
-- Processamento em tempo real (SSE)
-- Persistência em:
-  - `MEGAG_IMP_REPCCOMISSAO` *(ou equivalente no ambiente Consinco)*
-- Interface dedicada e integrada ao monitor
-
-Processador:
-- `processa_comissao.php`
-
----
-
-### 🎯 Importação de Custo de Comercialização (Tabela de Venda por Raio)
-- Upload de planilhas com:
-  - Nº Tabela de Venda
-  - Sequência do Produto
-  - Raio
-  - Percentual de Redução (PERAD)
-- Persistência em:
-  - `MEGAG_IMP_TABVDAPRODRAIO`
-- Controle de status, log e data de inclusão
-- Integrado ao Monitor de Importação
-
-Página:
-- `imp_tabvdaprodraio.php`
-
-Processador:
-- `processors/processa_tabvdaprodraio.php`
-
----
-
-## 🧩 Importações BI / Metas / Vendas
-
-Todos os módulos abaixo seguem o padrão:
-- Upload `.xls/.xlsx`
-- Processamento **SSE**
-- Cabeçalho validado por colunas obrigatórias
-- Escrita em Oracle com status e logs (quando existir na tabela)
-- UI Clean SaaS com cor de tema por módulo
-
----
-
-### 📈 Importação BI Metas (Warning)
-- Colunas esperadas:
-  - `CODMETA, CODVENDEDOR, CODPERIODO, META, CODREGIAO, SEGMENTO, TIPORETIRA, CATEGORIA, SEQPRODUTO, DTAATUALIZACAO`
-- Persistência em:
-  - `MEGAG_IMP_BI_METAS`
-
----
-
-### 🧩 BI Metas Perspect / Metas Perspec / Metas GAP / Metas Faixas / Lançamento Comissão
-
-Todos integrados ao Monitor de Importação com as respectivas tabelas Oracle e processadores SSE em `processors/`.
-
----
-
-## 💸 Módulo de Reembolsos / Despesas Corporativas — Novo 🚀
-
-Módulo completo de **solicitação, acompanhamento e aprovação hierárquica** de despesas, integrando com as PKGs Oracle do ERP.
-
-### 🗂️ Tabelas Oracle envolvidas
-
-| Tabela | Finalidade |
-|---|---|
-| `MEGAG_DESP` | Registro principal da despesa |
-| `MEGAG_DESP_TIPO` | Categorias de despesa |
-| `MEGAG_DESP_RATEIO` | Rateio entre múltiplos Centros de Custo |
-| `MEGAG_DESP_APROVADORES` | Aprovadores por CC e hierarquia |
-| `MEGAG_DESP_APROVACAO` | Log de aprovações / reprovações |
-| `MEGAG_DESP_ARQUIVO` | Anexos (recibos, notas) |
-| `MEGAG_DESP_POLIT_CENTRO_CUSTO` | Políticas de aprovação por CC |
-| `ABA_CENTRORESULTADO` | Centros de Custo do ERP Consinco |
-
-### ✅ Funcionalidades implementadas
-
-#### 📋 Lançamento de Despesas (`pages/despesas.php`)
-- Modal split (drag & drop de anexo esquerda / formulário direita)
-- Campos:
-  - Moeda, Valor, Estabelecimento (Fornecedor), Data da Despesa
-  - Categoria (`MEGAG_DESP_TIPO`) com **TomSelect autocomplete**
-  - Centro de Custo com **TomSelect autocomplete**
-  - Data de Vencimento, Comentário/Observação
-- Campo **Estabelecimento / Fornecedor** com **autocomplete sob demanda**
-  - consulta assÃ­ncrona enquanto o usuÃ¡rio digita
-  - busca iniciada a partir de 2 letras
-  - limite de resultados por requisiÃ§Ã£o para evitar travamento com muitos fornecedores
-  - mensagens de apoio no campo: digite mais caracteres, buscando, nenhum resultado
-- Upload de anexo com preview (PDF = iframe, imagem = background)
-
-#### 🏢 Múltiplos Centros de Custo (Rateio)
-- Botão **`+`** ao lado do campo de CC para adicionar quantos CCs forem necessários
-- Cada CC adicional tem botão **`×`** para remover com animação `fadeInDown`
-- **Campo de valor por CC**: ao adicionar o 2º CC, aparecem inputs de valor individuais (roxos) próximos a cada linha
-- **Indicador de soma em tempo real**:
-  - Barra de progresso preenchendo conforme a soma dos valores
-  - 🟡 Amarelo: `Faltam R$ X,XX`
-  - 🔴 Vermelho: `Excesso R$ X,XX`
-  - 🟢 Verde: `✓ Ok` (bate com o total)
-- **Validação no envio**: bloqueia o submit com SweetAlert2 se a soma não coincidir com o total da despesa
-- Rateio gravado em `MEGAG_DESP_RATEIO` via `PRC_INS_MEGAG_DESP_RATEIO`, com o valor exato digitado por CC
-
-#### 📊 Tabela de Despesas
-- Métricas no header: Total, Em Aprovação, Reembolsado, Reprovado (com valores)
-- Coluna "Centro de custo" exibe badge **`◆ Rateio N CCs`** (roxo/índigo) quando há múltiplos centros
-
-#### 🏠 Radar de Despesas na Home (`pages/home.php`)
-- KPIs com contagem de:
-  - Em aprovação
-  - Reembolsadas
-  - Reprovadas
-  - Volume somado das despesas recentes
-- Lista das últimas despesas do usuário logado
-- Link direto para o módulo completo de despesas
-- Consulta direta em `CONSINCO.MEGAG_DESP` com fallback seguro caso não haja dados
-
-#### 🔍 Modal de Detalhes
-- Visualizador de anexo (PDF ou imagem) no lado esquerdo
-- Dados da despesa no lado direito
-- **Seção de Rateio expansível**: aparece automaticamente quando há > 1 CC
-  - Cards por CC com nome, código, barra de proporção gradiente e valor + percentual
-  - Collapse com chevron animado
-
-#### ✅ Aprovação Hierárquica
-- PKG `PRC_UPD_MEGAG_DESP_APROVACAO` gere aprovação por nível por CC
-- Impede auto-aprovação
-- Finaliza a despesa como `APROVADO` quando todos os níveis aprovam
-- Rejeita imediatamente ao `REJEITADO`
-- Timeline de aprovação no modal de detalhes com nome, nível e data
-
-### 📡 API: `api/api_despesas.php`
-
-| Action | Descrição |
-|---|---|
-| `get_doms` | Lista categorias e centros de custo para os selects |
-| `search_fornecedores` | Busca fornecedores sob demanda para o autocomplete de estabelecimento |
-| `create` | Cria nova despesa + arquivo + rateio por CC |
-| `list_mine` | Lista despesas do usuário logado com métricas e contagem de rateio |
-| `list_approvals` | Lista despesas pendentes de aprovação para o aprovador logado |
-| `update_approval` | Aprova ou rejeita uma despesa |
-| `get_history` | Trilha de aprovações de uma despesa |
-| `get_rateio` | Retorna os CCs e valores do rateio de uma despesa |
-| `get_dashboard_data` | Dados para gráficos: por categoria, mensal, top CCs |
-
-### 🗄️ Package Oracle: `PKG_MEGAG_DESP_CADASTRO`
-
-Arquivo: `PKG/PackageBody.sql`
-
-Procedures principais:
-
-| Procedure | Finalidade |
-|---|---|
-| `PRC_INS_MEGAG_DESP` | Inserir despesa principal |
-| `PRC_LIST_MEGAG_DESP` | Listar despesas por usuário/status |
-| `PRC_UPD_MEGAG_DESP` | Atualizar despesa (só status LANCADO) |
-| `PRC_INS_MEGAG_DESP_RATEIO` | Inserir linha de rateio por CC |
-| `PRC_LIST_MEGAG_DESP_RATEIO` | Listar rateio de uma despesa |
-| `PRC_UPD_MEGAG_DESP_APROVACAO` | Aprovar / Rejeitar despesa com hierarquia |
-| `PRC_LIST_MEGAG_DESP_APROVACAO` | Listar despesas pendentes de aprovação |
-| `PRC_INS_MEGAG_DESP_ARQUIVO` | Inserir arquivo na tabela de anexos |
-| `PRC_LIST_MEGAG_DESP_FORNECEDOR` | Base de fornecedores utilizada no campo Estabelecimento |
-| `PRC_LIST_MEGAG_DESP_CENTRO_CUSTO` | Listar centros de custo disponíveis |
-
----
-
-## 🗂️ Módulo de Tarefas (Kanban) — Novo 🚀
-
-Módulo completo de tarefas estilo Kanban, com API própria e páginas dedicadas.
-
-### ✅ Recursos
-- **Spaces** (agrupadores)
-- **Lists** (listas dentro do space)
-- **Kanban por Status** (TODO/DOING/DONE)
-- **Criar task** com:
-  - Título, descrição, status, prioridade, tags, responsável, entrega, criado_por
-- **Detalhes da task** com:
-  - Edição e salvar
-  - Excluir
-  - Comentários
-  - Anexos (upload, download, excluir)
-- UI Clean SaaS aplicada
-
-### 📌 API de Tarefas
-Arquivo: `api/tasks.php`
-
-Integrações adicionais:
-- A home utiliza `megag_task_tasks` para compor prioridades do dia
-- A home utiliza `megag_task_notificacoes` para exibir recados recentes
-
----
-
-## 🚀 Novos Módulos SaaS Incorporados
-
-### 💼 CRM & Leads (Gestão Comercial)
-- Quadro **Kanban Drag & Drop** super leve (sem lib externa).
-- Funil com etapas de venda: Novos Leads, Contato, Proposta, Ganho, Perdido.
-
-### 📚 Base de Conhecimento (Wiki)
-- Divisão responsiva: Lateral fixa com **Tópicos** (TI, RH, Comerciais, etc).
-- Dois Estados Visuais: Grid de visualização e State "Reader" focado no conteúdo.
-
-### 👥 Recursos Humanos (RH / Departamento Pessoal)
-- Tabela de **Minhas Solicitações** para empregados.
-- **Mural de Avisos** para comunicação interna.
-
----
-
-## 🔎 Visualização de Dados (Monitor de Importação)
-
-Consulta **unificada e inteligente** para **qualquer tabela de importação** cadastrada no Oracle.
-
-Página: `dados_visualizar.php` | API: `api/api_dados.php`
-
-### Status (legendas oficiais)
-- `S` = Sucesso  
-- `E` = Erro  
-- `C` = Cancelado  
-- `P` = Pendente  
-
----
-
-## 🔐 Controle de Usuários & Permissões
-
-- Permissões carregadas em sessão
-- Função central: `temPermissao($app, $acao)`
-- Admin (`ADMIN`) possui acesso total
-- Backend valida permissão sempre (segurança real)
-
----
-
-## 🧠 Processamento em Tempo Real (SSE)
-
-O sistema utiliza **Server-Sent Events** para acompanhar o processamento das planilhas sem travar o navegador.
-
-Fluxo:
-1. Upload do arquivo
-2. Salvamento no servidor
-3. Abertura do `EventSource`
-4. Processamento linha a linha
-5. Log em tempo real
-6. Evento `close` encerra o stream
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Backend:** PHP (Vanilla)
-- **Banco de Dados:** Oracle Database (PDO_OCI)
-- **Frontend:**
-  - HTML5 + CSS3 (tokens SaaS)
-  - Bootstrap 5
-  - JavaScript (Fetch API + SSE)
-- **Bibliotecas:**
-  - PhpSpreadsheet
-  - TomSelect (autocomplete)
-  - SweetAlert2 (alertas)
-  - ApexCharts (gráficos)
-
----
-
-## 📂 Estrutura do Projeto
-
-```
+Melhorias implementadas:
+
+- nova home em formato de `Central Pessoal`
+- hero com contexto do usuario logado
+- KPIs de tarefas, recados e atalhos
+- prioridades do dia
+- mural de recados
+- radar de despesas
+- atalhos dinamicos baseados em `$_SESSION['menu_apps']`
+- fallbacks seguros quando nao houver dados reais
+
+Fontes de dados usadas na home:
+
+- `$_SESSION['usuario']`
+- `$_SESSION['menu_apps']`
+- `megag_task_tasks`
+- `megag_task_notificacoes`
+- `CONSINCO.MEGAG_DESP`
+- `CONSINCO.MEGAG_DESP_TIPO`
+- `CONSINCO.MEGAG_DESP_APROVACAO`
+
+### Modulo de Tarefas
+
+Arquivos principais:
+
+- `pages/tarefas.php`
+- `pages/tarefas_criar_tasks.php`
+- `pages/tarefas_detalhes.php`
+- `api/tasks.php`
+- `assets/js/tasks-kanban-enhancements.js`
+
+Recursos implementados:
+
+- spaces e lists para organizacao do trabalho
+- task com titulo, descricao, prioridade, tags, responsavel e entrega
+- vinculacao do kanban ao usuario logado
+- filtro de acesso por criador e participantes da list
+- suporte a participantes da list
+- suporte a status dinamicos por list
+- resumo leve na tela principal do kanban
+- botao `Ver mais` por status
+- quadro completo em modal fullscreen
+- criacao de novos status por list
+- drag and drop no quadro completo
+- navegacao para tela de detalhes/edicao da task
+
+Regras de visibilidade:
+
+- o usuario pode ver a list se for criador ou participante
+- as tasks visiveis dependem da list acessivel
+- o fluxo deixou de depender apenas do `responsavel`
+
+Objetos novos de banco usados pelo modulo:
+
+- `MEGAG_TASK_LIST_PARTICIPANTES`
+- `MEGAG_TASK_LIST_STATUS`
+- `SEQ_MEGAG_TASK_LIST_STATUS`
+
+Objetos ja usados pelo modulo:
+
+- `MEGAG_TASK_SPACES`
+- `MEGAG_TASK_LISTS`
+- `MEGAG_TASK_TASKS`
+- `MEGAG_TASK_COMMENTS`
+- `MEGAG_TASK_ATTACHMENTS`
+- `MEGAG_TASK_NOTIFICACOES`
+
+### Modulo de Despesas / Reembolsos
+
+Arquivos principais:
+
+- `pages/despesas.php`
+- `pages/despesas_aprovacao.php`
+- `pages/despesas_config.php`
+- `api/api_despesas.php`
+- `api/api_despesas_config.php`
+
+Recursos implementados:
+
+- solicitacao de reembolso em modal split
+- upload de anexo
+- autocomplete de fornecedor
+- autocomplete de centro de custo
+- categorias dinamicas
+- rateio entre multiplos centros de custo
+- barra de soma do rateio
+- radar de despesas na home
+- detalhe da despesa com secao de rateio
+- timeline de aprovacao
+- aprovacao hierarquica
+
+Ajustes importantes feitos na integracao:
+
+- a API de despesas foi alinhada com a `PKG_MEGAG_DESP_CADASTRO`
+- o create passou a resolver e enviar `CODPOLITICA` automaticamente
+- o cadastro agora bloqueia quando:
+  - nao existe politica para o centro de custo
+  - existe mais de uma politica para o mesmo centro de custo
+
+Observacao:
+
+- o backend continua recebendo `valores_rateio` em valor absoluto
+- futuras evolucoes de percentual podem converter para valor antes do submit, sem quebrar a API
+
+## APIs Principais
+
+### `api/tasks.php`
+
+Entidades principais:
+
+- `spaces`
+- `lists`
+- `tasks`
+- `comments`
+- `attachments`
+- `statuses`
+
+Capacidades:
+
+- CRUD de spaces e lists
+- CRUD de tasks
+- mover task entre status
+- suporte a participantes
+- suporte a status dinamicos
+
+### `api/api_despesas.php`
+
+Acoes principais:
+
+- `get_doms`
+- `search_fornecedores`
+- `create`
+- `list_mine`
+- `list_approvals`
+- `update_approval`
+- `get_history`
+- `get_rateio`
+- `get_dashboard_data`
+
+### `api/api_despesas_config.php`
+
+Acoes principais:
+
+- `list_grupos`
+- `add_grupo`
+- `del_grupo`
+- `list_politicas`
+- `add_politica`
+- `del_politica`
+- `list_tipos`
+- `add_tipo`
+- `del_tipo`
+- `list_aprovadores`
+- `add_aprovador`
+- `del_aprovador`
+
+## Tabelas Oracle Envolvidas
+
+### Tarefas
+
+- `MEGAG_TASK_SPACES`
+- `MEGAG_TASK_LISTS`
+- `MEGAG_TASK_TASKS`
+- `MEGAG_TASK_COMMENTS`
+- `MEGAG_TASK_ATTACHMENTS`
+- `MEGAG_TASK_NOTIFICACOES`
+- `MEGAG_TASK_LIST_PARTICIPANTES`
+- `MEGAG_TASK_LIST_STATUS`
+
+### Despesas
+
+- `MEGAG_DESP`
+- `MEGAG_DESP_TIPO`
+- `MEGAG_DESP_RATEIO`
+- `MEGAG_DESP_APROVADORES`
+- `MEGAG_DESP_APROVACAO`
+- `MEGAG_DESP_ARQUIVO`
+- `MEGAG_DESP_POLIT_CENTRO_CUSTO`
+- `MEGAG_DESP_GRUPO`
+- `MEGAG_DESP_FORNEC_AUX`
+
+### Tabelas de apoio do ERP
+
+- `ABA_CENTRORESULTADO`
+- `GE_USUARIO`
+- `GE_PESSOA`
+
+## Estrutura Resumida
+
+```text
 importadorV2/
-├── pages/
-│   ├── home.php                  # Dashboard
-│   ├── despesas.php              # 💸 Módulo de Reembolsos
-│   ├── gerenciar_despesas.php    # Aprovação de Despesas
-│   ├── dados_visualizar.php      # Monitor de Importação
-│   ├── tarefas.php               # Kanban de Tarefas
-│   ├── crm.php                   # CRM / Leads
-│   ├── wiki.php                  # Base de Conhecimento
-│   ├── rh.php                    # RH / DP
-│   ├── usuarios.php              # Admin de Usuários
-│   └── imp_*.php                 # Importações (cargas, metas, BI, etc.)
-├── api/
-│   ├── api_despesas.php          # 💸 API de Despesas/Reembolsos
-│   ├── api_dados.php
-│   ├── tasks.php
-│   ├── api_usuarios.php
-│   ├── crm.php
-│   ├── wiki.php
-│   ├── rh.php
-│   └── notif.php
-├── PKG/
-│   ├── PackageBody.sql           # Package Oracle principal
-│   ├── DespesaCRUD.sql
-│   ├── RateioCRUD.sql
-│   ├── CentroCustoDespesaCRUD.sql
-│   ├── TipoDespesaCRUD.sql
-│   └── AprovadoresCRUD.sql
-├── processors/
-│   └── processa_*.php
-├── includes/
-│   ├── header.php
-│   ├── sidebar.php
-│   └── footer.php
-├── db_config/
-│   └── db_connect.php
-├── uploads/
-├── vendor/
-└── index.php                     # Controlador central
+|-- pages/
+|   |-- home.php
+|   |-- tarefas.php
+|   |-- tarefas_criar_tasks.php
+|   |-- tarefas_detalhes.php
+|   |-- despesas.php
+|   |-- despesas_aprovacao.php
+|   |-- despesas_config.php
+|   |-- crm.php
+|   |-- wiki.php
+|   `-- rh.php
+|-- api/
+|   |-- tasks.php
+|   |-- api_despesas.php
+|   |-- api_despesas_config.php
+|   `-- notif.php
+|-- assets/
+|   `-- js/tasks-kanban-enhancements.js
+|-- includes/
+|   |-- header.php
+|   |-- sidebar.php
+|   `-- footer.php
+|-- PKG/
+|   |-- CREATE_TABLE.sql
+|   `-- scripts / packages Oracle
+`-- index.php
 ```
 
----
+## Requisitos
 
-## ✅ Requisitos
+- PHP `7.4+`
+- Oracle com acesso por `PDO_OCI`
+- Composer
+- permissao de leitura e escrita nas tabelas Oracle usadas pelo sistema
 
-- PHP **7.4+** (recomendado 8.x)
-- Extensão/driver Oracle para PHP (**PDO_OCI**)
-- Composer (dependências como PhpSpreadsheet)
-- Acesso ao Oracle (Consinco) com permissões de leitura/escrita nas tabelas usadas
+## Observacoes para Publicacao
 
----
+- validar a existencia das tabelas novas do modulo de tarefas em producao
+- validar a package `PKG_MEGAG_DESP_CADASTRO` atualizada em producao
+- validar politicas por centro de custo no modulo de despesas
+- revisar permissoes do schema utilizado pela aplicacao
 
-## 📌 Status do Projeto
+## Ultima Atualizacao
 
-✅ Estável  
-🚀 Em produção  
-🧩 Arquitetura modular e APIs RESTful  
-🎨 UI Clean SaaS Padronizada  
-🔐 Segurança por permissão  
-⚡ Processamento em tempo real (SSE)  
-🗂️ Kanban de Tarefas com Comentários e Anexos  
-💸 Módulo de Reembolsos com Rateio multi-CC e Aprovação Hierárquica  
-🚀 Central Global Integrada (Wiki, CRM, RH e Notificações Toasts)
-
----
-
-> Última atualização: **Março 2026**
+- `Marco / 2026`
