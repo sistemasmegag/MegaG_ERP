@@ -15,6 +15,7 @@ O projeto hoje contempla:
 - 🔔 **Sistema de Notificações Global (Toasts + Painel Inteligente)**
 - 📈 **Analytics Avançado com ApexCharts no Dashboard de Dados**
 - 💸 **Módulo de Reembolsos / Despesas Corporativas** ← _novo_
+- 🏠 **Home Central Pessoal** com KPIs, prioridades, radar de despesas e atalhos dinâmicos
 - 🎨 UI **Clean SaaS** (tema dark/light, tokens CSS centralizados, glassmorphism)
 
 ![Status do Projeto](https://img.shields.io/badge/Status-Em%20Produ%C3%A7%C3%A3o-brightgreen)
@@ -54,6 +55,12 @@ O sistema foi padronizado com layout **Clean SaaS**, focado em usabilidade, clar
   - Painel global no Footer com divisão de "Lido/Não Lido".
   - Notificações Toasts (popups de não-bloqueio) avisando do tráfego.
   - Sinos com badge counter rodando de forma invisível via polling longo.
+- 🏠 **Home / Central Pessoal**
+  - Hero com KPIs rápidos de tarefas, recados e atalhos
+  - Bloco de prioridades do dia
+  - Radar de despesas com resumo financeiro e últimas solicitações
+  - Busca de atalhos usando permissões carregadas na sessão
+  - Fallback seguro: quando não há dados reais, a home usa dados mock para não quebrar
 
 ---
 
@@ -61,8 +68,21 @@ O sistema foi padronizado com layout **Clean SaaS**, focado em usabilidade, clar
 
 ### 📊 Dashboard
 - Visão geral do sistema
-- Totais por módulo
-- Atalhos para operações
+- KPIs rápidos do usuário logado
+- Prioridades do dia com dados reais do módulo de tarefas
+- Radar de despesas com resumo de status e volume financeiro
+- Atalhos dinâmicos montados a partir de `$_SESSION['menu_apps']`
+- Recados/notificações recentes do usuário
+
+Página:
+- `pages/home.php`
+
+Fontes de dados da home:
+- `$_SESSION['usuario']` → saudação e contexto do usuário
+- `$_SESSION['menu_apps']` → atalhos e módulos liberados
+- `megag_task_tasks` → prioridades e métricas de tarefas
+- `megag_task_notificacoes` → recados recentes
+- `CONSINCO.MEGAG_DESP` → radar de despesas e últimas solicitações
 
 ---
 
@@ -187,6 +207,16 @@ Módulo completo de **solicitação, acompanhamento e aprovação hierárquica**
 - Métricas no header: Total, Em Aprovação, Reembolsado, Reprovado (com valores)
 - Coluna "Centro de custo" exibe badge **`◆ Rateio N CCs`** (roxo/índigo) quando há múltiplos centros
 
+#### 🏠 Radar de Despesas na Home (`pages/home.php`)
+- KPIs com contagem de:
+  - Em aprovação
+  - Reembolsadas
+  - Reprovadas
+  - Volume somado das despesas recentes
+- Lista das últimas despesas do usuário logado
+- Link direto para o módulo completo de despesas
+- Consulta direta em `CONSINCO.MEGAG_DESP` com fallback seguro caso não haja dados
+
 #### 🔍 Modal de Detalhes
 - Visualizador de anexo (PDF ou imagem) no lado esquerdo
 - Dados da despesa no lado direito
@@ -255,6 +285,10 @@ Módulo completo de tarefas estilo Kanban, com API própria e páginas dedicadas
 
 ### 📌 API de Tarefas
 Arquivo: `api/tasks.php`
+
+Integrações adicionais:
+- A home utiliza `megag_task_tasks` para compor prioridades do dia
+- A home utiliza `megag_task_notificacoes` para exibir recados recentes
 
 ---
 

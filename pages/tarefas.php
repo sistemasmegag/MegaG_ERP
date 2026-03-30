@@ -497,6 +497,552 @@
             }
         }
     </style>
+
+    <style>
+        .wrap {
+            max-width: 1520px;
+            padding: 26px 24px 42px;
+        }
+
+        .saas-page-head {
+            padding: 22px 22px;
+            border-radius: 24px;
+        }
+
+        .saas-title {
+            font-size: 44px;
+            line-height: 1;
+        }
+
+        .saas-subtitle {
+            max-width: 680px;
+            font-size: 15px;
+        }
+
+        .actions {
+            gap: 12px;
+        }
+
+        .hero-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(320px, .8fr);
+            gap: 18px;
+            align-items: end;
+        }
+
+        .hero-layout > div:first-child {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .hero-layout .actions {
+            margin-left: auto;
+        }
+
+        .hero-note {
+            margin-top: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(13, 110, 253, .18);
+            background: rgba(255, 255, 255, .58);
+            color: #0f172a;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .hero-layout > div > .saas-subtitle:last-child {
+            display: none;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .hero-stat {
+            border: 1px solid var(--saas-border);
+            border-radius: 20px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, .68);
+            box-shadow: 0 14px 28px rgba(17, 24, 39, .06);
+        }
+
+        .hero-stat-label {
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--saas-muted);
+            margin-bottom: 8px;
+        }
+
+        .hero-stat-value {
+            font-size: 22px;
+            line-height: 1.1;
+            font-weight: 950;
+            color: var(--saas-text);
+        }
+
+        .hero-stat-value.sm {
+            font-size: 16px;
+            line-height: 1.35;
+        }
+
+        .btnx,
+        .saas-theme-toggle {
+            min-height: 44px;
+            padding: 10px 16px;
+            box-shadow: 0 10px 24px rgba(17, 24, 39, .06);
+            background: rgba(255, 255, 255, .58);
+        }
+
+        .btnx.primary {
+            background: linear-gradient(135deg, rgba(13, 110, 253, .18), rgba(13, 110, 253, .08));
+        }
+
+        .grid {
+            grid-template-columns: minmax(0, 1.35fr) minmax(340px, .9fr);
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .context-shell {
+            display: grid;
+            gap: 18px;
+        }
+
+        .context-shell > .card-title,
+        .context-shell > .hr {
+            display: none;
+        }
+
+        .context-shell > .row {
+            border: 1px solid var(--saas-border);
+            border-radius: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, .7);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+        }
+
+        .context-shell > #msgBox {
+            margin-top: -4px;
+        }
+
+        .context-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .context-copy p {
+            margin: 6px 0 0;
+            color: var(--saas-muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .context-eyebrow {
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: #2563eb;
+            margin-bottom: 6px;
+        }
+
+        .context-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .context-badge {
+            min-width: 140px;
+            border-radius: 18px;
+            padding: 12px 14px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, .82), rgba(255, 255, 255, .58));
+            border: 1px solid var(--saas-border);
+            box-shadow: 0 10px 24px rgba(17, 24, 39, .05);
+        }
+
+        .context-badge span {
+            display: block;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--saas-muted);
+            margin-bottom: 6px;
+        }
+
+        .context-badge strong {
+            display: block;
+            font-size: 16px;
+            line-height: 1.3;
+            font-weight: 900;
+        }
+
+        .context-panels {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .context-panel {
+            border: 1px solid var(--saas-border);
+            border-radius: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, .7);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            font-weight: 900;
+            margin-bottom: 6px;
+        }
+
+        .panel-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: rgba(13, 110, 253, .10);
+        }
+
+        .context-panel p {
+            margin: 0 0 14px;
+            color: var(--saas-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .metric-card {
+            border: 1px solid var(--saas-border);
+            border-radius: 18px;
+            padding: 14px;
+            background: rgba(255, 255, 255, .74);
+        }
+
+        .metric-card.todo {
+            background: linear-gradient(180deg, rgba(59, 130, 246, .11), rgba(255, 255, 255, .8));
+        }
+
+        .metric-card.doing {
+            background: linear-gradient(180deg, rgba(245, 158, 11, .13), rgba(255, 255, 255, .8));
+        }
+
+        .metric-card.done {
+            background: linear-gradient(180deg, rgba(16, 185, 129, .13), rgba(255, 255, 255, .8));
+        }
+
+        .metric-card.total {
+            background: linear-gradient(180deg, rgba(99, 102, 241, .11), rgba(255, 255, 255, .8));
+        }
+
+        .metric-card span {
+            display: block;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--saas-muted);
+            margin-bottom: 8px;
+        }
+
+        .metric-card strong {
+            display: block;
+            font-size: 26px;
+            line-height: 1;
+            font-weight: 950;
+            color: var(--saas-text);
+        }
+
+        .tip-list {
+            margin: 16px 0 0;
+            padding: 0;
+            list-style: none;
+            display: grid;
+            gap: 10px;
+        }
+
+        .tip-list li {
+            border-top: 1px solid rgba(17, 24, 39, .08);
+            padding-top: 10px;
+            color: var(--saas-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .grid > .saas-card:nth-child(2) .row,
+        .grid > .saas-card:nth-child(2) .hr:last-of-type,
+        .grid > .saas-card:nth-child(2) .hint:last-of-type {
+            display: none;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 14px;
+        }
+
+        .row {
+            gap: 14px;
+        }
+
+        .field {
+            min-width: 210px;
+        }
+
+        input,
+        select,
+        textarea {
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .85);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: rgba(13, 110, 253, .34);
+            box-shadow: 0 0 0 4px var(--saas-ring);
+        }
+
+        .hr {
+            margin: 16px 0;
+        }
+
+        .hint {
+            line-height: 1.8;
+        }
+
+        .kanban {
+            margin-top: 18px;
+            gap: 18px;
+        }
+
+        .kcol {
+            padding: 18px;
+            min-height: 520px;
+        }
+
+        .saas-card:nth-of-type(3) .kcol {
+            background: linear-gradient(180deg, rgba(59, 130, 246, .06), transparent 180px);
+        }
+
+        .saas-card:nth-of-type(4) .kcol {
+            background: linear-gradient(180deg, rgba(245, 158, 11, .08), transparent 180px);
+        }
+
+        .saas-card:nth-of-type(5) .kcol {
+            background: linear-gradient(180deg, rgba(16, 185, 129, .08), transparent 180px);
+        }
+
+        .kname {
+            font-size: 20px;
+            letter-spacing: -.02em;
+        }
+
+        .pill {
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, .72);
+        }
+
+        .ksub {
+            margin-bottom: 14px;
+        }
+
+        .dropzone {
+            min-height: 240px;
+            border-radius: 18px;
+            transition: background .18s ease, outline-color .18s ease, transform .18s ease;
+        }
+
+        .dropzone.is-over {
+            outline: 2px dashed rgba(13, 110, 253, .35);
+            outline-offset: 6px;
+            background: rgba(13, 110, 253, .05);
+        }
+
+        .task {
+            position: relative;
+            border-radius: 18px;
+            padding: 14px;
+            background: rgba(255, 255, 255, .9);
+            overflow: hidden;
+            cursor: grab;
+            transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+        }
+
+        .task:active {
+            cursor: grabbing;
+        }
+
+        .task.is-dragging {
+            opacity: .48;
+            transform: rotate(1.2deg) scale(.98);
+            box-shadow: 0 18px 40px rgba(17, 24, 39, .14);
+        }
+
+        .task::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 5px;
+            background: #94a3b8;
+            border-radius: 18px 0 0 18px;
+        }
+
+        .task.prio-low::before {
+            background: #60a5fa;
+        }
+
+        .task.prio-med::before {
+            background: #f59e0b;
+        }
+
+        .task.prio-high::before {
+            background: #f97316;
+        }
+
+        .task.prio-urgent::before {
+            background: #ef4444;
+        }
+
+        .task-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .task-id {
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--saas-muted);
+            margin-bottom: 6px;
+        }
+
+        .tt {
+            font-size: 15px;
+            line-height: 1.35;
+        }
+
+        .task-badge {
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .task-badge.low {
+            background: rgba(59, 130, 246, .10);
+            color: #2563eb;
+        }
+
+        .task-badge.med {
+            background: rgba(245, 158, 11, .12);
+            color: #b45309;
+        }
+
+        .task-badge.high {
+            background: rgba(249, 115, 22, .12);
+            color: #c2410c;
+        }
+
+        .task-badge.urgent {
+            background: rgba(239, 68, 68, .12);
+            color: #b91c1c;
+        }
+
+        .meta {
+            margin-top: 12px;
+        }
+
+        .chip {
+            padding: 5px 9px;
+            background: rgba(17, 24, 39, .05);
+        }
+
+        .ta {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(17, 24, 39, .08);
+        }
+
+        .empty-col {
+            min-height: 180px;
+            border: 1px dashed rgba(17, 24, 39, .14);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--saas-muted);
+            padding: 20px;
+            background: rgba(255, 255, 255, .42);
+            line-height: 1.6;
+        }
+
+        html[data-theme="dark"] .empty-col {
+            background: rgba(255, 255, 255, .03);
+            border-color: rgba(255, 255, 255, .10);
+        }
+
+        @media (max-width: 1050px) {
+            .hero-layout,
+            .grid,
+            .kanban {
+                grid-template-columns: 1fr;
+            }
+
+            .context-panels,
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .context-header {
+                flex-direction: column;
+            }
+
+            .saas-title {
+                font-size: 34px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -505,15 +1051,36 @@
 
             <!-- Header padrão -->
             <div class="saas-page-head">
-                <div class="head-row">
+                <div class="hero-layout">
                     <div>
                         <h2 class="saas-title">Tarefas</h2>
+                        <p class="saas-subtitle">Painel de trabalho com foco em contexto, fluxo e andamento real da lista selecionada.</p>
+                        <div class="hero-note">Kanban ativo para acompanhar backlog, execucao e entregas no mesmo lugar.</div>
                         <p class="saas-subtitle">Organize por Space e List — visão Kanban</p>
                     </div>
                     <div class="actions">
                         <button class="saas-theme-toggle" id="btnTheme">🌙 <span id="themeLabel">Dark</span></button>
                         <button class="btnx" id="btnReload">↻ Recarregar</button>
                         <button class="btnx primary" id="btnNewTask">＋ Nova Task</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-stats" style="margin-top:18px;">
+                    <div class="hero-stat">
+                        <div class="hero-stat-label">Space ativo</div>
+                        <div class="hero-stat-value sm" id="heroSpace">Nenhum space</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-label">List ativa</div>
+                        <div class="hero-stat-value sm" id="heroList">Nenhuma list</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-label">Responsavel base</div>
+                        <div class="hero-stat-value sm" id="heroUser">web</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-label">Tasks na list</div>
+                        <div class="hero-stat-value" id="heroTotal">0</div>
                     </div>
                 </div>
             </div>
@@ -523,6 +1090,24 @@
 
                 <div class="saas-card">
                     <div class="card-body">
+                        <div class="context-shell">
+                            <div class="context-header">
+                                <div class="context-copy">
+                                    <div class="context-eyebrow">Workspace</div>
+                                    <div class="card-title" style="margin:0;">Organize o fluxo antes de criar ou mover tasks</div>
+                                    <p>Defina o contexto principal, crie novos agrupadores e mantenha cada entrega ligada ao space e list corretos.</p>
+                                </div>
+                                <div class="context-badges">
+                                    <div class="context-badge">
+                                        <span>Space atual</span>
+                                        <strong id="contextSpaceBadge">Nenhum</strong>
+                                    </div>
+                                    <div class="context-badge">
+                                        <span>List atual</span>
+                                        <strong id="contextListBadge">Nenhuma</strong>
+                                    </div>
+                                </div>
+                            </div>
                         <div class="card-title">Contexto</div>
 
                         <div class="row">
@@ -578,12 +1163,39 @@
                             </div>
                         </div>
 
+                        </div>
                     </div>
                 </div>
 
                 <div class="saas-card">
                     <div class="card-body">
-                        <div class="card-title">Resumo da List</div>
+                        <div class="context-eyebrow">Resumo</div>
+                        <div class="card-title" style="margin-bottom:8px;">Saude da list selecionada</div>
+                        <div class="hint" style="margin-top:0;">Leitura rapida da fila para decidir onde concentrar o trabalho primeiro.</div>
+                        <div class="metric-grid" style="margin-top:18px;">
+                            <div class="metric-card todo">
+                                <span>TODO</span>
+                                <strong id="summaryTodo">0</strong>
+                            </div>
+                            <div class="metric-card doing">
+                                <span>DOING</span>
+                                <strong id="summaryDoing">0</strong>
+                            </div>
+                            <div class="metric-card done">
+                                <span>DONE</span>
+                                <strong id="summaryDone">0</strong>
+                            </div>
+                            <div class="metric-card total">
+                                <span>Total</span>
+                                <strong id="countTotal">0</strong>
+                            </div>
+                        </div>
+                        <ul class="tip-list">
+                            <li>Mude o status direto no card para reorganizar o fluxo sem sair do quadro.</li>
+                            <li>Use "Nova Task" para criar itens ja vinculados a list atualmente selecionada.</li>
+                            <li>Crie um novo space so quando a frente for realmente diferente; senao, prefira separar por lists.</li>
+                        </ul>
+                        <div class="card-title" style="display:none;">Resumo da List</div>
 
                         <div class="row">
                             <div class="field">
@@ -615,35 +1227,35 @@
             <div class="kanban">
 
                 <div class="saas-card">
-                    <div class="kcol">
+                    <div class="kcol todo-col">
                         <div class="khead">
                             <div class="kname">TODO</div>
                             <div class="pill" id="pillTodo">0</div>
                         </div>
                         <div class="ksub">A fazer</div>
-                        <div id="colTODO"></div>
+                        <div id="colTODO" class="dropzone" data-status="TODO"></div>
                     </div>
                 </div>
 
                 <div class="saas-card">
-                    <div class="kcol">
+                    <div class="kcol doing-col">
                         <div class="khead">
                             <div class="kname">DOING</div>
                             <div class="pill" id="pillDoing">0</div>
                         </div>
                         <div class="ksub">Em andamento</div>
-                        <div id="colDOING"></div>
+                        <div id="colDOING" class="dropzone" data-status="DOING"></div>
                     </div>
                 </div>
 
                 <div class="saas-card">
-                    <div class="kcol">
+                    <div class="kcol done-col">
                         <div class="khead">
                             <div class="kname">DONE</div>
                             <div class="pill" id="pillDone">0</div>
                         </div>
                         <div class="ksub">Concluídas</div>
-                        <div id="colDONE"></div>
+                        <div id="colDONE" class="dropzone" data-status="DONE"></div>
                     </div>
                 </div>
 
@@ -719,6 +1331,8 @@
     <script>
         const API = '/importador/api/tasks.php';
         const $ = (id) => document.getElementById(id);
+        let draggingTaskId = null;
+        let draggingTaskStatus = null;
 
         function showMsg(text, ok = true) {
             const el = $('msgBox');
@@ -772,6 +1386,83 @@
             return ($('userDefault').value || '').trim() || 'web';
         }
 
+        function selectedText(id, fallback) {
+            const sel = $(id);
+            if (!sel) return fallback;
+            const opt = sel.options[sel.selectedIndex];
+            return opt ? opt.textContent : fallback;
+        }
+
+        function refreshHeroStats(total = null) {
+            const spaceText = selectedText('spaceSelect', 'Nenhum space');
+            const listText = selectedText('listSelect', 'Nenhuma list');
+            const userText = user();
+
+            if ($('heroSpace')) $('heroSpace').textContent = spaceText || 'Nenhum space';
+            if ($('heroList')) $('heroList').textContent = listText || 'Nenhuma list';
+            if ($('heroUser')) $('heroUser').textContent = userText;
+            if ($('contextSpaceBadge')) $('contextSpaceBadge').textContent = spaceText || 'Nenhum';
+            if ($('contextListBadge')) $('contextListBadge').textContent = listText || 'Nenhuma';
+            if (total !== null) {
+                if ($('heroTotal')) $('heroTotal').textContent = String(total);
+                if ($('countTotal')) $('countTotal').textContent = String(total);
+            }
+        }
+
+        async function moveTask(taskId, status) {
+            await apiSend(`${API}?entity=tasks&action=move`, 'PATCH', {
+                task_id: taskId,
+                status,
+                user: user()
+            });
+            showMsg('Status atualizado.', true);
+            await loadTasks();
+        }
+
+        function clearDropzones() {
+            document.querySelectorAll('.dropzone.is-over').forEach(el => el.classList.remove('is-over'));
+        }
+
+        function setupDropzones() {
+            document.querySelectorAll('.dropzone').forEach(zone => {
+                if (zone.dataset.dndBound === '1') return;
+                zone.dataset.dndBound = '1';
+
+                zone.addEventListener('dragover', (ev) => {
+                    ev.preventDefault();
+                    zone.classList.add('is-over');
+                });
+
+                zone.addEventListener('dragenter', (ev) => {
+                    ev.preventDefault();
+                    zone.classList.add('is-over');
+                });
+
+                zone.addEventListener('dragleave', (ev) => {
+                    if (!zone.contains(ev.relatedTarget)) {
+                        zone.classList.remove('is-over');
+                    }
+                });
+
+                zone.addEventListener('drop', async (ev) => {
+                    ev.preventDefault();
+                    const nextStatus = zone.dataset.status || '';
+                    clearDropzones();
+
+                    if (!draggingTaskId || !nextStatus || nextStatus === draggingTaskStatus) return;
+
+                    try {
+                        await moveTask(draggingTaskId, nextStatus);
+                    } catch (e) {
+                        showMsg(e.message, false);
+                    } finally {
+                        draggingTaskId = null;
+                        draggingTaskStatus = null;
+                    }
+                });
+            });
+        }
+
         // Theme toggle (compatível com seu data-theme)
         function setTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
@@ -807,6 +1498,7 @@
                 $('listSelect').innerHTML = '<option value="">Sem lists</option>';
                 renderKanban([]);
             }
+            refreshHeroStats();
         }
 
         async function loadLists() {
@@ -842,6 +1534,7 @@
             } else {
                 renderKanban([]);
             }
+            refreshHeroStats();
         }
 
         async function loadTasks() {
@@ -869,6 +1562,11 @@
             $('countTodo').textContent = by.TODO.length;
             $('countDoing').textContent = by.DOING.length;
             $('countDone').textContent = by.DONE.length;
+            if ($('summaryTodo')) $('summaryTodo').textContent = by.TODO.length;
+            if ($('summaryDoing')) $('summaryDoing').textContent = by.DOING.length;
+            if ($('summaryDone')) $('summaryDone').textContent = by.DONE.length;
+            if ($('countTotal')) $('countTotal').textContent = tasks.length;
+            refreshHeroStats(tasks.length);
 
             paint('colTODO', by.TODO);
             paint('colDOING', by.DOING);
@@ -878,6 +1576,14 @@
         function paint(id, tasks) {
             const el = $(id);
             el.innerHTML = '';
+            setupDropzones();
+            if (!tasks.length) {
+                const empty = document.createElement('div');
+                empty.className = 'empty-col';
+                empty.textContent = 'Nenhuma task nesta etapa ainda. Crie uma nova task ou mova cards para organizar o fluxo.';
+                el.appendChild(empty);
+                return;
+            }
             tasks.forEach(t => el.appendChild(card(t)));
         }
 
@@ -899,12 +1605,53 @@
             const criadoEm = t.CRIADO_EM ?? t.criado_em ?? '';
 
             const el = document.createElement('div');
-            el.className = 'task';
+            const prioClass = String(prioridade || 'med').toLowerCase();
+            el.className = `task prio-${prioClass}`;
+            el.draggable = true;
+            el.dataset.taskId = String(id);
+            el.dataset.status = status;
+
+            el.addEventListener('dragstart', (ev) => {
+                draggingTaskId = id;
+                draggingTaskStatus = status;
+                el.classList.add('is-dragging');
+                if (ev.dataTransfer) {
+                    ev.dataTransfer.effectAllowed = 'move';
+                    ev.dataTransfer.setData('text/plain', String(id));
+                }
+            });
+
+            el.addEventListener('dragend', () => {
+                el.classList.remove('is-dragging');
+                clearDropzones();
+                draggingTaskId = null;
+                draggingTaskStatus = null;
+            });
 
             const tt = document.createElement('p');
             tt.className = 'tt';
-            tt.textContent = `#${id} — ${titulo}`;
-            el.appendChild(tt);
+            tt.textContent = titulo;
+
+            const top = document.createElement('div');
+            top.className = 'task-top';
+
+            const left = document.createElement('div');
+            const taskId = document.createElement('div');
+            taskId.className = 'task-id';
+            taskId.textContent = `Task #${id}`;
+
+            left.appendChild(taskId);
+            left.appendChild(tt);
+            top.appendChild(left);
+
+            if (prioridade) {
+                const badge = document.createElement('span');
+                badge.className = `task-badge ${prioClass}`;
+                badge.textContent = prioridade;
+                top.appendChild(badge);
+            }
+
+            el.appendChild(top);
 
             const meta = document.createElement('div');
             meta.className = 'meta';
@@ -929,13 +1676,7 @@
             });
             sel.addEventListener('change', async () => {
                 try {
-                    await apiSend(`${API}?entity=tasks&action=move`, 'PATCH', {
-                        task_id: id,
-                        status: sel.value,
-                        user: user()
-                    });
-                    showMsg('Status atualizado.', true);
-                    await loadTasks();
+                    await moveTask(id, sel.value);
                 } catch (e) {
                     showMsg(e.message, false);
                 }
@@ -1171,6 +1912,7 @@
                 showMsg(e.message, false);
             }
         });
+        $('userDefault').addEventListener('input', () => refreshHeroStats());
 
         $('btnCreateSpace').addEventListener('click', async () => {
             try {

@@ -108,17 +108,68 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
     }
 
     .wrap {
-      max-width: 1200px;
+      max-width: 1440px;
       margin: 0 auto;
-      padding: 18px 18px 28px;
+      padding: 28px 24px 40px;
     }
 
     .head-row {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .hero-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-stats {
+      display: flex;
       gap: 12px;
       flex-wrap: wrap;
+    }
+
+    .hero-stat {
+      min-width: 150px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(13, 110, 253, .14);
+      background: rgba(255, 255, 255, .42);
+      backdrop-filter: blur(8px);
+    }
+
+    html[data-theme="dark"] .hero-stat {
+      background: rgba(255, 255, 255, .06);
+      border-color: rgba(255, 255, 255, .08);
+    }
+
+    .hero-stat-label {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--saas-muted);
+    }
+
+    .hero-stat-value {
+      margin-top: 6px;
+      font-size: 24px;
+      font-weight: 950;
+      letter-spacing: -.03em;
+      color: var(--saas-text);
+      line-height: 1;
+    }
+
+    .hero-stat-sub {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--saas-muted);
     }
 
     .actions {
@@ -130,10 +181,10 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
 
     .btnx {
       border: 1px solid var(--saas-border);
-      background: rgba(255, 255, 255, .20);
+      background: rgba(255, 255, 255, .52);
       color: var(--saas-text);
       border-radius: 999px;
-      padding: 9px 12px;
+      padding: 10px 16px;
       font-size: 13px;
       font-weight: 900;
       cursor: pointer;
@@ -141,6 +192,7 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
       align-items: center;
       gap: 8px;
       text-decoration: none;
+      box-shadow: 0 10px 24px rgba(17, 24, 39, .06);
     }
 
     html[data-theme="dark"] .btnx {
@@ -152,7 +204,7 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
     }
 
     .btnx.primary {
-      background: rgba(13, 110, 253, .12);
+      background: linear-gradient(135deg, rgba(13, 110, 253, .18), rgba(13, 110, 253, .08));
       border-color: rgba(13, 110, 253, .25);
       color: #0b5ed7;
     }
@@ -162,18 +214,26 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
     }
 
     .card-body {
-      padding: 16px;
+      padding: 22px;
+    }
+
+    .layout-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, .75fr);
+      gap: 18px;
+      margin-top: 18px;
+      align-items: start;
     }
 
     .row {
       display: flex;
-      gap: 12px;
+      gap: 14px;
       flex-wrap: wrap;
     }
 
     .field {
       flex: 1;
-      min-width: 240px;
+      min-width: 220px;
     }
 
     label {
@@ -190,18 +250,26 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
     select,
     textarea {
       width: 100%;
-      padding: 10px 12px;
-      border-radius: 14px;
+      padding: 12px 14px;
+      border-radius: 16px;
       border: 1px solid var(--saas-border);
-      background: rgba(255, 255, 255, .75);
+      background: rgba(255, 255, 255, .84);
       color: var(--saas-text);
       outline: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35);
     }
 
     html[data-theme="dark"] input,
     html[data-theme="dark"] select,
     html[data-theme="dark"] textarea {
       background: rgba(255, 255, 255, .06);
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(13, 110, 253, .34);
+      box-shadow: 0 0 0 4px rgba(13, 110, 253, .12);
     }
 
     textarea {
@@ -240,6 +308,130 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
       color: var(--saas-muted);
       font-size: 12px;
       margin-top: 8px;
+      line-height: 1.8;
+    }
+
+    .section-block {
+      border: 1px solid rgba(17, 24, 39, .08);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .72), rgba(255, 255, 255, .48));
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    html[data-theme="dark"] .section-block {
+      background: rgba(255, 255, 255, .04);
+      border-color: rgba(255, 255, 255, .06);
+    }
+
+    .section-head {
+      margin-bottom: 14px;
+    }
+
+    .section-kicker {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--saas-muted);
+      margin-bottom: 4px;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 950;
+      letter-spacing: -.02em;
+      color: var(--saas-text);
+      margin: 0;
+    }
+
+    .section-note {
+      font-size: 13px;
+      color: var(--saas-muted);
+      margin-top: 4px;
+    }
+
+    .side-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .summary-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .summary-item {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(17, 24, 39, .08);
+      background: rgba(255, 255, 255, .62);
+    }
+
+    html[data-theme="dark"] .summary-item {
+      background: rgba(255, 255, 255, .04);
+      border-color: rgba(255, 255, 255, .08);
+    }
+
+    .summary-label {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--saas-muted);
+    }
+
+    .summary-value {
+      margin-top: 6px;
+      font-size: 16px;
+      font-weight: 950;
+      color: var(--saas-text);
+      line-height: 1.35;
+    }
+
+    .summary-help {
+      font-size: 12px;
+      color: var(--saas-muted);
+      margin-top: 6px;
+      line-height: 1.6;
+    }
+
+    .priority-preview {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(17, 24, 39, .08);
+      background: rgba(255, 255, 255, .66);
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--saas-text);
+    }
+
+    .priority-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f59e0b;
+    }
+
+    .priority-dot.low {
+      background: #60a5fa;
+    }
+
+    .priority-dot.med {
+      background: #f59e0b;
+    }
+
+    .priority-dot.high {
+      background: #f97316;
+    }
+
+    .priority-dot.urgent {
+      background: #ef4444;
     }
 
     /* Autocomplete bonito */
@@ -290,6 +482,16 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
       border-radius: 999px;
       border: 1px solid var(--saas-border);
     }
+
+    @media (max-width: 1050px) {
+      .layout-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .wrap {
+        padding: 20px 16px 28px;
+      }
+    }
   </style>
 </head>
 
@@ -299,9 +501,26 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
 
       <div class="saas-page-head">
         <div class="head-row">
-          <div>
+          <div class="hero-copy">
             <h2 class="saas-title">Criar Task</h2>
-            <p class="saas-subtitle">Crie uma nova task no Space/List desejado</p>
+            <p class="saas-subtitle">Monte a task com mais contexto antes de publicar no fluxo. A ideia aqui é reduzir ruído e deixar a criação bem mais guiada.</p>
+            <div class="hero-stats">
+              <div class="hero-stat">
+                <div class="hero-stat-label">Space</div>
+                <div class="hero-stat-value" id="heroSpace">--</div>
+                <div class="hero-stat-sub">contexto atual</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat-label">List</div>
+                <div class="hero-stat-value" id="heroList">--</div>
+                <div class="hero-stat-sub">destino da task</div>
+              </div>
+              <div class="hero-stat">
+                <div class="hero-stat-label">Prioridade</div>
+                <div class="hero-stat-value" id="heroPrio">MED</div>
+                <div class="hero-stat-sub">nível atual selecionado</div>
+              </div>
+            </div>
           </div>
           <div class="actions">
             <button class="saas-theme-toggle" id="btnTheme">🌙 <span id="themeLabel">Dark</span></button>
@@ -311,7 +530,8 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
         </div>
       </div>
 
-      <div style="margin-top:14px" class="saas-card">
+      <div class="layout-grid">
+      <div class="saas-card">
         <div class="card-body">
           <div id="msgBox" class="msg"></div>
 
@@ -353,6 +573,10 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
                 <option value="HIGH">HIGH</option>
                 <option value="URGENT">URGENT</option>
               </select>
+              <div class="priority-preview">
+                <span class="priority-dot med" id="priorityDot"></span>
+                <span id="priorityText">Prioridade média selecionada</span>
+              </div>
             </div>
           </div>
 
@@ -390,6 +614,48 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
           </div>
 
         </div>
+      </div>
+
+      <div class="side-stack">
+        <div class="saas-card">
+          <div class="card-body">
+            <div class="section-kicker">Resumo</div>
+            <h3 class="section-title">Prévia da publicação</h3>
+            <div class="section-note">Uma leitura rápida do que será criado antes de enviar.</div>
+
+            <div class="summary-list" style="margin-top:16px;">
+              <div class="summary-item">
+                <div class="summary-label">Título</div>
+                <div class="summary-value" id="previewTitulo">Aguardando título...</div>
+                <div class="summary-help">Use um nome curto e claro para facilitar leitura no kanban.</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Responsável</div>
+                <div class="summary-value" id="previewResponsavel">Não definido</div>
+                <div class="summary-help">O autocomplete grava o login do responsável no backend.</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Entrega</div>
+                <div class="summary-value" id="previewEntrega">Sem prazo</div>
+                <div class="summary-help">Definir prazo ajuda a priorizar melhor no fluxo.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="saas-card">
+          <div class="card-body">
+            <div class="section-kicker">Guia rápido</div>
+            <h3 class="section-title">Boas práticas</h3>
+            <div class="hint" style="margin-top:14px;">
+              â€¢ Escolha primeiro o Space e a List corretos<br>
+              â€¢ Use título curto, mas objetivo<br>
+              â€¢ Informe responsável quando a task já tiver dono<br>
+              â€¢ Depois de criar, você será levado direto para os detalhes
+            </div>
+          </div>
+        </div>
+      </div>
       </div>
 
     </div>
@@ -444,6 +710,38 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
       localStorage.setItem('megag_theme', theme);
     }
 
+    function updateHeaderContext() {
+      const spaceText = $('spaceSelect').selectedOptions[0]?.textContent || '--';
+      const listText = $('listSelect').selectedOptions[0]?.textContent || '--';
+      $('heroSpace').textContent = spaceText && spaceText !== 'Selecione...' ? spaceText.replace(/\s*\(#\d+\)\s*$/, '') : '--';
+      $('heroList').textContent = listText && listText !== 'Selecione...' ? listText.replace(/\s*\(#\d+\)\s*$/, '') : '--';
+    }
+
+    function updatePriorityPreview() {
+      const value = ($('fPrioridade').value || 'MED').toLowerCase();
+      const map = {
+        low: 'Prioridade baixa selecionada',
+        med: 'Prioridade média selecionada',
+        high: 'Prioridade alta selecionada',
+        urgent: 'Prioridade urgente selecionada'
+      };
+      $('heroPrio').textContent = (value || 'med').toUpperCase();
+      $('priorityDot').className = `priority-dot ${value}`;
+      $('priorityText').textContent = map[value] || map.med;
+    }
+
+    function updateFormPreview() {
+      const titulo = ($('fTitulo').value || '').trim();
+      const responsavel = ($('fResponsavel').value || '').trim();
+      const entrega = ($('fEntrega').value || '').trim();
+
+      $('previewTitulo').textContent = titulo || 'Aguardando título...';
+      $('previewResponsavel').textContent = responsavel || 'Não definido';
+      $('previewEntrega').textContent = entrega || 'Sem prazo';
+      updatePriorityPreview();
+      updateHeaderContext();
+    }
+
     async function loadSpaces() {
       const spaces = await apiGet(`${API}?entity=spaces&only_active=S`);
       const sel = $('spaceSelect');
@@ -467,6 +765,7 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
       else if (spaces.length) sel.value = String(spaces[0].ID ?? spaces[0].id);
 
       await loadLists();
+      updateHeaderContext();
     }
 
     async function loadLists() {
@@ -497,6 +796,8 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
 
       if (PRE_LIST_ID) sel.value = String(PRE_LIST_ID);
       else if (lists.length) sel.value = String(lists[0].ID ?? lists[0].id);
+
+      updateHeaderContext();
     }
 
     async function createTask() {
@@ -541,8 +842,16 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
       setTheme(cur === 'dark' ? 'light' : 'dark');
     });
 
-    $('spaceSelect').addEventListener('change', loadLists);
+    $('spaceSelect').addEventListener('change', async () => {
+      await loadLists();
+      updateFormPreview();
+    });
     $('btnCreate').addEventListener('click', createTask);
+    $('listSelect').addEventListener('change', updateFormPreview);
+    $('fPrioridade').addEventListener('change', updateFormPreview);
+    $('fTitulo').addEventListener('input', updateFormPreview);
+    $('fResponsavel').addEventListener('input', updateFormPreview);
+    $('fEntrega').addEventListener('input', updateFormPreview);
 
     (async () => {
       const savedTheme = localStorage.getItem('megag_theme');
@@ -550,12 +859,14 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
 
       // botão voltar preservando contexto
       const qs = new URLSearchParams();
+      qs.set('page', 'tarefas');
       if (PRE_SPACE_ID) qs.set('space_id', PRE_SPACE_ID);
       if (PRE_LIST_ID) qs.set('list_id', PRE_LIST_ID);
       $('btnBack').href = '/importador/index.php?' + qs.toString();
 
       $('fCriadoPor').value = 'Felipe'; // ajuste depois pra sessão
       await loadSpaces();
+      updateFormPreview();
     })();
 
     // =============================
@@ -605,6 +916,7 @@ $list_id  = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
         hid.value = u.loginid; // ✅ esse é o que vai para o backend
         closeDrop();
         hint.textContent = `Selecionado: ${u.loginid}`;
+        updateFormPreview();
       }
 
       function renderDrop(list) {
