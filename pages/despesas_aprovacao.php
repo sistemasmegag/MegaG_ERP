@@ -320,6 +320,11 @@ $paginaAtual = 'despesas_aprovacao';
     color: #4b5563;
   }
 
+  .chip-red {
+    background: rgba(220, 53, 69, .1);
+    color: #dc3545;
+  }
+
   html[data-theme="dark"] .chip-primary {
     color: #6ea8fe;
   }
@@ -387,6 +392,39 @@ $paginaAtual = 'despesas_aprovacao';
     height: 44px;
     border-radius: 12px;
     font-size: 18px;
+  }
+
+  .det-anexos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 1rem 1rem;
+    max-height: 210px;
+    overflow-y: auto;
+  }
+
+  .det-anexo-item {
+    width: 100%;
+    border: 1px solid var(--saas-border);
+    background: rgba(255, 255, 255, .9);
+    border-radius: 12px;
+    padding: .8rem .95rem;
+    text-align: left;
+    transition: .2s ease;
+    color: var(--saas-text);
+  }
+
+  .det-anexo-item:hover,
+  .det-anexo-item.active {
+    border-color: rgba(13, 110, 253, .35);
+    box-shadow: 0 10px 20px rgba(13, 110, 253, .08);
+    background: rgba(13, 110, 253, .05);
+  }
+
+  .det-anexo-item small {
+    display: block;
+    color: var(--saas-text-muted);
+    margin-top: 4px;
   }
 </style>
 
@@ -496,30 +534,21 @@ $paginaAtual = 'despesas_aprovacao';
 
         <!-- LADO ESQUERDO: Visualizador de Anexo (Recibo/NFe) -->
         <div class="split-left" style="overflow-y:auto;">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <button class="btn btn-light btn-sm"><i class="bi bi-image"></i></button>
-            <div class="text-muted fw-bold small">4 / 4 &nbsp;&nbsp; <i class="bi bi-chevron-left"></i> &nbsp; <i
-                class="bi bi-chevron-right"></i></div>
+          <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-white border-bottom"
+            style="border-radius: 8px 8px 0 0;">
+            <button class="btn btn-light btn-sm" type="button"><i class="bi bi-image"></i></button>
+            <div class="text-muted fw-bold small">Documentação da despesa</div>
+            <a id="btnDownloadAllDocsAprov" class="btn btn-light btn-sm d-none" href="#" download>
+              <i class="bi bi-download me-1"></i> Baixar tudo
+            </a>
           </div>
-          <div class="pdf-viewer-fake flex-grow-1">
-            <div class="pdf-toolbar">
-              <div class="d-flex gap-3 align-items-center">
-                <i class="bi bi-list"></i>
-                <span>ab...</span>
-                <span>1 / 2</span>
-                <span class="px-2" style="border-left:1px solid #555; border-right:1px solid #555;">85% &nbsp; -
-                  +</span>
-              </div>
-              <div class="d-flex gap-3">
-                <i class="bi bi-arrow-counterclockwise"></i>
-                <i class="bi bi-download"></i>
-                <i class="bi bi-printer"></i>
-              </div>
-            </div>
-            <div id="visualizadorAnexoAprov" class="pdf-page d-flex align-items-center justify-content-center text-muted flex-column gap-2 mt-4"
-              style="background:#fff no-repeat center center; background-size: contain; width: 100%; height: 100%; min-height: 500px;">
+          <div id="detAnexosListAprov" class="det-anexos-list"></div>
+          <div class="pdf-viewer-fake flex-grow-1 p-3 w-100">
+            <div id="visualizadorAnexoAprov"
+              class="pdf-page d-flex align-items-center justify-content-center text-muted flex-column gap-2"
+              style="background:#fff no-repeat center center; background-size: contain; min-height: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%;">
               <i class="bi bi-file-earmark-image fs-1 opacity-25"></i>
-              <span>Carregando documento...</span>
+              <span>Carregando anexo...</span>
             </div>
           </div>
         </div>
@@ -602,16 +631,16 @@ $paginaAtual = 'despesas_aprovacao';
 
       <!-- FOOTER FIXO PARA APROVAÇÃO -->
       <div class="modal-footer d-flex justify-content-between align-items-center"
-        style="border-top: 1px solid var(--saas-border); padding: 1.25rem 2rem; background: var(--saas-surface); position: absolute; bottom: 0; width: 100%;">
+        style="border-top: 1px solid var(--saas-border); padding: 1.25rem 2rem; background: var(--saas-surface); position: absolute; bottom: 0; width: 100%; z-index: 30; pointer-events: auto;">
         <div class="text-muted small">
           Ao aprovar, esta despesa irá para o próximo nível da alçada ou ficará liberada para pagamento.
         </div>
         <div class="d-flex gap-3">
-          <button class="btn btn-danger rounded-pill px-4 fw-bold"
-            id="btnReprovar"><i
+          <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold"
+            id="btnReprovar" onclick="atualizarStatus('REPROVADO'); return false;"><i
                class="bi bi-x-circle me-1"></i> Reprovar</button>
-          <button class="btn-primary-custom rounded-pill px-5"
-            id="btnAprovar">Aprovar
+          <button type="button" class="btn-primary-custom rounded-pill px-5"
+            id="btnAprovar" onclick="atualizarStatus('APROVADO'); return false;">Aprovar
             <i class="bi bi-check2 ms-1"></i></button>
         </div>
       </div>
@@ -621,6 +650,183 @@ $paginaAtual = 'despesas_aprovacao';
 
 <script>
   let currentDespesaId = null;
+
+  function setApprovalButtonsState(isPending) {
+    const btnAprovar = document.getElementById('btnAprovar');
+    const btnReprovar = document.getElementById('btnReprovar');
+    if (!btnAprovar || !btnReprovar) return;
+
+    btnAprovar.disabled = !isPending;
+    btnReprovar.disabled = !isPending;
+
+    const opacity = isPending ? '1' : '0.55';
+    const cursor = isPending ? 'pointer' : 'not-allowed';
+    const filter = isPending ? '' : 'grayscale(100%)';
+
+    btnAprovar.style.opacity = opacity;
+    btnReprovar.style.opacity = opacity;
+    btnAprovar.style.cursor = cursor;
+    btnReprovar.style.cursor = cursor;
+    btnAprovar.style.filter = filter;
+    btnReprovar.style.filter = filter;
+  }
+
+  function formatDateBr(value) {
+    if (!value) return '--';
+    let raw = String(value).trim();
+    if (!raw) return '--';
+
+    if (/^\d{2}\/\d{2}\/\d{4}/.test(raw)) {
+      return raw;
+    }
+
+    let normalized = raw.replace(' ', 'T');
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      normalized = raw + 'T00:00:00';
+    }
+
+    const dt = new Date(normalized);
+    if (Number.isNaN(dt.getTime())) {
+      return raw;
+    }
+
+    return dt.toLocaleDateString('pt-BR');
+  }
+
+  function renderAprovAttachment(file) {
+    const visualizador = document.getElementById('visualizadorAnexoAprov');
+    if (!visualizador) return;
+
+    if (!file || !file.NOMEARQUIVO) {
+      visualizador.style.backgroundImage = 'none';
+      visualizador.style.background = '#f8f9fa';
+      visualizador.innerHTML = '<i class="bi bi-file-earmark-image fs-1 opacity-25"></i><span>Sem anexo</span>';
+      return;
+    }
+
+    const ext = String(file.NOMEARQUIVO).split('.').pop().toLowerCase();
+    const fileUrl = `uploads/${file.NOMEARQUIVO}`;
+
+    if (ext === 'pdf') {
+      visualizador.style.backgroundImage = 'none';
+      visualizador.style.background = '#525659';
+      visualizador.innerHTML = `<iframe src="${fileUrl}" style="width:100%; height:100%; min-height:600px; border:none; border-radius:8px;"></iframe>`;
+      return;
+    }
+
+    visualizador.style.backgroundColor = '#fff';
+    visualizador.style.backgroundImage = `url('${fileUrl}')`;
+    visualizador.style.backgroundSize = 'contain';
+    visualizador.style.backgroundRepeat = 'no-repeat';
+    visualizador.style.backgroundPosition = 'center';
+    visualizador.innerHTML = '';
+  }
+
+  async function loadAnexosAprovacao(id, fallbackNomeArquivo = '') {
+    try {
+      const res = await fetch('api/api_despesas.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_attachments', id })
+      });
+      const json = await res.json();
+
+      if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {
+        renderAprovAttachment(json.dados[0].NOMEARQUIVO || '');
+        return;
+      }
+    } catch (e) {
+      console.error('Erro ao carregar anexos da aprovação:', e);
+    }
+
+    renderAprovAttachment(fallbackNomeArquivo);
+  }
+
+  function renderAprovAttachment(file) {
+    const visualizador = document.getElementById('visualizadorAnexoAprov');
+    if (!visualizador) return;
+
+    if (!file || !file.NOMEARQUIVO) {
+      visualizador.style.backgroundImage = 'none';
+      visualizador.style.background = '#f8f9fa';
+      visualizador.innerHTML = '<i class="bi bi-file-earmark-image fs-1 opacity-25"></i><span>Sem anexo</span>';
+      return;
+    }
+
+    const ext = String(file.NOMEARQUIVO).split('.').pop().toLowerCase();
+    const fileUrl = `uploads/${file.NOMEARQUIVO}`;
+
+    if (ext === 'pdf') {
+      visualizador.style.backgroundImage = 'none';
+      visualizador.style.background = '#525659';
+      visualizador.innerHTML = `<iframe src="${fileUrl}" style="width:100%; height:100%; min-height:600px; border:none; border-radius:8px;"></iframe>`;
+      return;
+    }
+
+    visualizador.style.backgroundColor = '#fff';
+    visualizador.style.backgroundImage = `url('${fileUrl}')`;
+    visualizador.style.backgroundSize = 'contain';
+    visualizador.style.backgroundRepeat = 'no-repeat';
+    visualizador.style.backgroundPosition = 'center';
+    visualizador.innerHTML = '';
+  }
+
+  async function loadAnexosAprovacao(id, fallbackNomeArquivo = '') {
+    const list = document.getElementById('detAnexosListAprov');
+    const downloadBtn = document.getElementById('btnDownloadAllDocsAprov');
+    if (!list || !downloadBtn) return;
+
+    list.innerHTML = '<div class="text-muted small px-2"><i class="bi bi-hourglass-split me-1"></i>Carregando anexos...</div>';
+    downloadBtn.classList.add('d-none');
+    downloadBtn.removeAttribute('href');
+
+    try {
+      const res = await fetch('api/api_despesas.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_attachments', id })
+      });
+      const json = await res.json();
+      let anexos = (json.sucesso && Array.isArray(json.dados)) ? json.dados : [];
+
+      if (!anexos.length && fallbackNomeArquivo) {
+        anexos = [{ NOMEARQUIVO: fallbackNomeArquivo, TIPOARQUIVO: '', CODARQUIVO: 0 }];
+      }
+
+      if (!anexos.length) {
+        list.innerHTML = '<div class="text-muted small px-2">Nenhum anexo vinculado a esta despesa.</div>';
+        renderAprovAttachment(null);
+        return;
+      }
+
+      list.innerHTML = anexos.map((file, index) => `
+        <button type="button" class="det-anexo-item ${index === 0 ? 'active' : ''}" data-file="${encodeURIComponent(JSON.stringify(file))}">
+          <div class="fw-bold d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>${file.NOMEARQUIVO}</span>
+          </div>
+          <small>${(file.TIPOARQUIVO || '').trim() || 'Arquivo anexado'}</small>
+        </button>
+      `).join('');
+
+      list.querySelectorAll('.det-anexo-item').forEach(button => {
+        button.addEventListener('click', function () {
+          list.querySelectorAll('.det-anexo-item').forEach(el => el.classList.remove('active'));
+          this.classList.add('active');
+          const payload = JSON.parse(decodeURIComponent(this.dataset.file));
+          renderAprovAttachment(payload);
+        });
+      });
+
+      renderAprovAttachment(anexos[0]);
+      downloadBtn.href = `api/download_despesa_documentos.php?id=${encodeURIComponent(id)}`;
+      downloadBtn.classList.remove('d-none');
+    } catch (e) {
+      console.error('Erro ao carregar anexos da aprovação:', e);
+      list.innerHTML = '<div class="text-danger small px-2">Não foi possível carregar os anexos.</div>';
+      renderAprovAttachment(null);
+    }
+  }
 
   async function loadHistory(id) {
     const container = document.getElementById('timelineAprov');
@@ -638,8 +844,8 @@ $paginaAtual = 'despesas_aprovacao';
                   <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">${i+1}</span>
                   <div class="timeline-card focused flex-grow-1 p-3 border rounded-3 bg-white">
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                       <span class="chip ${h.STATUS === 'APROVADO' ? 'chip-green' : 'chip-red'}" style="font-size:10px;">${h.STATUS}</span>
-                       <span class="text-muted" style="font-size:10px;">${h.DTAACAO_FORMAT || h.DTAACAO}</span>
+                       <span class="chip ${h.STATUS === 'APROVADO' ? 'chip-green' : (h.STATUS === 'REJEITADO' ? 'chip-red' : 'chip-primary')}" style="font-size:10px;">${h.STATUS}</span>
+                       <span class="text-muted" style="font-size:10px;">${h.DTAACAO_FORMAT || '--'}</span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                       <div class="avatar-small bg-primary text-white d-flex align-items-center justify-content-center" style="width:30px;height:30px;border-radius:50%;font-size:10px;">${getInitials(h.NOME_APROVADOR)}</div>
@@ -659,7 +865,14 @@ $paginaAtual = 'despesas_aprovacao';
   }
 
   async function atualizarStatus(status) {
-    if (!currentDespesaId) return;
+    if (!currentDespesaId) {
+      Swal.fire('Atenção', 'Nenhuma despesa foi carregada para aprovação.', 'warning');
+      return;
+    }
+
+    if (document.getElementById('btnAprovar')?.disabled || document.getElementById('btnReprovar')?.disabled) {
+      return;
+    }
 
     const { value: obs } = await Swal.fire({
       title: status === 'APROVADO' ? 'Aprovar Despesa' : 'Reprovar Despesa',
@@ -693,7 +906,9 @@ $paginaAtual = 'despesas_aprovacao';
       let json = await res.json();
       if (json.sucesso) {
         Swal.fire('Sucesso', json.dados.mensagem, 'success');
-        bootstrap.Modal.getInstance(document.getElementById('modalDetalhesAprovacao')).hide();
+        const modalEl = document.getElementById('modalDetalhesAprovacao');
+        const modal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.hide();
         loadApprovals();
       } else {
         Swal.fire('Erro', json.erro, 'error');
@@ -704,8 +919,7 @@ $paginaAtual = 'despesas_aprovacao';
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    document.getElementById('btnAprovar').onclick = () => atualizarStatus('APROVADO');
-    document.getElementById('btnReprovar').onclick = () => atualizarStatus('REPROVADO');
+    setApprovalButtonsState(false);
     loadApprovals();
   });
 
@@ -717,16 +931,15 @@ $paginaAtual = 'despesas_aprovacao';
       document.getElementById('detAprovForn').innerText = d.FORNECEDOR || 'Despesa Corporativa';
       document.getElementById('detAprovVal').innerText = parseFloat(d.VLRRATDESPESA || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-      let dateOnly = d.DTAINCLUSAO_FORMAT ? d.DTAINCLUSAO_FORMAT.split(' ')[0] : (d.DTAINCLUSAO ? d.DTAINCLUSAO.split(' ')[0] : '');
-      document.getElementById('detAprovData').innerText = dateOnly ? new Date(dateOnly + "T00:00:00").toLocaleDateString('pt-BR') : '--';
-
       document.getElementById('detAprovId').innerText = 'EXP-' + d.CODDESPESA;
-      document.getElementById('detAprovCC').innerText = d.CENTROCUSTO + ' | ' + (d.DESC_CC || 'Centro de Custo');
+      document.getElementById('detAprovData').innerText = formatDateBr(d.DTADESPESA_FORMAT || d.DTADESPESA || d.DTAINCLUSAO_FORMAT || d.DTAINCLUSAO);
+      document.getElementById('detAprovCC').innerText = (d.CODIGO_CC || d.CENTROCUSTO) + ' | ' + (d.DESC_CC || 'Centro de Custo');
+      document.getElementById('detAprovVenc').innerText = formatDateBr(d.DTAVENCIMENTO_FORMAT || d.DTAVENCIMENTO);
       document.getElementById('detAprovObs').innerText = d.OBSERVACAO || '--';
-
-      document.getElementById('detAprovCat').innerText = d.DESCRICAO || '--'; 
+      document.getElementById('detAprovCat').innerText = d.DESC_TIPO || d.DESCRICAO || '--';
 
       document.getElementById('detAprovStatus').innerHTML = parseStatusChip(d.STATUS);
+      setApprovalButtonsState((d.TEM_PENDENTE ?? 0) == 1);
 
       // Tratar Anexo - Suporte a PDF e Imagens na Aprovação
       let visualizador = document.getElementById('visualizadorAnexoAprov');
@@ -751,8 +964,11 @@ $paginaAtual = 'despesas_aprovacao';
          visualizador.innerHTML = '<i class="bi bi-file-earmark-image fs-1 opacity-25"></i><span>Sem anexo</span>';
       }
 
+      loadAnexosAprovacao(d.CODDESPESA, d.NOMEARQUIVO || '');
       loadHistory(d.CODDESPESA);
-      new bootstrap.Modal('#modalDetalhesAprovacao').show();
+      const modalEl = document.getElementById('modalDetalhesAprovacao');
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
     } catch (e) {
       console.error(e);
     }
@@ -825,7 +1041,7 @@ $paginaAtual = 'despesas_aprovacao';
                   <td class="text-muted fw-bold">${dataStr}</td>
                   <td>
                     <div class="fw-bold" style="font-size:13px; letter-spacing: -0.01em; color: var(--saas-text);">${d.FORNECEDOR || 'Despesa Corporativa'}</div>
-                    <div class="text-muted" style="font-size:11.5px; margin-top: 2px;">${d.DESC_CC || 'Centro de Custo'} • EXP-${d.CODDESPESA}</div>
+                    <div class="text-muted" style="font-size:11.5px; margin-top: 2px;">${d.DESC_CC || 'Centro de Custo'} • EXP-${d.CODDESPESA}${d.NIVEL_PENDENTE ? ` • Nível ${d.NIVEL_PENDENTE}` : ''}</div>
                   </td>
                   <td class="text-end fw-bold" style="font-size: 13.5px;">${valFormat}</td>
                   <td class="text-center">${parseStatusChip(d.STATUS)}</td>

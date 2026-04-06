@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../helpers/onesignal.php'; ?>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMenu()"></div>
@@ -83,6 +84,8 @@
   <div class="mg-notif-head">
     <p class="mg-notif-title">Notificações</p>
     <div class="mg-notif-actions">
+      <button class="mg-notif-btn" id="mgPushEnable" type="button" style="display:none;">Ativar push</button>
+      <button class="mg-notif-btn" id="mgPushTest" type="button" style="display:none;">Teste push</button>
       <button class="mg-notif-btn" id="mgNotifReadAll" type="button">Ler todas</button>
       <button class="mg-notif-btn" id="mgNotifClose" type="button">Fechar</button>
     </div>
@@ -119,7 +122,47 @@
 <script>
   // ✅ usuário logado vindo do PHP (ajuste a variável conforme seu bootstrap)
   window.MG_USER = <?= json_encode($_SESSION['loginid'] ?? $_SESSION['usuario'] ?? $_SESSION['user'] ?? '') ?>;
+  window.MG_ONESIGNAL = <?= json_encode(mg_onesignal_public_config(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 </script>
+
+<?php $mgOneSignal = mg_onesignal_public_config(); ?>
+<?php if (!empty($mgOneSignal['enabled'])): ?>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.MGPush = window.MGPush || {};
+
+  window.OneSignalDeferred.push(async function (OneSignal) {
+    const cfg = window.MG_ONESIGNAL || {};
+    if (!cfg.enabled || !cfg.app_id) return;
+
+    await OneSignal.init({
+      appId: cfg.app_id,
+      safari_web_id: cfg.safari_web_id || undefined,
+      allowLocalhostAsSecureOrigin: ['localhost', '127.0.0.1'].includes(window.location.hostname),
+      serviceWorkerPath: cfg.service_worker_path || '/OneSignalSDKWorker.js',
+      serviceWorkerUpdaterPath: cfg.service_worker_updater_path || '/OneSignalSDKUpdaterWorker.js',
+      notifyButton: { enable: false },
+    });
+
+    if (window.MG_USER) {
+      await OneSignal.login(String(window.MG_USER));
+    }
+
+    window.MGPush.ensure = async function () {
+      if (window.MG_USER) {
+        await OneSignal.login(String(window.MG_USER));
+      }
+      return OneSignal;
+    };
+
+    window.MGPush.requestPermission = async function () {
+      await window.MGPush.ensure();
+      return OneSignal.Notifications.requestPermission();
+    };
+  });
+</script>
+<?php endif; ?>
 
 <!-- Toast Container (Global) -->
 <div aria-live="polite" aria-atomic="true" class="position-relative">
@@ -187,8 +230,58 @@
     const badge = document.getElementById('mgNotifBadge');
     const panel = document.getElementById('mgNotifPanel');
     const list = document.getElementById('mgNotifList');
+    const pushEnableBtn = document.getElementById('mgPushEnable');
+    const pushTestBtn = document.getElementById('mgPushTest');
+
+    function pushEnabled() {
+      return !!(window.MG_ONESIGNAL && window.MG_ONESIGNAL.enabled);
+    }
+
+    function syncPushButtons() {
+      if (!pushEnableBtn || !pushTestBtn) return;
+      if (!pushEnabled()) {
+        pushEnableBtn.style.display = 'none';
+        pushTestBtn.style.display = 'none';
+        return;
+      }
+      pushEnableBtn.style.display = 'inline-flex';
+      pushTestBtn.style.display = 'inline-flex';
+    }
+
+    syncPushButtons();
 
     document.getElementById('mgNotifClose').addEventListener('click', () => panel.classList.remove('open'));
+    if (pushEnableBtn) {
+      pushEnableBtn.addEventListener('click', async () => {
+        try {
+          if (!window.MGPush || typeof window.MGPush.requestPermission !== 'function') {
+            throw new Error('OneSignal ainda nao foi inicializado.');
+          }
+          await window.MGPush.requestPermission();
+          window.showToast('Permissao de push solicitada ao navegador.', 'success', 'Push');
+        } catch (e) {
+          window.showToast(e.message || 'Nao foi possivel ativar o push.', 'error', 'Push');
+        }
+      });
+    }
+    if (pushTestBtn) {
+      pushTestBtn.addEventListener('click', async () => {
+        try {
+          const r = await fetch('api/onesignal.php?action=test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          const j = await r.json().catch(() => null);
+          if (!j || !j.success) {
+            throw new Error((j && j.error) || 'Falha ao enviar push de teste.');
+          }
+          window.showToast('Push de teste enviado. Confira o navegador/dispositivo inscrito.', 'success', 'Push');
+        } catch (e) {
+          window.showToast(e.message || 'Falha ao enviar push de teste.', 'error', 'Push');
+        }
+      });
+    }
     fab.addEventListener('click', async () => {
       panel.classList.toggle('open');
       if (panel.classList.contains('open')) await loadNotifs();

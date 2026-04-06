@@ -498,7 +498,7 @@ BEGIN
         INNER JOIN MEGAG_DESP_APROVADORES a
             ON a.CENTROCUSTO = r.CENTROCUSTO
         INNER JOIN MEGAG_DESP_POLIT_CENTRO_CUSTO p
-            ON p.CODGRUPO = a.CODGRUPO AND p.CENTROCUSTO = a.CENTROCUSTO
+            ON p.SEQUSUARIO = a.SEQUSUARIO AND p.CENTROCUSTO = a.CENTROCUSTO
         -- Pode ser que a aplicação tenha outros status intermediários além de LANCADO
         WHERE desp.STATUS NOT IN ('APROVADO', 'REJEITADO')
           -- 1 Não listar se a despesa foi feita pelo próprio usuário logado
@@ -571,7 +571,7 @@ PROCEDURE PRC_UPD_MEGAG_DESP_APROVACAO(
         JOIN MEGAG_DESP_APROVADORES a
           ON a.CENTROCUSTO = r.CENTROCUSTO
         JOIN MEGAG_DESP_POLIT_CENTRO_CUSTO p
-          ON p.CODGRUPO = a.CODGRUPO
+          ON p.SEQUSUARIO = a.SEQUSUARIO
           AND p.CENTROCUSTO = a.CENTROCUSTO
         WHERE r.CODDESPESA = p_coddespesa
           AND a.SEQUSUARIO = p_sequsuario

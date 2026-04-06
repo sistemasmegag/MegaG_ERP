@@ -693,8 +693,8 @@ $paginaAtual = 'despesas';
   }
 
   .btn-receipt .badge-count {
-    position: absolute;
-    top: -5px;
+      position: absolute;
+      top: -5px;
     right: -5px;
     background: #3b82f6;
     color: #fff;
@@ -705,7 +705,41 @@ $paginaAtual = 'despesas';
     border-radius: 50%;
     display: flex;
     align-items: center;
-    justify-content: center;
+      justify-content: center;
+    }
+  .det-anexos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 1rem 1rem;
+    max-height: 210px;
+    overflow-y: auto;
+  }
+  .det-anexo-item {
+    width: 100%;
+    border: 1px solid var(--saas-border);
+    background: rgba(255,255,255,.9);
+    border-radius: 12px;
+    padding: .8rem .95rem;
+    text-align: left;
+    transition: .2s ease;
+    color: var(--saas-text);
+  }
+  .det-anexo-item:hover,
+  .det-anexo-item.active {
+    border-color: rgba(13,110,253,.35);
+    box-shadow: 0 10px 20px rgba(13,110,253,.08);
+    background: rgba(13,110,253,.05);
+  }
+  .det-anexo-item small {
+    display: block;
+    color: var(--saas-text-muted);
+    margin-top: 4px;
+  }
+
+  .filtros-resumo {
+    font-size: 12px;
+    color: var(--saas-muted);
   }
   /* ===== Rateio Styles ===== */
   .rateio-badge {
@@ -856,7 +890,7 @@ $paginaAtual = 'despesas';
           <p class="saas-subtitle">Adicione e acompanhe suas solicitações de reembolso.</p>
         </div>
         <div class="d-flex gap-2">
-          <button class="btn-light d-none d-md-flex align-items-center gap-2">
+          <button class="btn-light d-none d-md-flex align-items-center gap-2" id="btnPeriodoResumo" type="button">
             <i class="bi bi-calendar3"></i> Últimos 30 dias
           </button>
           <button class="btn-primary-custom" onclick="abrirModalNova()">
@@ -913,10 +947,10 @@ $paginaAtual = 'despesas';
         <div style="position: relative; width: 350px;">
           <i class="bi bi-search"
             style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--saas-muted);"></i>
-          <input type="text" class="saas-input" placeholder="Buscar por categoria ou código da despesa"
+          <input type="text" class="saas-input" id="inputBuscaDespesas" placeholder="Buscar por categoria ou código da despesa"
             style="padding-left: 40px; border-radius: 99px;">
         </div>
-        <button class="btn-light rounded-pill px-3" style="font-size: 13px;">
+        <button class="btn-light rounded-pill px-3" id="btnFiltrosDespesas" type="button" style="font-size: 13px;">
           Filtros <i class="bi bi-funnel ms-1"></i>
         </button>
       </div>
@@ -948,6 +982,66 @@ $paginaAtual = 'despesas';
   </div>
 </main>
 
+<div class="modal fade" id="modalFiltrosDespesas" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:20px; border:1px solid var(--saas-border); overflow:hidden;">
+      <div class="modal-header" style="padding: 1rem 1.5rem; border-bottom:1px solid var(--saas-border);">
+        <div>
+          <h5 class="modal-title fw-bold m-0">Filtros de Reembolso</h5>
+          <div class="filtros-resumo">Refine a listagem sem perder os dados já carregados.</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div class="mb-3">
+          <label class="saas-label mb-1">Status</label>
+          <select class="saas-select" id="filtroStatusDespesas">
+            <option value="">Todos</option>
+            <option value="EM_APROVACAO">Em aprovação</option>
+            <option value="REEMBOLSADO">Reembolsado</option>
+            <option value="REPROVADO">Reprovado</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="saas-label mb-1">Centro de custo</label>
+          <input type="text" class="saas-input" id="filtroCentroDespesas" placeholder="Código ou descrição do centro de custo">
+        </div>
+        <div class="mb-3">
+          <label class="saas-label mb-1">Período</label>
+          <select class="saas-select" id="filtroPeriodoDespesas">
+            <option value="30">Últimos 30 dias</option>
+            <option value="7">Últimos 7 dias</option>
+            <option value="90">Últimos 90 dias</option>
+            <option value="all">Todo o histórico</option>
+          </select>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="saas-label mb-1">Anexos</label>
+            <select class="saas-select" id="filtroAnexoDespesas">
+              <option value="">Todos</option>
+              <option value="com">Com anexo</option>
+              <option value="sem">Sem anexo</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="saas-label mb-1">Rateio</label>
+            <select class="saas-select" id="filtroRateioDespesas">
+              <option value="">Todos</option>
+              <option value="com">Com rateio</option>
+              <option value="sem">Sem rateio</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top:1px solid var(--saas-border);">
+        <button type="button" class="btn btn-light" id="btnLimparFiltrosDespesas">Limpar</button>
+        <button type="button" class="btn btn-primary-custom" id="btnAplicarFiltrosDespesas">Aplicar filtros</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Solicitar Reembolso -->
 <div class="modal fade" id="modalNovaDespesa" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
   <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 1250px;">
@@ -972,12 +1066,12 @@ $paginaAtual = 'despesas';
           <div class="drag-drop-area" id="dropArea" style="background:transparent; border-width: 2px;">
             <div class="drag-drop-icon" style="background: rgba(13,110,253,.08);"><i
                 class="bi bi-cloud-arrow-up-fill"></i></div>
-            <h6 class="fw-bold mb-1 text-dark" style="font-size: 15px;">Arraste e solte aqui o seu arquivo</h6>
+            <h6 class="fw-bold mb-1 text-dark" style="font-size: 15px;">Arraste e solte aqui os seus arquivos</h6>
             <p style="font-size:12px;" class="text-muted mb-4 opacity-75">Formatos permitidos: PDF, PNG, JPEG, JPG</p>
-            <input type="file" id="fArquivo" class="d-none" accept=".pdf,.png,.jpeg,.jpg">
+            <input type="file" id="fArquivo" class="d-none" accept=".pdf,.png,.jpeg,.jpg" multiple>
             <button class="btn-light rounded-pill" onclick="document.getElementById('fArquivo').click()"
               style="color:#0d6efd; border-color: rgba(13,110,253,.3); padding: 8px 24px; font-size: 13px;">
-              Selecionar arquivo <i class="bi bi-upload ms-1"></i>
+              Selecionar arquivos <i class="bi bi-upload ms-1"></i>
             </button>
             <div id="fileDisplayName" class="mt-3 text-success fw-bold" style="font-size: 13px;"></div>
           </div>
@@ -1124,17 +1218,21 @@ $paginaAtual = 'despesas';
         </div>
       </div>
 
-      <div class="modal-split-body flex-grow-1" style="min-height:0; overflow:hidden;">
-        <!-- LADO ESQUERDO: Visualizador de Anexo -->
-        <div class="split-left" style="overflow-y:auto; background: #eee; min-height: 400px; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;">
-          <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-white border-bottom w-100" style="border-radius: 8px 8px 0 0;">
-             <button class="btn btn-light btn-sm"><i class="bi bi-image"></i></button>
-             <div class="text-muted fw-bold small">Documento Anexo</div>
-          </div>
-          <div class="pdf-viewer-fake flex-grow-1 p-3 w-100">
-             <div id="visualizadorAnexo" class="pdf-page d-flex align-items-center justify-content-center text-muted flex-column gap-2" 
-                  style="background:#fff no-repeat center center; background-size: contain; min-height: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%;">
-               <i class="bi bi-file-earmark-image fs-1 opacity-25"></i>
+        <div class="modal-split-body flex-grow-1" style="min-height:0; overflow:hidden;">
+          <!-- LADO ESQUERDO: Visualizador de Anexo -->
+          <div class="split-left" style="overflow-y:auto; background: #eee; min-height: 400px; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;">
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-white border-bottom w-100" style="border-radius: 8px 8px 0 0;">
+               <button class="btn btn-light btn-sm"><i class="bi bi-image"></i></button>
+             <div class="text-muted fw-bold small">Documentação da despesa</div>
+             <a id="btnDownloadAllDocs" class="btn btn-light btn-sm d-none" href="#" download>
+               <i class="bi bi-download me-1"></i> Baixar tudo
+             </a>
+            </div>
+            <div id="detAnexosList" class="det-anexos-list"></div>
+            <div class="pdf-viewer-fake flex-grow-1 p-3 w-100">
+              <div id="visualizadorAnexo" class="pdf-page d-flex align-items-center justify-content-center text-muted flex-column gap-2" 
+                   style="background:#fff no-repeat center center; background-size: contain; min-height: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%;">
+                 <i class="bi bi-file-earmark-image fs-1 opacity-25"></i>
                <span>Carregando anexo...</span>
              </div>
           </div>
@@ -1508,10 +1606,27 @@ $paginaAtual = 'despesas';
     loadDomMock(); // Carrega dinamicamente do BD
   }
 
-  document.getElementById('fArquivo').addEventListener('change', function (e) {
-    if (this.files && this.files[0]) {
-      document.getElementById('fileDisplayName').innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + this.files[0].name;
+  function renderSelectedFiles(files) {
+    const target = document.getElementById('fileDisplayName');
+    if (!target) return;
+    if (!files || !files.length) {
+      target.innerHTML = '';
+      return;
     }
+
+    const items = Array.from(files).map(file =>
+      `<div class="d-flex align-items-center justify-content-center gap-2 mt-1"><i class="bi bi-check-circle-fill"></i><span>${file.name}</span></div>`
+    ).join('');
+
+    const resumo = files.length === 1
+      ? '1 arquivo selecionado'
+      : `${files.length} arquivos selecionados`;
+
+    target.innerHTML = `<div>${resumo}</div>${items}`;
+  }
+
+  document.getElementById('fArquivo').addEventListener('change', function (e) {
+    renderSelectedFiles(this.files);
   });
 
   function updateValorDisplay(val) {
@@ -1601,7 +1716,9 @@ $paginaAtual = 'despesas';
 
       let fileInput = document.getElementById('fArquivo');
       if (fileInput.files.length > 0) {
-        formData.append('arquivo', fileInput.files[0]);
+        Array.from(fileInput.files).forEach(file => {
+          formData.append('arquivo[]', file);
+        });
       }
 
       let res = await fetch('api/api_despesas.php', {
@@ -1629,6 +1746,7 @@ $paginaAtual = 'despesas';
           if (document.getElementById('fEstabelecimento').tomselect) {
             document.getElementById('fEstabelecimento').tomselect.clear();
           }
+          document.getElementById('fArquivo').value = '';
           document.getElementById('fileDisplayName').innerHTML = '';
           document.getElementById('displayValor').innerText = 'R$ 0,00';
           // Remover CCs extras e limpar inputs de valor
@@ -1729,13 +1847,13 @@ $paginaAtual = 'despesas';
                     <div class="text-muted" style="font-size:11.5px; margin-top: 2px;">${d.OBSERVACAO || ''}</div>
                   </td>
                   <td class="text-end fw-bold" style="font-size: 13.5px;">${valFormat}</td>
-                  <td class="text-center">
-                    <button class="btn-receipt ms-auto" title="${d.NOMEARQUIVO || 'Sem arquivo'}"><i class="bi bi-file-earmark-text"></i> ${d.CODARQUIVO > 0 ? `<span class="badge-count text-white bg-primary">1</span>` : ''}</button>
-                  </td>
+                    <td class="text-center">
+                     <button class="btn-receipt ms-auto" title="${d.QTD_ARQUIVOS > 0 ? `${d.QTD_ARQUIVOS} arquivo(s)` : (d.NOMEARQUIVO || 'Sem arquivo')}"><i class="bi bi-file-earmark-text"></i> ${parseInt(d.QTD_ARQUIVOS || 0) > 0 ? `<span class="badge-count text-white bg-primary">${d.QTD_ARQUIVOS}</span>` : ''}</button>
+                    </td>
                   <td>${parseStatusChip(d.STATUS)}</td>
                   <td>${fpHtml}</td>
                   <td style="font-size:12px;" class="text-muted">
-                    ${d.CENTROCUSTO} | ${d.DESC_CC || 'Centro de Custo'}
+                    ${d.CODIGO_CC || d.CENTROCUSTO} | ${d.DESC_CC || 'Centro de Custo'}
                     ${parseInt(d.QTD_RATEIO) > 1
                       ? `<span class="rateio-badge"><i class="bi bi-diagram-3-fill" style="font-size:9px;"></i> Rateio ${d.QTD_RATEIO} CCs</span>`
                       : ''}
@@ -1835,7 +1953,7 @@ $paginaAtual = 'despesas';
               <div class="rateio-card-icon"><i class="bi bi-building"></i></div>
               <div class="rateio-card-body">
                 <div class="rateio-card-name" title="${nome}">${nome}</div>
-                <div class="rateio-card-code">${r.CENTROCUSTO}</div>
+                <div class="rateio-card-code">${r.CODIGO_CC || r.CENTROCUSTO}</div>
                 <div class="rateio-bar-wrap mt-2">
                   <div class="rateio-bar-fill" style="width:${pct}%"></div>
                 </div>
@@ -1853,7 +1971,92 @@ $paginaAtual = 'despesas';
     }
   }
 
-  function abrirModalDetalhes(jsonEncoded) {
+  function renderAnexoPreview(file) {
+    let visualizador = document.getElementById('visualizadorAnexo');
+    if (!visualizador) return;
+
+    if (!file || !file.NOMEARQUIVO) {
+      visualizador.style.backgroundImage = 'none';
+      visualizador.style.background = '#f8f9fa';
+      visualizador.innerHTML = '<i class="bi bi-file-earmark-image fs-1 opacity-25"></i><span>Sem anexo</span>';
+      return;
+    }
+
+    let ext = String(file.NOMEARQUIVO).split('.').pop().toLowerCase();
+    let fileUrl = `uploads/${file.NOMEARQUIVO}`;
+
+    if (ext === 'pdf') {
+      visualizador.style.backgroundImage = 'none';
+      visualizador.style.background = '#525659';
+      visualizador.innerHTML = `<iframe src="${fileUrl}" style="width:100%; height:100%; min-height:600px; border:none; border-radius:8px;"></iframe>`;
+    } else {
+      visualizador.style.backgroundImage = `url('${fileUrl}')`;
+      visualizador.style.backgroundSize = 'contain';
+      visualizador.style.backgroundRepeat = 'no-repeat';
+      visualizador.style.backgroundPosition = 'center';
+      visualizador.style.backgroundColor = '#fff';
+      visualizador.innerHTML = '';
+    }
+  }
+
+  async function loadAnexosDespesa(id, fallbackNomeArquivo = '') {
+    const list = document.getElementById('detAnexosList');
+    const downloadBtn = document.getElementById('btnDownloadAllDocs');
+    if (!list || !downloadBtn) return;
+
+    list.innerHTML = '<div class="text-muted small px-2"><i class="bi bi-hourglass-split me-1"></i>Carregando anexos...</div>';
+    downloadBtn.classList.add('d-none');
+    downloadBtn.removeAttribute('href');
+
+    try {
+      let res = await fetch('api/api_despesas.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_attachments', id: id })
+      });
+      let json = await res.json();
+      let anexos = (json.sucesso && Array.isArray(json.dados)) ? json.dados : [];
+
+      if (!anexos.length && fallbackNomeArquivo) {
+        anexos = [{ NOMEARQUIVO: fallbackNomeArquivo, TIPOARQUIVO: '', CODARQUIVO: 0 }];
+      }
+
+      if (!anexos.length) {
+        list.innerHTML = '<div class="text-muted small px-2">Nenhum anexo vinculado a esta despesa.</div>';
+        renderAnexoPreview(null);
+        return;
+      }
+
+      list.innerHTML = anexos.map((file, index) => `
+        <button type="button" class="det-anexo-item ${index === 0 ? 'active' : ''}" data-file="${encodeURIComponent(JSON.stringify(file))}">
+          <div class="fw-bold d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>${file.NOMEARQUIVO}</span>
+          </div>
+          <small>${(file.TIPOARQUIVO || '').trim() || 'Arquivo anexado'}</small>
+        </button>
+      `).join('');
+
+      list.querySelectorAll('.det-anexo-item').forEach(button => {
+        button.addEventListener('click', function () {
+          list.querySelectorAll('.det-anexo-item').forEach(el => el.classList.remove('active'));
+          this.classList.add('active');
+          let payload = JSON.parse(decodeURIComponent(this.dataset.file));
+          renderAnexoPreview(payload);
+        });
+      });
+
+      renderAnexoPreview(anexos[0]);
+      downloadBtn.href = `api/download_despesa_documentos.php?id=${encodeURIComponent(id)}`;
+      downloadBtn.classList.remove('d-none');
+    } catch (e) {
+      console.error('Erro ao carregar anexos:', e);
+      list.innerHTML = '<div class="text-danger small px-2">Não foi possível carregar os anexos.</div>';
+      renderAnexoPreview(null);
+    }
+  }
+
+  async function abrirModalDetalhes(jsonEncoded) {
     try {
       let d = JSON.parse(decodeURIComponent(jsonEncoded));
       document.getElementById('detForn').innerText = d.FORNECEDOR || 'Despesa Corporativa';
@@ -1864,7 +2067,7 @@ $paginaAtual = 'despesas';
       document.getElementById('detData').innerText = formatDateBr(d.DTADESPESA_FORMAT || d.DTAINCLUSAO_FORMAT || d.DTADESPESA || d.DTAINCLUSAO);
 
       document.getElementById('detId').innerText = 'EXP-' + d.CODDESPESA;
-      document.getElementById('detCC').innerText = d.CENTROCUSTO + ' | ' + (d.DESC_CC || 'Centro de Custo');
+      document.getElementById('detCC').innerText = (d.CODIGO_CC || d.CENTROCUSTO) + ' | ' + (d.DESC_CC || 'Centro de Custo');
       document.getElementById('detObs').innerText = d.OBSERVACAO || '--';
       document.getElementById('detCat').innerText = d.DESC_TIPO || '--';
       document.getElementById('detVenc').innerText = '--';
@@ -1896,6 +2099,7 @@ $paginaAtual = 'despesas';
       }
 
       loadHistory(d.CODDESPESA);
+      loadAnexosDespesa(d.CODDESPESA, d.NOMEARQUIVO || '');
       // Carrega rateio se houver múltiplos CCs
       loadRateio(d.CODDESPESA, parseFloat(d.VLRRATDESPESA || 0));
       new bootstrap.Modal('#modalDetalhesDespesa').show();
@@ -1904,7 +2108,214 @@ $paginaAtual = 'despesas';
     }
   }
 
+  let despesasCache = [];
+  let filtrosDespesas = {
+    busca: '',
+    status: '',
+    centro: '',
+    periodo: '30',
+    anexo: '',
+    rateio: ''
+  };
+
+  function normalizarTextoFiltro(value) {
+    return String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  function obterDataFiltroDespesa(row) {
+    const raw = row.DTADESPESA_FORMAT || row.DTADESPESA || row.DTAINCLUSAO_FORMAT || row.DTAINCLUSAO || '';
+    if (!raw) return null;
+    const normalized = String(raw).trim().substring(0, 10);
+    const dt = new Date(normalized + 'T00:00:00');
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  }
+
+  function obterResumoPeriodoDespesa() {
+    if (filtrosDespesas.periodo === '7') return 'Últimos 7 dias';
+    if (filtrosDespesas.periodo === '90') return 'Últimos 90 dias';
+    if (filtrosDespesas.periodo === 'all') return 'Todo o histórico';
+    return 'Últimos 30 dias';
+  }
+
+  function atualizarResumoPeriodoDespesa() {
+    const btn = document.getElementById('btnPeriodoResumo');
+    if (!btn) return;
+    btn.innerHTML = `<i class="bi bi-calendar3"></i> ${obterResumoPeriodoDespesa()}`;
+  }
+
+  function filtrarDespesasLocal(rows) {
+    const agora = new Date();
+    const termoBusca = normalizarTextoFiltro(filtrosDespesas.busca);
+    const centroBusca = normalizarTextoFiltro(filtrosDespesas.centro);
+
+    return (rows || []).filter(d => {
+      const status = String(d.STATUS || '').toUpperCase();
+      const qtdArquivos = parseInt(d.QTD_ARQUIVOS || 0, 10);
+      const qtdRateio = parseInt(d.QTD_RATEIO || 0, 10);
+      const data = obterDataFiltroDespesa(d);
+
+      if (filtrosDespesas.status === 'EM_APROVACAO' && !['LANCADO', 'EM_APROVACAO', 'APROVACAO'].includes(status)) return false;
+      if (filtrosDespesas.status === 'REEMBOLSADO' && !['APROVADO', 'REEMBOLSADO'].includes(status)) return false;
+      if (filtrosDespesas.status === 'REPROVADO' && !['REJEITADO', 'REPROVADO'].includes(status)) return false;
+
+      if (centroBusca) {
+        const centroTexto = normalizarTextoFiltro(`${d.CODIGO_CC || d.CENTROCUSTO || ''} ${d.DESC_CC || ''}`);
+        if (!centroTexto.includes(centroBusca)) return false;
+      }
+
+      if (termoBusca) {
+        const texto = normalizarTextoFiltro([
+          d.CODDESPESA,
+          d.FORNECEDOR,
+          d.OBSERVACAO,
+          d.DESC_TIPO,
+          d.CODIGO_CC,
+          d.DESC_CC,
+          d.STATUS
+        ].join(' '));
+        if (!texto.includes(termoBusca)) return false;
+      }
+
+      if (filtrosDespesas.anexo === 'com' && qtdArquivos <= 0) return false;
+      if (filtrosDespesas.anexo === 'sem' && qtdArquivos > 0) return false;
+      if (filtrosDespesas.rateio === 'com' && qtdRateio <= 1) return false;
+      if (filtrosDespesas.rateio === 'sem' && qtdRateio > 1) return false;
+
+      if (filtrosDespesas.periodo !== 'all' && data) {
+        const dias = parseInt(filtrosDespesas.periodo || '30', 10);
+        const limite = new Date(agora);
+        limite.setHours(0, 0, 0, 0);
+        limite.setDate(limite.getDate() - dias);
+        if (data < limite) return false;
+      }
+
+      return true;
+    });
+  }
+
+  function renderListFiltrada() {
+    const tbody = document.getElementById('tbodyReembolsos');
+    const rows = filtrarDespesasLocal(despesasCache);
+
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-5">Nenhum reembolso encontrado com os filtros aplicados.</td></tr>';
+      atualizarResumoPeriodoDespesa();
+      return;
+    }
+
+    let html = '';
+    rows.forEach(d => {
+      const dataStr = formatDateBr(d.DTADESPESA_FORMAT || d.DTAINCLUSAO_FORMAT || d.DTADESPESA || d.DTAINCLUSAO);
+      const valFormat = parseFloat(d.VLRRATDESPESA || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      const fpHtml = '<span class="chip chip-green"><i class="bi bi-check-circle" style="font-size:11px;"></i> Dentro da regra</span>';
+
+      html += `
+        <tr>
+          <td class="text-center"><input type="checkbox" class="form-check-input" style="width:20px;height:20px;border-radius:6px;border-color:var(--saas-border);"></td>
+          <td class="text-muted fw-bold">${dataStr}</td>
+          <td>
+            <div class="fw-bold" style="font-size:13px; letter-spacing: -0.01em; color: var(--saas-text);">${d.FORNECEDOR || 'Despesa'}</div>
+            <div class="text-muted" style="font-size:11.5px; margin-top: 2px;">${d.OBSERVACAO || ''}</div>
+          </td>
+          <td class="text-end fw-bold" style="font-size: 13.5px;">${valFormat}</td>
+          <td class="text-center">
+            <button class="btn-receipt ms-auto" title="${d.QTD_ARQUIVOS > 0 ? `${d.QTD_ARQUIVOS} arquivo(s)` : (d.NOMEARQUIVO || 'Sem arquivo')}"><i class="bi bi-file-earmark-text"></i> ${parseInt(d.QTD_ARQUIVOS || 0, 10) > 0 ? `<span class="badge-count text-white bg-primary">${d.QTD_ARQUIVOS}</span>` : ''}</button>
+          </td>
+          <td>${parseStatusChip(d.STATUS)}</td>
+          <td>${fpHtml}</td>
+          <td style="font-size:12px;" class="text-muted">
+            ${d.CODIGO_CC || d.CENTROCUSTO} | ${d.DESC_CC || 'Centro de Custo'}
+            ${parseInt(d.QTD_RATEIO || 0, 10) > 1 ? `<span class="rateio-badge"><i class="bi bi-diagram-3-fill" style="font-size:9px;"></i> Rateio ${d.QTD_RATEIO} CCs</span>` : ''}
+          </td>
+          <td class="text-end" style="padding-right: 2rem;">
+            <div class="d-flex gap-2 justify-content-end">
+              <button class="btn btn-sm btn-light p-1" style="width:30px;height:30px; border-radius:8px;" onclick="abrirModalDetalhes('${encodeURIComponent(JSON.stringify(d))}')"><i class="bi bi-eye text-muted"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+    atualizarResumoPeriodoDespesa();
+  }
+
+  async function loadList() {
+    let tbody = document.getElementById('tbodyReembolsos');
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-5"><i class="bi bi-hourglass-split me-2"></i> Atualizando...</td></tr>';
+
+    try {
+      let res = await fetch('api/api_despesas.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'list_mine' })
+      });
+      let json = await res.json();
+
+      if (json.sucesso) {
+        let m = json.dados.metricas;
+        if (m) {
+          document.getElementById('metricTotalValor').innerText = parseFloat(m.total_valor || 0).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+          document.getElementById('metricTotalQtd').innerText = m.total;
+          document.getElementById('metricAprovacaoValor').innerText = parseFloat(m.em_aprovacao_valor || 0).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+          document.getElementById('metricAprovacaoQtd').innerText = m.em_aprovacao + ' Reembolsos';
+          document.getElementById('metricReembolsadoValor').innerText = parseFloat(m.reembolsado_valor || 0).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+          document.getElementById('metricReembolsadoQtd').innerText = m.reembolsado + ' Reembolsos';
+          document.getElementById('metricReprovadoValor').innerText = parseFloat(m.reprovado_valor || 0).toLocaleString('pt-br', { style: 'currency', currency: 'BRL' });
+          document.getElementById('metricReprovadoQtd').innerText = m.reprovado == 0 ? 'Nenhum Reembolso' : m.reprovado + ' Reembolsos';
+        }
+
+        despesasCache = Array.isArray(json.dados.dados) ? json.dados.dados : [];
+        renderListFiltrada();
+      }
+    } catch (e) {
+      console.error(e);
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger py-5">Erro ao comunicar com a API.</td></tr>';
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     loadList();
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const inputBusca = document.getElementById('inputBuscaDespesas');
+    const btnFiltros = document.getElementById('btnFiltrosDespesas');
+    const btnPeriodo = document.getElementById('btnPeriodoResumo');
+    const btnAplicar = document.getElementById('btnAplicarFiltrosDespesas');
+    const btnLimpar = document.getElementById('btnLimparFiltrosDespesas');
+
+    inputBusca?.addEventListener('input', function () {
+      filtrosDespesas.busca = this.value || '';
+      renderListFiltrada();
+    });
+
+    const abrirModalFiltros = () => bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFiltrosDespesas')).show();
+    btnFiltros?.addEventListener('click', abrirModalFiltros);
+    btnPeriodo?.addEventListener('click', abrirModalFiltros);
+
+    btnAplicar?.addEventListener('click', function () {
+      filtrosDespesas.status = document.getElementById('filtroStatusDespesas')?.value || '';
+      filtrosDespesas.centro = document.getElementById('filtroCentroDespesas')?.value || '';
+      filtrosDespesas.periodo = document.getElementById('filtroPeriodoDespesas')?.value || '30';
+      filtrosDespesas.anexo = document.getElementById('filtroAnexoDespesas')?.value || '';
+      filtrosDespesas.rateio = document.getElementById('filtroRateioDespesas')?.value || '';
+      renderListFiltrada();
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFiltrosDespesas')).hide();
+    });
+
+    btnLimpar?.addEventListener('click', function () {
+      filtrosDespesas = { busca: inputBusca?.value || '', status: '', centro: '', periodo: '30', anexo: '', rateio: '' };
+      if (document.getElementById('filtroStatusDespesas')) document.getElementById('filtroStatusDespesas').value = '';
+      if (document.getElementById('filtroCentroDespesas')) document.getElementById('filtroCentroDespesas').value = '';
+      if (document.getElementById('filtroPeriodoDespesas')) document.getElementById('filtroPeriodoDespesas').value = '30';
+      if (document.getElementById('filtroAnexoDespesas')) document.getElementById('filtroAnexoDespesas').value = '';
+      if (document.getElementById('filtroRateioDespesas')) document.getElementById('filtroRateioDespesas').value = '';
+      renderListFiltrada();
+    });
   });
 </script>

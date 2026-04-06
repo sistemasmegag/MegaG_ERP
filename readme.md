@@ -10,8 +10,9 @@ O projeto atualmente contempla:
 - Dashboard principal com `Home Central Pessoal`
 - Modulo de tarefas em estilo kanban
 - Modulo de reembolsos / despesas corporativas
+- Modulo de inventario geral da MEGA G
 - Gestao de aprovadores, grupos e politicas de despesas
-- CRM, Wiki, RH e notificacoes globais
+- CRM, Wiki, RH, notificacoes globais e push web
 - UI padronizada no estilo `Clean SaaS`
 
 ## Principais Entregas Desta Rodada
@@ -126,6 +127,61 @@ Observacao:
 - o backend continua recebendo `valores_rateio` em valor absoluto
 - futuras evolucoes de percentual podem converter para valor antes do submit, sem quebrar a API
 
+### Modulo de Inventario Geral e Almoxarifado
+
+Arquivos principais:
+
+- `pages/inventario_ti.php`
+- `api/inventario_ti.php`
+- `assets/js/inventario-geral.js`
+- `PKG/CREATE_TABLE_TI_INVENTARIO.sql`
+
+Recursos implementados:
+
+- dashboard com total de ativos, itens em uso, em estoque, em manutencao e garantia proxima
+- inventario geral da empresa, nao mais restrito a TI
+- listagem com busca por patrimonio, serie, colaborador, localizacao e modelo
+- cadastro e edicao de itens com dados de patrimonio, responsavel, datas e garantia
+- historico basico de movimentacoes e alteracoes cadastrais
+- termo digital de responsabilidade com duas assinaturas internas
+- requisicao digital ao almoxarifado
+- assinatura do solicitante obrigatoria
+- assinatura do almoxarifado somente no momento da entrega
+- centro de custo com autocomplete usando `ABA_CENTRORESULTADO`
+- filial com selecao assistida
+- responsavel da proxima etapa carregado a partir dos aprovadores vinculados ao centro de custo no modulo de despesas
+- estrutura Oracle dedicada para equipamentos, trilha de auditoria e solicitacoes do almoxarifado
+
+### Integracao de Push com OneSignal
+
+Arquivos principais:
+
+- `includes/footer.php`
+- `helpers/onesignal.php`
+- `api/onesignal.php`
+- `api/notif.php`
+- `api/api_despesas.php`
+- `includes/onesignal.local.php`
+- `includes/onesignal.local.example.php`
+- `OneSignalSDKWorker.js`
+- `OneSignalSDKUpdaterWorker.js`
+
+Recursos implementados:
+
+- inicializacao global do SDK web do OneSignal no layout compartilhado
+- vinculacao do navegador ao usuario logado via `external_id`
+- botao `Ativar push` no painel global de notificacoes
+- botao `Teste push` no painel global de notificacoes
+- endpoint interno para teste de envio
+- disparo de push junto das notificacoes internas ja criadas por `notif.php`
+- disparo de push junto das notificacoes do modulo de despesas
+
+Configuracao:
+
+- preencher `includes/onesignal.local.php` com `app_id` e `rest_api_key`
+- manter `enabled => true` para exibir os botoes no painel
+- o ambiente precisa estar em `HTTPS` e no mesmo dominio configurado no OneSignal
+
 ## APIs Principais
 
 ### `api/tasks.php`
@@ -160,6 +216,22 @@ Acoes principais:
 - `get_history`
 - `get_rateio`
 - `get_dashboard_data`
+
+### `api/inventario_ti.php`
+
+Acoes principais:
+
+- `dashboard`
+- `list`
+- `get`
+- `save`
+- `history`
+- `save_term`
+- `list_requests`
+- `get_request`
+- `save_request`
+- `request_form_domains`
+- `request_responsibles`
 
 ### `api/api_despesas_config.php`
 
@@ -203,6 +275,17 @@ Acoes principais:
 - `MEGAG_DESP_GRUPO`
 - `MEGAG_DESP_FORNEC_AUX`
 
+### Inventario Geral / Almoxarifado
+
+- `MEGAG_TI_EQUIPAMENTOS`
+- `MEGAG_TI_EQUIP_HIST`
+- `MEGAG_TI_TERMOS`
+- `MEGAG_ALMOX_SOLICITACOES`
+- `SEQ_MEGAG_TI_EQUIPAMENTOS`
+- `SEQ_MEGAG_TI_EQUIP_HIST`
+- `SEQ_MEGAG_TI_TERMOS`
+- `SEQ_MEGAG_ALMOX_SOLICITACOES`
+
 ### Tabelas de apoio do ERP
 
 - `ABA_CENTRORESULTADO`
@@ -228,16 +311,27 @@ importadorV2/
 |   |-- tasks.php
 |   |-- api_despesas.php
 |   |-- api_despesas_config.php
-|   `-- notif.php
+|   |-- inventario_ti.php
+|   |-- notif.php
+|   `-- onesignal.php
 |-- assets/
-|   `-- js/tasks-kanban-enhancements.js
+|   `-- js/
+|       |-- tasks-kanban-enhancements.js
+|       `-- inventario-geral.js
 |-- includes/
 |   |-- header.php
 |   |-- sidebar.php
-|   `-- footer.php
+|   |-- footer.php
+|   |-- onesignal.local.php
+|   `-- onesignal.local.example.php
+|-- helpers/
+|   `-- onesignal.php
 |-- PKG/
 |   |-- CREATE_TABLE.sql
+|   |-- CREATE_TABLE_TI_INVENTARIO.sql
 |   `-- scripts / packages Oracle
+|-- OneSignalSDKWorker.js
+|-- OneSignalSDKUpdaterWorker.js
 `-- index.php
 ```
 
@@ -253,6 +347,10 @@ importadorV2/
 - validar a existencia das tabelas novas do modulo de tarefas em producao
 - validar a package `PKG_MEGAG_DESP_CADASTRO` atualizada em producao
 - validar politicas por centro de custo no modulo de despesas
+- validar a estrutura `MEGAG_ALMOX_SOLICITACOES` em producao
+- validar grants do schema para as tabelas e sequences do inventario / almox
+- configurar `includes/onesignal.local.php` com as credenciais reais do OneSignal
+- testar permissao de push em navegador sob `HTTPS`
 - revisar permissoes do schema utilizado pela aplicacao
 
 ## Ultima Atualizacao
