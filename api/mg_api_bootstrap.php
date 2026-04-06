@@ -88,9 +88,43 @@ function mg_need_permission($perm)
     return true;
 }
 
+function mg_schema(): string
+{
+    $schema = defined('DB_SCHEMA') ? strtoupper(trim((string)DB_SCHEMA)) : '';
+    if ($schema === '') {
+        throw new RuntimeException('Constante DB_SCHEMA nao definida ou vazia.');
+    }
+
+    return $schema;
+}
+
+function mg_table(string $object): string
+{
+    return mg_schema() . '.' . strtoupper(trim($object));
+}
+
+function mg_sequence(string $object): string
+{
+    return mg_schema() . '.' . strtoupper(trim($object));
+}
+
+function mg_package(string $object): string
+{
+    return mg_schema() . '.' . strtoupper(trim($object));
+}
+
+function mg_with_schema(string $sql): string
+{
+    return str_replace(
+        ['{{SCHEMA}}.', 'CONSINCO.'],
+        [mg_schema() . '.', mg_schema() . '.'],
+        $sql
+    );
+}
+
 /* |-------------------------------------------------------------------------- | Helper para nome de package |-------------------------------------------------------------------------- */
 
 function mg_pkg($pkg)
 {
-    return strtoupper($pkg);
+    return mg_package($pkg);
 }

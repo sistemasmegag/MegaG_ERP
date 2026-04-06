@@ -35,6 +35,10 @@ try {
 
     $conn->exec("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'");
     $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+    $schema = defined('DB_SCHEMA') ? strtoupper(trim((string)DB_SCHEMA)) : '';
+    if ($schema === '') {
+        throw new Exception("Constante DB_SCHEMA nao definida ou vazia.");
+    }
 
     // ==================================================================
     // 2) FILTROS FIXOS (gestor)
@@ -52,7 +56,7 @@ try {
     // ==================================================================
     // 3) LISTA PERMITIDA (anti SQL injection) via megag_tabs_importacao
     // ==================================================================
-    $ownerTabs = 'CONSINCO';
+    $ownerTabs = $schema;
     $tabTabs   = 'MEGAG_TABS_IMPORTACAO';
 
     // Descobre a coluna que guarda o "tipo" (nome da tabela)
@@ -98,11 +102,11 @@ try {
     if ($tipoNorm === '') {
         // tenta uma view padrão (se existir) para “todos os dados”
         // Se você tiver uma view consolidada, coloque o nome aqui.
-        $tipoNorm = 'CONSINCO.MEGAG_VW_IMPORTACAO';
+        $tipoNorm = $schema . '.MEGAG_VW_IMPORTACAO';
     }
 
     // valida se tipoNorm é permitido OU é a view padrão
-    if ($tipoNorm !== 'CONSINCO.MEGAG_VW_IMPORTACAO' && !in_array($tipoNorm, $allowedNorm, true)) {
+    if ($tipoNorm !== ($schema . '.MEGAG_VW_IMPORTACAO') && !in_array($tipoNorm, $allowedNorm, true)) {
         throw new Exception("Tipo de dado inválido (não está em megag_tabs_importacao): {$tipoNorm}");
     }
 
@@ -111,7 +115,7 @@ try {
     // ==================================================================
     // separa OWNER e TABLE
     $parts = explode('.', $tipoNorm, 2);
-    $owner = strtoupper(trim($parts[0] ?? 'CONSINCO'));
+    $owner = strtoupper(trim($parts[0] ?? $schema));
     $tab   = strtoupper(trim($parts[1] ?? ''));
 
     if ($tab === '') throw new Exception("Tipo de dado inválido: {$tipoNorm}");

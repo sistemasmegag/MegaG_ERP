@@ -36,11 +36,15 @@ try {
     // Oracle session
     $conn->exec("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'");
     $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+    $schema = defined('DB_SCHEMA') ? strtoupper(trim((string)DB_SCHEMA)) : '';
+    if ($schema === '') {
+        throw new Exception("Constante DB_SCHEMA nao definida ou vazia.");
+    }
 
     // ==================================================================
     // 2) DESCOBRE COLUNAS DA megag_tabs_importacao
     // ==================================================================
-    $owner = 'CONSINCO';
+    $owner = $schema;
     $tab   = 'MEGAG_TABS_IMPORTACAO'; // <-- padrão pedido pelo gestor
 
     $stmtCols = $conn->prepare("

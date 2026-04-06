@@ -11,36 +11,6 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 // ============================
-// 1) Menu vem da sessão (carregado no login_action.php pela VIEW)
-// ============================
-$menuApps = $_SESSION['menu_apps'] ?? [];
-
-// Injeta módulos de teste (SaaS)
-$menuApps[] = [
-    'CODMODULO'       => 'SAAS_APPS',
-    'ORDEM_APLICACAO' => 1,
-    'APLICACAO'       => 'CRM & Leads',
-    'CODAPLICACAO'    => 'APP_CRM',
-    'LINKMENU'        => 'crm'
-];
-
-$menuApps[] = [
-    'CODMODULO'       => 'SAAS_APPS',
-    'ORDEM_APLICACAO' => 2,
-    'APLICACAO'       => 'Base de Conhecimento',
-    'CODAPLICACAO'    => 'APP_WIKI',
-    'LINKMENU'        => 'wiki'
-];
-
-$menuApps[] = [
-    'CODMODULO'       => 'SAAS_APPS',
-    'ORDEM_APLICACAO' => 3,
-    'APLICACAO'       => 'Recursos Humanos',
-    'CODAPLICACAO'    => 'APP_RH',
-    'LINKMENU'        => 'rh'
-];
-
-// ============================
 // 2) Agrupa por módulo (CODMODULO)
 // ============================
 $grupos = [];
@@ -112,19 +82,259 @@ if (!function_exists('normalizeLinkMenu')) {
 // 3) Helper para ícone (por enquanto fixo/fallback)
 // (Como a view não traz ICO, usamos um fallback por módulo)
 // ============================
+if (!function_exists('renderSvgIcon')) {
+    function renderSvgIcon($iconName, $extraClasses = '')
+    {
+        $iconName = strtolower(trim((string)$iconName));
+        $extraClasses = trim((string)$extraClasses);
+
+        $svg = '';
+        switch ($iconName) {
+            case 'search':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>';
+                break;
+            case 'layout':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M9 4v16"></path></svg>';
+                break;
+            case 'dashboard':
+                $svg = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"></rect><rect x="13" y="3" width="8" height="5" rx="1.5"></rect><rect x="13" y="10" width="8" height="11" rx="1.5"></rect><rect x="3" y="13" width="8" height="8" rx="1.5"></rect></svg>';
+                break;
+            case 'rocket':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 19c1.5-3 4-4 4-4"></path><path d="M15 9l-6 6"></path><path d="M14 4c3.5 0 6 2.5 6 6-2 2-4.5 3.5-7.5 4.5L9.5 11.5C10.5 8.5 12 6 14 4z"></path><path d="M7 13l-3 1 1-3 2-2 2 2-2 2z"></path></svg>';
+                break;
+            case 'upload':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 16V5"></path><path d="M8 9l4-4 4 4"></path><path d="M20 16.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1.5"></path></svg>';
+                break;
+            case 'table':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 10h18M9 4v16M15 4v16"></path></svg>';
+                break;
+            case 'shield':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"></path><path d="M9.5 12l1.8 1.8L15 10"></path></svg>';
+                break;
+            case 'receipt':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21V3z"></path><path d="M9 8h6M9 12h6"></path></svg>';
+                break;
+            case 'kanban':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M8 9v6M12 9v3M16 9v8"></path></svg>';
+                break;
+            case 'headset':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0"></path><rect x="3" y="12" width="4" height="7" rx="2"></rect><rect x="17" y="12" width="4" height="7" rx="2"></rect><path d="M21 18a3 3 0 0 1-3 3h-2"></path></svg>';
+                break;
+            case 'plus-square':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M12 8v8M8 12h8"></path></svg>';
+                break;
+            case 'card-text':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M7 10h10M7 14h7"></path></svg>';
+                break;
+            case 'box-in':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l8 4-8 4-8-4 8-4z"></path><path d="M4 7v10l8 4 8-4V7"></path><path d="M12 11v6"></path><path d="M9 14l3 3 3-3"></path></svg>';
+                break;
+            case 'coin':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"></ellipse><path d="M5 6v8c0 1.7 3.1 3 7 3s7-1.3 7-3V6"></path><path d="M12 9v6"></path></svg>';
+                break;
+            case 'bullseye':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"></circle></svg>';
+                break;
+            case 'chart-down':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6v14h16"></path><path d="M7 9l4 4 4-4 2 2"></path></svg>';
+                break;
+            case 'chart-bars':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 19V9"></path><path d="M12 19V5"></path><path d="M19 19v-7"></path></svg>';
+                break;
+            case 'eye':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>';
+                break;
+            case 'ruler':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 15l7-7 9 9-7 3-9-5z"></path><path d="M10 9l2 2M13 12l2 2M16 15l2 2"></path></svg>';
+                break;
+            case 'cash-stack':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="7" width="16" height="10" rx="2"></rect><path d="M7 10h.01M17 14h.01"></path><circle cx="12" cy="12" r="2.5"></circle><path d="M6 5h12M7 19h10"></path></svg>';
+                break;
+            case 'people':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><circle cx="17" cy="10" r="2.5"></circle><path d="M4 19c0-3 3-5 5-5s5 2 5 5"></path><path d="M14 19c.4-1.9 2.1-3.2 4-3.5"></path></svg>';
+                break;
+            case 'diagram':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="6" height="4" rx="1"></rect><rect x="15" y="4" width="6" height="4" rx="1"></rect><rect x="9" y="16" width="6" height="4" rx="1"></rect><path d="M6 8v4h12V8M12 12v4"></path></svg>';
+                break;
+            case 'book':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22V5.5z"></path><path d="M8 7h8M8 11h8"></path></svg>';
+                break;
+            case 'badge':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="3"></circle><path d="M6 19c0-3.2 2.7-5 6-5s6 1.8 6 5"></path><path d="M8 21l4-2 4 2"></path></svg>';
+                break;
+            case 'logout':
+                $svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 17l5-5-5-5"></path><path d="M15 12H4"></path><path d="M20 19v-2a2 2 0 0 0-2-2h-2"></path><path d="M20 5v2a2 2 0 0 1-2 2h-2"></path></svg>';
+                break;
+            case 'circle':
+            default:
+                $svg = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle></svg>';
+                break;
+        }
+
+        return '<span class="menu-icon-svg ' . htmlspecialchars($extraClasses, ENT_QUOTES, 'UTF-8') . '" aria-hidden="true">' . $svg . '</span>';
+    }
+}
+
+if (!function_exists('mapDbIconToSvgName')) {
+    function mapDbIconToSvgName($icoHtml)
+    {
+        $icoHtml = strtolower((string)$icoHtml);
+        if ($icoHtml === '') return '';
+
+        $map = [
+            'fa-bullseye' => 'bullseye',
+            'fa-table' => 'table',
+            'fa-list' => 'dashboard',
+            'fa-tasks' => 'kanban',
+            'fa-abacus' => 'chart-bars',
+            'fa-file' => 'card-text',
+            'fa-book' => 'book',
+            'fa-headset' => 'headset',
+            'fa-user' => 'badge',
+            'fa-users' => 'people',
+            'fa-cog' => 'shield',
+            'fa-gear' => 'shield',
+            'fa-money' => 'coin',
+            'fa-dollar' => 'coin',
+        ];
+
+        foreach ($map as $needle => $iconName) {
+            if (strpos($icoHtml, $needle) !== false) {
+                return $iconName;
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('renderDbHtmlIcon')) {
+    function renderDbHtmlIcon($icoHtml, $extraClasses = 'me-2')
+    {
+        $icoHtml = (string)$icoHtml;
+        if ($icoHtml === '') return '';
+
+        if (!preg_match('/class\s*=\s*"([^"]+)"/i', $icoHtml, $m)) {
+            return '';
+        }
+
+        $classAttr = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', (string)$m[1]);
+        $classAttr = trim(preg_replace('/\s+/', ' ', $classAttr));
+        $extraClasses = trim((string)$extraClasses);
+
+        if ($classAttr === '' || stripos($classAttr, 'fa') === false) {
+            return '';
+        }
+
+        if ($extraClasses !== '') {
+            $classAttr .= ' ' . $extraClasses;
+        }
+
+        return '<i class="' . htmlspecialchars($classAttr, ENT_QUOTES, 'UTF-8') . '" aria-hidden="true"></i>';
+    }
+}
+
 if (!function_exists('renderMenuIconFromModulo')) {
     function renderMenuIconFromModulo($codModulo)
     {
         $codModulo = strtoupper(trim((string)$codModulo));
-
-        if ($codModulo === 'SAAS_APPS') return '<i class="bi bi-rocket-takeoff-fill me-2"></i>';
-        if ($codModulo === 'UPLOAD') return '<i class="bi bi-cloud-arrow-up-fill me-2"></i>';
-        if ($codModulo === 'DADOS')  return '<i class="bi bi-table me-2"></i>';
-        if ($codModulo === 'ADMIN')  return '<i class="bi bi-shield-lock-fill me-2"></i>';
-
-        return '<i class="bi bi-dot me-2"></i>';
+        if ($codModulo === 'SAAS_APPS') return renderSvgIcon('rocket', 'me-2');
+        if ($codModulo === 'UPLOAD')    return renderSvgIcon('upload', 'me-2');
+        if ($codModulo === 'DADOS')     return renderSvgIcon('table', 'me-2');
+        if ($codModulo === 'ADMIN')     return renderSvgIcon('shield', 'me-2');
+        return renderSvgIcon('circle', 'me-2');
     }
 }
+
+// ============================
+// 3.1) Icone por item (CODAPLICACAO ou LINKMENU)
+// ============================
+if (!function_exists('renderMenuIcon')) {
+    function renderMenuIcon($codModulo, $codApp = '', $linkMenu = '', $icoHtml = '')
+    {
+        $codApp   = strtoupper(trim((string)$codApp));
+        $linkMenu = strtolower(trim((string)$linkMenu));
+        $mod      = strtoupper(trim((string)$codModulo));
+
+        $dbHtmlIcon = renderDbHtmlIcon($icoHtml, 'me-2');
+        if ($dbHtmlIcon !== '') {
+            return $dbHtmlIcon;
+        }
+
+        $dbIcon = mapDbIconToSvgName($icoHtml);
+        if ($dbIcon !== '') {
+            return renderSvgIcon($dbIcon, 'me-2');
+        }
+
+        // Mapa por CODAPLICACAO
+        $mapaCodApp = [
+            'APP_DESP_LANC'      => 'coin',
+            'APP_DESP_GERENCIAR' => 'receipt',
+            'APP_DESP_CONFIG'    => 'shield',
+            'APP_DESP'           => 'receipt',
+            'APP_INVENTARIO_TI'  => 'box-in',
+            'APP_TI_INVENTARIO'  => 'box-in',
+            'APP_TAREFAS'        => 'kanban',
+            'APP_TASK'           => 'kanban',
+            'APP_CRM'            => 'diagram',
+            'APP_WIKI'           => 'book',
+            'APP_RH'             => 'badge',
+            'APP_USUARIOS'       => 'people',
+            'APP_CONFIG'         => 'shield',
+            'APP_CHAMADOS'       => 'headset',
+        ];
+        if ($codApp !== '' && isset($mapaCodApp[$codApp])) {
+            return renderSvgIcon($mapaCodApp[$codApp], 'me-2');
+        }
+
+        // Mapa por LINKMENU (slug normalizado)
+        $mapaLink = [
+            'despesas'            => 'coin',
+            'gerenciar_despesas'  => 'receipt',
+            'config_despesas'     => 'shield',
+            'tarefas'             => 'kanban',
+            'tarefas_criar_tasks' => 'plus-square',
+            'tarefas_criar_task'  => 'plus-square',
+            'tarefas_detalhes'    => 'card-text',
+            'cargas'              => 'box-in',
+            'comissoes'           => 'coin',
+            'imp_metas'           => 'bullseye',
+            'imp_metas_gap'       => 'chart-down',
+            'imp_metas_faixa'     => 'chart-bars',
+            'imp_metas_perspec'   => 'eye',
+            'imp_bi_metas'        => 'chart-bars',
+            'bi_metas_perspect'   => 'eye',
+            'imp_tabvdaprodraio'  => 'ruler',
+            'imp_lanctocomissao'  => 'cash-stack',
+            'dados_visualizar'    => 'table',
+            'inventario_ti'       => 'box-in',
+            'ti_inventario'       => 'box-in',
+            'chamados'            => 'headset',
+            'usuarios'            => 'people',
+            'crm'                 => 'diagram',
+            'wiki'                => 'book',
+            'rh'                  => 'badge',
+        ];
+        if ($linkMenu !== '' && isset($mapaLink[$linkMenu])) {
+            return renderSvgIcon($mapaLink[$linkMenu], 'me-2');
+        }
+
+        // Fallback por modulo
+        if ($mod === 'SAAS_APPS') return renderSvgIcon('rocket', 'me-2');
+        if ($mod === 'UPLOAD')    return renderSvgIcon('upload', 'me-2');
+        if ($mod === 'DADOS')     return renderSvgIcon('table', 'me-2');
+        if ($mod === 'ADMIN')     return renderSvgIcon('shield', 'me-2');
+        if ($mod === 'DESPESAS')  return renderSvgIcon('receipt', 'me-2');
+        if ($mod === 'TAREFAS')   return renderSvgIcon('kanban', 'me-2');
+        if ($mod === 'CHAMADOS')  return renderSvgIcon('headset', 'me-2');
+        if ($mod === 'CRM')       return renderSvgIcon('diagram', 'me-2');
+        if ($mod === 'WIKI')      return renderSvgIcon('book', 'me-2');
+        if ($mod === 'RH')        return renderSvgIcon('badge', 'me-2');
+
+        return renderSvgIcon('circle', 'me-2');
+    }
+}
+
 
 // ============================
 // 3.1) Normaliza LINKMENU vindo da VIEW
@@ -171,7 +381,7 @@ if (!function_exists('normalizeLinkMenu')) {
         <div class="d-flex align-items-center gap-2">
             <!-- botão recolher/expandir (desktop) -->
             <button type="button" class="sidebar-toggle-btn d-none d-md-inline-flex" id="btnSidebarToggle" title="Recolher/Expandir">
-                <i class="bi bi-layout-sidebar-inset"></i>
+                <?php echo renderSvgIcon('layout'); ?>
             </button>
 
             <!-- botão fechar (mobile) -->
@@ -180,7 +390,7 @@ if (!function_exists('normalizeLinkMenu')) {
     </div>
 
     <div class="position-relative sidebar-search mb-4">
-        <i class="bi bi-search"></i>
+        <?php echo renderSvgIcon('search'); ?>
         <input type="text" class="form-control py-2" placeholder="Buscar..." id="sidebarSearchInput" autocomplete="off">
     </div>
 
@@ -192,7 +402,7 @@ if (!function_exists('normalizeLinkMenu')) {
             <li class="nav-item" data-menu-item="1" data-menu-text="dashboard" data-menu-group="principal">
                 <a href="index.php?page=home" class="nav-link <?php echo ($paginaAtual == 'home') ? 'active' : ''; ?>">
                     <span>
-                        <i class="bi bi-grid-fill me-2"></i>
+                        <?php echo renderSvgIcon('dashboard', 'me-2'); ?>
                         <span class="nav-text">Dashboard</span>
                     </span>
                 </a>
@@ -228,7 +438,7 @@ if (!function_exists('normalizeLinkMenu')) {
                 data-bs-target="#<?php echo $collapseId; ?>"
                 aria-expanded="<?php echo $hasActive ? 'true' : 'false'; ?>"
                 style="cursor:pointer; user-select:none;">
-                <?php echo renderMenuIconFromModulo($codModulo); ?>
+                <?php echo renderMenuIcon($codModulo); ?>
                 <?php echo htmlspecialchars($tituloModulo, ENT_QUOTES, 'UTF-8'); ?>
             </div>
 
@@ -246,6 +456,7 @@ if (!function_exists('normalizeLinkMenu')) {
 
                         // pega o link cru da view
                         $linkMenuRaw = (string)($app['LINKMENU'] ?? '');
+                        $icoItemRaw  = (string)($app['ICO'] ?? '');
 
                         // normaliza para bater com suas pages (imp_*)
                         $linkMenu = normalizeLinkMenu($linkMenuRaw);
@@ -259,8 +470,8 @@ if (!function_exists('normalizeLinkMenu')) {
                         // Active
                         $isActive = ($paginaAtual === $linkMenu);
 
-                        // Ícone (fallback por módulo)
-                        $icoHtml = renderMenuIconFromModulo($codModulo);
+                        // Ícone por item (prioridade: codApp > linkMenu > modulo)
+                        $icoHtml = renderMenuIcon($codModulo, $codApp, $linkMenu, $icoItemRaw);
 
                         $classes = 'nav-link';
                         if ($isActive) $classes .= ' active';
@@ -309,7 +520,7 @@ if (!function_exists('normalizeLinkMenu')) {
             <small class="text-muted"><?php echo htmlspecialchars(strtolower($user), ENT_QUOTES, 'UTF-8'); ?>@megag.com</small>
         </div>
         <a href="logout.php" class="logout-btn ms-3" title="Sair">
-            <i class="bi bi-box-arrow-right fs-5"></i>
+            <?php echo renderSvgIcon('logout'); ?>
         </a>
     </div>
 
@@ -322,7 +533,7 @@ if (!function_exists('normalizeLinkMenu')) {
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius:18px;">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold"><i class="bi bi-shield-lock me-2"></i>Acesso negado</h5>
+                <h5 class="modal-title fw-bold"><?php echo renderSvgIcon('shield', 'me-2'); ?>Acesso negado</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
             <div class="modal-body">
