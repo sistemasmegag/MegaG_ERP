@@ -1,0 +1,118 @@
+--INSERT
+CREATE OR REPLACE PROCEDURE PRC_INS_MEGAG_DESP_APROVADORES(
+    p_sequsuario           IN MEGAG_DESP_APROVADORES.SEQUSUARIO%TYPE,
+    p_centrocusto          IN MEGAG_DESP_APROVADORES.CENTROCUSTO%TYPE,
+    p_seqcentroresultado   IN MEGAG_DESP_APROVADORES.SEQCENTRORESULTADO%TYPE,
+    p_nome       		   IN MEGAG_DESP_APROVADORES.NOME%TYPE,
+    p_sequusuarioalt       IN MEGAG_DESP_APROVADORES.SEQUSUARIOALTERACAO%TYPE,
+    p_dtaalteracao         IN MEGAG_DESP_APROVADORES.DTAALTERACAO%TYPE DEFAULT NULL,
+	p_codgrupo			   IN MEGAG_DESP_APROVADORES.CODGRUPO%TYPE
+)
+AS
+BEGIN
+/*
+* REGRA DE NEGÓCIO
+*/
+    INSERT INTO MEGAG_DESP_APROVADORES(
+        SEQUSUARIO,
+        CENTROCUSTO,
+        SEQCENTRORESULTADO,
+        SEQUSUARIOALTERACAO,
+        NOME,
+        DTAINCLUSAO,
+        DTAALTERACAO,
+		CODGRUPO
+    )
+    VALUES(
+        p_sequsuario,
+        p_centrocusto,
+        p_seqcentroresultado,
+        p_sequusuarioalt,
+        p_nome,
+        SYSDATE,
+        p_dtaalteracao,
+		p_codgrupo);
+END PRC_INS_MEGAG_DESP_APROVADORES;
+/
+
+-- SELECT
+CREATE OR REPLACE PROCEDURE PRC_LIST_MEGAG_DESP_APROVADORES(
+    p_nome IN GE_USUARIO.NOME%TYPE,
+    p_cursor OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+/*
+* REGRA DE NEGÓCIO
+*/
+    OPEN p_cursor FOR
+        SELECT t.SEQUSUARIO,
+               t.CENTROCUSTO,
+               t.SEQCENTRORESULTADO,
+               t.SEQUSUARIOALTERACAO,
+			   t.NOME,
+               t.DTAINCLUSAO,
+               t.DTAALTERACAO,
+			   t.CODGRUPO
+        FROM MEGAG_DESP_APROVADORES t
+        JOIN GE_USUARIO u
+          ON t.SEQUSUARIO = u.SEQUSUARIO
+        WHERE u.NOME = p_nome;
+END PRC_LIST_MEGAG_DESP_APROVADORES;
+/
+
+--UPDATE
+CREATE OR REPLACE PROCEDURE PRC_UPD_MEGAG_DESP_APROVADORES(
+    p_sequsuario           IN MEGAG_DESP_APROVADORES.SEQUSUARIO%TYPE,
+    p_centrocusto          IN MEGAG_DESP_APROVADORES.CENTROCUSTO%TYPE,
+    p_seqcentroresultado   IN MEGAG_DESP_APROVADORES.SEQCENTRORESULTADO%TYPE,
+    p_nome                 IN MEGAG_DESP_APROVADORES.NOME%TYPE,
+    p_sequusuarioalt       IN MEGAG_DESP_APROVADORES.SEQUSUARIOALTERACAO%TYPE,
+    p_dtaalteracao         IN MEGAG_DESP_APROVADORES.DTAALTERACAO%TYPE DEFAULT NULL,
+	p_codgrupo			   IN MEGAG_DESP_APROVADORES.CODGRUPO%TYPE,
+    p_rows_affected        OUT NUMBER
+)
+AS
+BEGIN
+/*
+* REGRA DE NEGÓCIO
+*/
+    UPDATE MEGAG_DESP_APROVADORES
+       SET CENTROCUSTO         = p_centrocusto,
+           SEQCENTRORESULTADO  = p_seqcentroresultado,
+           SEQUSUARIOALTERACAO = p_sequusuarioalt,
+           NOME                = p_nome,
+           DTAALTERACAO        = NVL(p_dtaalteracao, SYSDATE),
+		   CODGRUPO			   = p_codgrupo
+     WHERE SEQUSUARIO = p_sequsuario;
+
+    p_rows_affected := SQL%ROWCOUNT;
+
+    COMMIT;
+END PRC_UPD_MEGAG_DESP_APROVADORES;
+/
+
+--DELETE
+CREATE OR REPLACE PROCEDURE PRC_DEL_MEGAG_DESP_APROVADORES(
+    p_nome IN VARCHAR2
+)
+AS
+    v_sequsuario MEGAG_DESP_APROVADORES.SEQUSUARIO%TYPE;
+BEGIN
+/*
+* REGRA DE NEGÓCIO
+*/
+    -- Busca o código do usuário pelo nome
+    SELECT SEQUSUARIO
+    INTO v_sequsuario
+    FROM GE_USUARIO
+    WHERE NOME = p_nome;
+    DELETE FROM MEGAG_DESP_APROVADORES
+    WHERE SEQUSUARIO = v_sequsuario;
+
+    COMMIT;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Usuário não encontrado: ' || p_nome);
+END PRC_DEL_MEGAG_DESP_APROVADORES;
+/
