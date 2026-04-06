@@ -49,6 +49,34 @@ function body_json()
     return is_array($j) ? $j : [];
 }
 
+function cfg_bind_pkg_status(PDOStatement $stmt, string &$sfx, string &$ico, string &$tiporet, string &$msg): void
+{
+    $sfx = str_repeat(' ', 20);
+    $ico = str_repeat(' ', 20);
+    $tiporet = str_repeat(' ', 2);
+    $msg = str_repeat(' ', 4000);
+
+    $stmt->bindParam(':S_SFX', $sfx, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 20);
+    $stmt->bindParam(':S_ICO', $ico, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 20);
+    $stmt->bindParam(':S_TIPORET', $tiporet, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 2);
+    $stmt->bindParam(':S_MSG', $msg, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 4000);
+}
+
+function cfg_pkg_response(string $sfx, string $ico, string $tiporet, string $msg): array
+{
+    return [
+        's_sfx' => trim($sfx),
+        's_ico' => trim($ico),
+        's_tiporet' => trim($tiporet),
+        's_msg' => trim($msg),
+    ];
+}
+
+function cfg_pkg_failed(array $pkgResult): bool
+{
+    return ($pkgResult['s_tiporet'] ?? '') !== 'S';
+}
+
 function ensure_politica_cadastro(PDO $conn, int $codpolitica, string $descricao): int
 {
     if ($codpolitica > 0) {
@@ -232,19 +260,24 @@ try {
         $nome = trim($req['nome'] ?? '');
         if ($nome === '') jexit(false, [], 'Informe o nome do grupo.');
 
-        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_GRUPO(
+        $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_GRUPO(
                     p_nomegrupo => :NOME,
                     p_dtainclusao => SYSDATE,
                     p_dtaalteracao => NULL,
-                    p_msg_retorno => :MSG
+                    s_sfx => :S_SFX,
+                    s_ico => :S_ICO,
+                    s_tiporet => :S_TIPORET,
+                    s_msg => :S_MSG
                 ); END;";
         $st = $conn->prepare(cfg_sql($sql));
         $st->bindValue(':NOME', $nome);
-        $msg = '';
-        $st->bindParam(':MSG', $msg, PDO::PARAM_STR, 4000);
+        cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
-
-        if (strpos(strtoupper($msg), 'ERRO') !== false) jexit(false, [], $msg);
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) jexit(false, [], $pkgResult['s_msg']);
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) jexit(false, [], $pkgResult['s_msg']);
 
         $stLast = $conn->prepare("
             SELECT CODGRUPO, NOMEGRUPO
@@ -260,18 +293,31 @@ try {
         $stLast->execute();
         $grupo = $stLast->fetch(PDO::FETCH_ASSOC) ?: null;
 
-        jexit(true, ['dados' => ['mensagem' => $msg, 'grupo' => $grupo]]);
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg'], 'grupo' => $grupo]]);
     }
 
     if ($action === 'del_grupo') {
         $id = (int)($req['id'] ?? 0);
-        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_GRUPO(p_codgrupo => :ID, p_msg_retorno => :MSG); END;";
+        $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_DEL_MEGAG_DESP_GRUPO(
+                    p_codgrupo => :ID,
+                    s_sfx => :S_SFX,
+                    s_ico => :S_ICO,
+                    s_tiporet => :S_TIPORET,
+                    s_msg => :S_MSG
+                ); END;";
         $st = $conn->prepare(cfg_sql($sql));
         $st->bindValue(':ID', $id);
-        $msg = '';
-        $st->bindParam(':MSG', $msg, PDO::PARAM_STR, 4000);
+        cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
-        jexit(true, ['dados' => ['mensagem' => $msg]]);
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) jexit(false, [], $pkgResult['s_msg']);
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) jexit(false, [], $pkgResult['s_msg']);
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) jexit(false, [], $pkgResult['s_msg']);
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
     }
 
     // ============================================
@@ -303,29 +349,39 @@ try {
             jexit(false, [], 'Informe grupo, centro de custo e usuário da política.');
         }
 
-        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_POLIT_CENTRO_CUSTO(
-                    p_codgrupo => :GRUPO,
-                    p_sequsuario => :SEQ_USUARIO,
-                    p_centrocusto => :CC,
-                    p_descricao => :DESC,
-                    p_nivel_aprovacao => :NIVEL,
-                    p_msg_retorno => :MSG
+        $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_POLITICA(
+                    p_descricao         => :DESC,
+                    p_codgrupo          => :GRUPO,
+                    p_sequsuario        => :SEQ_USUARIO,
+                    p_centrocusto       => :CC,
+                    p_nivel_aprovacao   => :NIVEL,
+                    p_descricao_vinculo => :DESC_VINCULO,
+                    p_codpolitica       => :OUT_CODPOL,
+                    p_codpolit_cc       => :OUT_CODPOLCC,
+                    s_sfx               => :S_SFX,
+                    s_ico               => :S_ICO,
+                    s_tiporet           => :S_TIPORET,
+                    s_msg               => :S_MSG
                 ); END;";
         $st = $conn->prepare(cfg_sql($sql));
         $st->bindValue(':GRUPO', $grupo);
         $st->bindValue(':SEQ_USUARIO', $seq_usuario);
         $st->bindValue(':CC', $seq_cc);
         $st->bindValue(':DESC', $desc);
+        $st->bindValue(':DESC_VINCULO', $desc !== '' ? $desc : null, $desc !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
         $st->bindValue(':NIVEL', $nivel);
-        $msg = '';
-        $st->bindParam(':MSG', $msg, PDO::PARAM_STR, 4000);
+        $outCodPolitica = 0;
+        $outCodPolitCc = 0;
+        $st->bindParam(':OUT_CODPOL', $outCodPolitica, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+        $st->bindParam(':OUT_CODPOLCC', $outCodPolitCc, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+        cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
-
-        if (strpos(strtoupper($msg), 'ERRO') !== false) {
-            jexit(false, [], $msg);
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) {
+            jexit(false, [], $pkgResult['s_msg']);
         }
 
-        jexit(true, ['dados' => ['mensagem' => $msg]]);
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg'], 'codpolitica' => (int)$outCodPolitica, 'codpolit_cc' => (int)$outCodPolitCc]]);
     }
 
     if ($action === 'add_politica_lote') {
@@ -347,10 +403,81 @@ try {
             jexit(false, [], 'O centro de custo selecionado nao existe mais no cadastro do ERP.');
         }
 
-        $conn->beginTransaction();
-
         try {
-            $codpolitica = ensure_politica_cadastro($conn, $codpolitica, $desc);
+            $primeiro = array_shift($aprovadores);
+            $primeiroSeq = (int)($primeiro['sequsuario'] ?? 0);
+            $primeiroNivel = max(1, (int)($primeiro['nivel'] ?? 1));
+
+            if (!$primeiroSeq) {
+                throw new Exception('Um dos aprovadores informados Ã© invÃ¡lido.');
+            }
+
+            if (!existe_vinculo_aprovador($conn, $grupo, $primeiroSeq, $seq_centro_resultado)) {
+                $nomeUsuario = nome_usuario_por_seq($conn, $primeiroSeq);
+                $nomeLabel = $nomeUsuario !== '' ? $nomeUsuario : ('SEQ ' . $primeiroSeq);
+                throw new Exception("O aprovador {$nomeLabel} nao esta vinculado ao grupo e centro de custo selecionados.");
+            }
+
+            if ($codpolitica > 0) {
+                $sqlPrimeiro = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_POLIT_CENTRO_CUSTO(
+                                    p_codpolitica     => :CODPOL,
+                                    p_codgrupo        => :GRUPO,
+                                    p_sequsuario      => :SEQ_USUARIO,
+                                    p_centrocusto     => :CC,
+                                    p_nivel_aprovacao => :NIVEL,
+                                    p_descricao       => :DESC,
+                                    p_codpolit_cc     => :OUT_CODPOLCC,
+                                    s_sfx             => :S_SFX,
+                                    s_ico             => :S_ICO,
+                                    s_tiporet         => :S_TIPORET,
+                                    s_msg             => :S_MSG
+                                ); END;";
+                $stPrimeiro = $conn->prepare(cfg_sql($sqlPrimeiro));
+                $stPrimeiro->bindValue(':CODPOL', $codpolitica, PDO::PARAM_INT);
+                $stPrimeiro->bindValue(':GRUPO', $grupo, PDO::PARAM_INT);
+                $stPrimeiro->bindValue(':SEQ_USUARIO', $primeiroSeq, PDO::PARAM_INT);
+                $stPrimeiro->bindValue(':CC', $seq_centro_resultado, PDO::PARAM_INT);
+                $stPrimeiro->bindValue(':NIVEL', $primeiroNivel, PDO::PARAM_INT);
+                $stPrimeiro->bindValue(':DESC', $desc !== '' ? $desc : null, $desc !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
+                $outPrimeiroCodPolitCc = 0;
+                $stPrimeiro->bindParam(':OUT_CODPOLCC', $outPrimeiroCodPolitCc, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+                cfg_bind_pkg_status($stPrimeiro, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+                $stPrimeiro->execute();
+            } else {
+                $sqlPrimeiro = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_POLITICA(
+                                    p_descricao         => :DESC,
+                                    p_codgrupo          => :GRUPO,
+                                    p_sequsuario        => :SEQ_USUARIO,
+                                    p_centrocusto       => :CC,
+                                    p_nivel_aprovacao   => :NIVEL,
+                                    p_descricao_vinculo => :DESC_VINCULO,
+                                    p_codpolitica       => :OUT_CODPOL,
+                                    p_codpolit_cc       => :OUT_CODPOLCC,
+                                    s_sfx               => :S_SFX,
+                                    s_ico               => :S_ICO,
+                                    s_tiporet           => :S_TIPORET,
+                                    s_msg               => :S_MSG
+                                ); END;";
+                $stPrimeiro = $conn->prepare(cfg_sql($sqlPrimeiro));
+                $stPrimeiro->bindValue(':DESC', $desc);
+                $stPrimeiro->bindValue(':GRUPO', $grupo, PDO::PARAM_INT);
+                $stPrimeiro->bindValue(':SEQ_USUARIO', $primeiroSeq, PDO::PARAM_INT);
+                $stPrimeiro->bindValue(':CC', $seq_centro_resultado, PDO::PARAM_INT);
+                $stPrimeiro->bindValue(':NIVEL', $primeiroNivel, PDO::PARAM_INT);
+                $stPrimeiro->bindValue(':DESC_VINCULO', $desc !== '' ? $desc : null, $desc !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
+                $outPrimeiroCodPolitica = 0;
+                $outPrimeiroCodPolitCc = 0;
+                $stPrimeiro->bindParam(':OUT_CODPOL', $outPrimeiroCodPolitica, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+                $stPrimeiro->bindParam(':OUT_CODPOLCC', $outPrimeiroCodPolitCc, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+                cfg_bind_pkg_status($stPrimeiro, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+                $stPrimeiro->execute();
+                $codpolitica = (int)$outPrimeiroCodPolitica;
+            }
+
+            $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+            if (cfg_pkg_failed($pkgResult)) {
+                throw new Exception($pkgResult['s_msg'] !== '' ? $pkgResult['s_msg'] : 'Falha ao cadastrar a polÃ­tica.');
+            }
 
             foreach ($aprovadores as $item) {
                 $seq_usuario = (int)($item['sequsuario'] ?? 0);
@@ -366,15 +493,39 @@ try {
                     throw new Exception("O aprovador {$nomeLabel} nao esta vinculado ao grupo e centro de custo selecionados.");
                 }
 
-                inserir_vinculo_politica($conn, $codpolitica, $grupo, $seq_usuario, $seq_centro_resultado, $nivel, $desc);
+                $sqlVinc = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_POLIT_CENTRO_CUSTO(
+                                p_codpolitica     => :CODPOL,
+                                p_codgrupo        => :GRUPO,
+                                p_sequsuario      => :SEQ_USUARIO,
+                                p_centrocusto     => :CC,
+                                p_nivel_aprovacao => :NIVEL,
+                                p_descricao       => :DESC,
+                                p_codpolit_cc     => :OUT_CODPOLCC,
+                                s_sfx             => :S_SFX,
+                                s_ico             => :S_ICO,
+                                s_tiporet         => :S_TIPORET,
+                                s_msg             => :S_MSG
+                            ); END;";
+                $stVinc = $conn->prepare(cfg_sql($sqlVinc));
+                $stVinc->bindValue(':CODPOL', $codpolitica, PDO::PARAM_INT);
+                $stVinc->bindValue(':GRUPO', $grupo, PDO::PARAM_INT);
+                $stVinc->bindValue(':SEQ_USUARIO', $seq_usuario, PDO::PARAM_INT);
+                $stVinc->bindValue(':CC', $seq_centro_resultado, PDO::PARAM_INT);
+                $stVinc->bindValue(':NIVEL', $nivel, PDO::PARAM_INT);
+                $stVinc->bindValue(':DESC', $desc !== '' ? $desc : null, $desc !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
+                $outCodPolitCc = 0;
+                $stVinc->bindParam(':OUT_CODPOLCC', $outCodPolitCc, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+                cfg_bind_pkg_status($stVinc, $pkgVincSfx, $pkgVincIco, $pkgVincTipoRet, $pkgVincMsg);
+                $stVinc->execute();
+
+                $pkgVincResult = cfg_pkg_response($pkgVincSfx, $pkgVincIco, $pkgVincTipoRet, $pkgVincMsg);
+                if (cfg_pkg_failed($pkgVincResult)) {
+                    throw new Exception($pkgVincResult['s_msg'] !== '' ? $pkgVincResult['s_msg'] : 'Falha ao vincular aprovador Ã  polÃ­tica.');
+                }
             }
 
-            $conn->commit();
             jexit(true, ['dados' => ['mensagem' => 'Política cadastrada com múltiplos aprovadores.']]);
         } catch (Exception $e) {
-            if ($conn->inTransaction()) {
-                $conn->rollBack();
-            }
             $msg = $e->getMessage();
             if (stripos($msg, 'FK_POLITCC_CENTRO') !== false || stripos($msg, 'ORA-02291') !== false) {
                 jexit(false, [], 'Nao foi possivel salvar a politica porque um dos aprovadores nao possui vinculo pai com este grupo e centro de custo.');
@@ -385,12 +536,20 @@ try {
 
     if ($action === 'del_politica') {
         $id = (int)($req['id'] ?? 0);
-        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_POLIT_CENTRO_CUSTO(p_codpolit_cc => :ID, p_msg_retorno => :MSG); END;";
+        $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_DEL_MEGAG_DESP_POLIT_CENTRO_CUSTO(
+                    p_codpolit_cc => :ID,
+                    s_sfx => :S_SFX,
+                    s_ico => :S_ICO,
+                    s_tiporet => :S_TIPORET,
+                    s_msg => :S_MSG
+                ); END;";
         $st = $conn->prepare(cfg_sql($sql));
         $st->bindValue(':ID', $id);
-        $msg = ''; $st->bindParam(':MSG', $msg, PDO::PARAM_STR, 4000);
+        cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
-        jexit(true, ['dados' => ['mensagem' => $msg]]);
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) jexit(false, [], $pkgResult['s_msg']);
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
     }
 
     // ============================================
@@ -407,18 +566,34 @@ try {
         $desc = trim($req['descricao'] ?? '');
         if ($desc === '') jexit(false, [], 'Informe a descrição da categoria.');
 
-        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_TIPO(p_DESCRICAO => :DESC); END;";
+        $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_TIPO(
+                    p_DESCRICAO => :DESC,
+                    s_sfx => :S_SFX,
+                    s_ico => :S_ICO,
+                    s_tiporet => :S_TIPORET,
+                    s_msg => :S_MSG
+                ); END;";
         $st = $conn->prepare(cfg_sql($sql));
         $st->bindValue(':DESC', $desc);
+        cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
-        jexit(true, ['dados' => ['mensagem' => 'Categoria cadastrada com sucesso!']]);
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) jexit(false, [], $pkgResult['s_msg']);
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
     }
 
     if ($action === 'del_tipo') {
         $id = (int) ($req['id'] ?? 0);
-        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_TIPO(p_CODTIPODESPESA => :ID); END;";
+        $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_DEL_MEGAG_DESP_TIPO(
+                    p_CODTIPODESPESA => :ID,
+                    s_sfx => :S_SFX,
+                    s_ico => :S_ICO,
+                    s_tiporet => :S_TIPORET,
+                    s_msg => :S_MSG
+                ); END;";
         $st = $conn->prepare(cfg_sql($sql));
         $st->bindValue(':ID', $id);
+        cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
         jexit(true, ['dados' => ['mensagem' => 'Categoria excluída com sucesso!']]);
     }
@@ -510,14 +685,18 @@ try {
             jexit(false, [], 'Centro de custo ou aprovador invalido.');
         }
 
-        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_APROVADORES(
+        $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_APROVADORES(
                       p_sequsuario         => :SEQ_USU,
                       p_centrocusto        => :CC,
                       p_seqcentroresultado => :SEQ_CC,
                       p_nome               => :NOME,
                       p_sequusuarioalt     => :USU_ALT,
                       p_dtaalteracao       => NULL,
-                      p_codgrupo           => :GRP
+                      p_codgrupo           => :GRP,
+                      s_sfx                => :S_SFX,
+                      s_ico                => :S_ICO,
+                      s_tiporet            => :S_TIPORET,
+                      s_msg                => :S_MSG
                   ); END;";
         $st = $conn->prepare(cfg_sql($sql));
         $st->bindValue(':SEQ_USU', $seq_usuario);
@@ -530,9 +709,12 @@ try {
         } else {
             $st->bindValue(':GRP', $codgrupo);
         }
+        cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) jexit(false, [], $pkgResult['s_msg']);
 
-        jexit(true, ['dados' => ['mensagem' => 'Aprovador vinculado com sucesso.']]);
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
     }
 
     if ($action === 'del_aprovador_vinculo') {
@@ -601,9 +783,16 @@ try {
         $nome = trim($req['nome'] ?? '');
         if ($nome === '') jexit(false, [], 'Nome inválido para exclusão.');
 
-        $sql = "BEGIN CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_DEL_MEGAG_DESP_APROVADORES(p_nome => :NOME); END;";
+        $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_DEL_MEGAG_DESP_APROVADORES(
+                    p_nome => :NOME,
+                    s_sfx => :S_SFX,
+                    s_ico => :S_ICO,
+                    s_tiporet => :S_TIPORET,
+                    s_msg => :S_MSG
+                ); END;";
         $st = $conn->prepare(cfg_sql($sql));
         $st->bindValue(':NOME', $nome);
+        cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
         jexit(true, ['dados' => ['mensagem' => 'Vinculação removida com sucesso.']]);
     }

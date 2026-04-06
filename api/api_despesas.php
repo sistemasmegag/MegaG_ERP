@@ -179,6 +179,34 @@ function create_notification(PDO $conn, string $usuario, string $tipo, string $t
     ]);
 }
 
+function desp_bind_pkg_status(PDOStatement $stmt, string &$sfx, string &$ico, string &$tiporet, string &$msg): void
+{
+    $sfx = str_repeat(' ', 20);
+    $ico = str_repeat(' ', 20);
+    $tiporet = str_repeat(' ', 2);
+    $msg = str_repeat(' ', 4000);
+
+    $stmt->bindParam(':S_SFX', $sfx, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 20);
+    $stmt->bindParam(':S_ICO', $ico, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 20);
+    $stmt->bindParam(':S_TIPORET', $tiporet, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 2);
+    $stmt->bindParam(':S_MSG', $msg, PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 4000);
+}
+
+function desp_pkg_response(string $sfx, string $ico, string $tiporet, string $msg): array
+{
+    return [
+        's_sfx' => trim($sfx),
+        's_ico' => trim($ico),
+        's_tiporet' => trim($tiporet),
+        's_msg' => trim($msg),
+    ];
+}
+
+function desp_pkg_failed(array $pkgResult): bool
+{
+    return ($pkgResult['s_tiporet'] ?? '') !== 'S';
+}
+
 function notify_pending_approvers_for_despesa(PDO $conn, int $codDespesa, string $solicitanteLogin, string $fornecedor, float $valor): void
 {
     $sql = mg_with_schema("SELECT DISTINCT USUARIOAPROVADOR, NIVEL_APROVACAO
@@ -607,7 +635,11 @@ try {
                       p_CODPOLITICA          => :CODPOL,
                       p_DTAVENCIMENTO        => TO_DATE(:VENC, 'YYYY-MM-DD'),
                       p_DTADESPESA           => TO_DATE(:DTADESP, 'YYYY-MM-DD'),
-                      p_CODDESPESA_OUT       => :OUT_ID
+                      p_CODDESPESA_OUT       => :OUT_ID,
+                      s_sfx                  => :S_SFX,
+                      s_ico                  => :S_ICO,
+                      s_tiporet              => :S_TIPORET,
+                      s_msg                  => :S_MSG
                   );
                 END;";
 
@@ -626,8 +658,13 @@ try {
 
         $out_id = 0;
         $st->bindParam(':OUT_ID', $out_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+        desp_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
 
         $st->execute();
+        $pkgResult = desp_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (desp_pkg_failed($pkgResult)) {
+            jexit(false, [], $pkgResult['s_msg'] !== '' ? $pkgResult['s_msg'] : 'Falha ao cadastrar despesa.');
+        }
 
         // Se gravou a despesa e tem arquivo(s), grava na tabela de arquivos anexa (PKG: PRC_INS_MEGAG_DESP_ARQUIVO)
         if ($out_id > 0 && !empty($uploadedFiles)) {
@@ -636,7 +673,11 @@ try {
                             p_CODDESPESA     => :COD_DESP,
                             p_NOMEARQUIVO    => :NOME_ARQ,
                             p_TIPOARQUIVO    => :TIPO_ARQ,
-                            p_CODARQUIVO_OUT => :OUT_ARQ
+                            p_CODARQUIVO_OUT => :OUT_ARQ,
+                            s_sfx            => :S_SFX,
+                            s_ico            => :S_ICO,
+                            s_tiporet        => :S_TIPORET,
+                            s_msg            => :S_MSG
                         );
                       END;";
             foreach ($uploadedFiles as $uploadedFile) {
@@ -646,7 +687,12 @@ try {
                 $stArq->bindValue(':TIPO_ARQ', $uploadedFile['type']);
                 $out_arq_id = 0;
                 $stArq->bindParam(':OUT_ARQ', $out_arq_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+                desp_bind_pkg_status($stArq, $pkgArqSfx, $pkgArqIco, $pkgArqTipoRet, $pkgArqMsg);
                 $stArq->execute();
+                $pkgArqResult = desp_pkg_response($pkgArqSfx, $pkgArqIco, $pkgArqTipoRet, $pkgArqMsg);
+                if (desp_pkg_failed($pkgArqResult)) {
+                    jexit(false, [], $pkgArqResult['s_msg'] !== '' ? $pkgArqResult['s_msg'] : 'Falha ao vincular arquivo da despesa.');
+                }
             }
         }
 
@@ -680,7 +726,11 @@ try {
                                 p_seqcentroresultado => :SEQ_CC,
                                 p_centrocusto        => :CC,
                                 p_valorrateio        => :VLR_RAT,
-                                p_codrateio          => :OUT_RAT
+                                p_codrateio          => :OUT_RAT,
+                                s_sfx                => :S_SFX,
+                                s_ico                => :S_ICO,
+                                s_tiporet            => :S_TIPORET,
+                                s_msg                => :S_MSG
                             );
                           END;";
 
@@ -702,7 +752,12 @@ try {
                 $stRat->bindValue(':VLR_RAT',  $vlr_rat);
                 $out_rat_id = 0;
                 $stRat->bindParam(':OUT_RAT', $out_rat_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+                desp_bind_pkg_status($stRat, $pkgRatSfx, $pkgRatIco, $pkgRatTipoRet, $pkgRatMsg);
                 $stRat->execute();
+                $pkgRatResult = desp_pkg_response($pkgRatSfx, $pkgRatIco, $pkgRatTipoRet, $pkgRatMsg);
+                if (desp_pkg_failed($pkgRatResult)) {
+                    jexit(false, [], $pkgRatResult['s_msg'] !== '' ? $pkgRatResult['s_msg'] : 'Falha ao gravar rateio da despesa.');
+                }
             }
         }
 
@@ -733,7 +788,77 @@ try {
 
         if (!$id || !$status) jexit(false, [], 'ID e Status são obrigatórios.');
 
-        $msg = process_approval_action($conn, $id, $usr_aprovador, $status, $pago, $obs);
+        $sql = "BEGIN
+                  " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_UPD_MEGAG_DESP_APROVACAO(
+                      p_coddespesa => :ID,
+                      p_sequsuario => :USU,
+                      p_status     => :STATUS,
+                      p_pago       => :PAGO,
+                      p_observacao => :OBS,
+                      s_sfx        => :S_SFX,
+                      s_ico        => :S_ICO,
+                      s_tiporet    => :S_TIPORET,
+                      s_msg        => :S_MSG
+                  );
+                END;";
+        $st = $conn->prepare(mg_with_schema($sql));
+        $st->bindValue(':ID', $id, PDO::PARAM_INT);
+        $st->bindValue(':USU', $usr_aprovador, PDO::PARAM_INT);
+        $st->bindValue(':STATUS', strtoupper($status));
+        $st->bindValue(':PAGO', strtoupper($pago) === 'S' ? 'S' : 'N');
+        $st->bindValue(':OBS', $obs !== '' ? $obs : null, $obs !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        desp_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        $st->execute();
+
+        $pkgResult = desp_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (desp_pkg_failed($pkgResult)) {
+            jexit(false, [], $pkgResult['s_msg'] !== '' ? $pkgResult['s_msg'] : 'Falha ao registrar aprovação.');
+        }
+
+        $stDesp = $conn->prepare(mg_with_schema("
+            SELECT USUARIOSOLICITANTE, STATUS, FORNECEDOR, VLRRATDESPESA
+              FROM CONSINCO.MEGAG_DESP
+             WHERE CODDESPESA = :ID
+        "));
+        $stDesp->execute([':ID' => $id]);
+        $despesa = $stDesp->fetch(PDO::FETCH_ASSOC) ?: [];
+
+        $solicitanteSeq = (int)($despesa['USUARIOSOLICITANTE'] ?? 0);
+        $solicitanteLogin = resolve_loginid_by_sequsuario($conn, $solicitanteSeq);
+        $aprovadorLogin = resolve_loginid_by_sequsuario($conn, $usr_aprovador);
+        $statusAtual = strtoupper((string)($despesa['STATUS'] ?? ''));
+
+        if ($solicitanteLogin !== '') {
+            if ($statusAtual === 'REJEITADO') {
+                create_notification(
+                    $conn,
+                    $solicitanteLogin,
+                    'APROVACAO',
+                    'Despesa reprovada',
+                    "A despesa EXP-{$id} foi reprovada por {$aprovadorLogin}."
+                );
+            } elseif ($statusAtual === 'APROVADO') {
+                create_notification(
+                    $conn,
+                    $solicitanteLogin,
+                    'APROVACAO',
+                    'Despesa aprovada',
+                    "A despesa EXP-{$id} foi aprovada por {$aprovadorLogin} e concluiu o fluxo de aprovação."
+                );
+            }
+        }
+
+        if (!in_array($statusAtual, ['APROVADO', 'REJEITADO'], true)) {
+            notify_pending_approvers_for_despesa(
+                $conn,
+                $id,
+                $solicitanteLogin !== '' ? $solicitanteLogin : (string)$user,
+                trim((string)($despesa['FORNECEDOR'] ?? '')),
+                (float)($despesa['VLRRATDESPESA'] ?? 0)
+            );
+        }
+
+        $msg = $pkgResult['s_msg'] !== '' ? $pkgResult['s_msg'] : 'Aprovação registrada com sucesso.';
         jexit(true, ['dados' => ['mensagem' => $msg]]);
     }
 
