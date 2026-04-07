@@ -1,4 +1,0 @@
-ERRO CONEXÃO: Arquivo de configuração de banco não encontrado.
-ERRO CONEXÃO: Arquivo de configuração de banco não encontrado.
-ERRO CONEXÃO: Arquivo de configuração de banco não encontrado.
-ERRO CONEXÃO: Arquivo de configuração de banco não encontrado.
