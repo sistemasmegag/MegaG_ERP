@@ -19,13 +19,22 @@ function mg_onesignal_config(): array
 
     $enabledValue = $localConfig['enabled'] ?? getenv('ONESIGNAL_ENABLED') ?? false;
     $enabled = filter_var($enabledValue, FILTER_VALIDATE_BOOLEAN);
+    $envApiUrl = getenv('ONESIGNAL_API_URL');
+    $apiUrl = trim((string)($localConfig['api_url'] ?? ''));
+    if ($apiUrl === '' && $envApiUrl !== false) {
+        $apiUrl = trim((string)$envApiUrl);
+    }
+    $apiUrl = preg_replace('/[\x00-\x1F\x7F\s]+/u', '', (string)$apiUrl) ?? '';
+    if ($apiUrl === '' || !filter_var($apiUrl, FILTER_VALIDATE_URL)) {
+        $apiUrl = 'https://api.onesignal.com/notifications?c=push';
+    }
 
     $config = [
         'enabled' => $enabled,
         'app_id' => trim((string)($localConfig['app_id'] ?? getenv('ONESIGNAL_APP_ID') ?? '')),
         'rest_api_key' => trim((string)($localConfig['rest_api_key'] ?? getenv('ONESIGNAL_REST_API_KEY') ?? '')),
         'safari_web_id' => trim((string)($localConfig['safari_web_id'] ?? getenv('ONESIGNAL_SAFARI_WEB_ID') ?? '')),
-        'api_url' => trim((string)($localConfig['api_url'] ?? getenv('ONESIGNAL_API_URL') ?? 'https://api.onesignal.com/notifications?c=push')),
+        'api_url' => $apiUrl,
     ];
 
     $config['web_ready'] = $config['enabled'] && $config['app_id'] !== '';
@@ -42,9 +51,53 @@ function mg_onesignal_public_config(): array
         'enabled' => $config['web_ready'],
         'app_id' => $config['app_id'],
         'safari_web_id' => $config['safari_web_id'],
-        'service_worker_path' => '/OneSignalSDKWorker.js',
-        'service_worker_updater_path' => '/OneSignalSDKUpdaterWorker.js',
+        'service_worker_path' => 'OneSignalSDKWorker.js',
+        'service_worker_updater_path' => 'OneSignalSDKUpdaterWorker.js',
+        'api_url_debug' => $config['api_url'],
     ];
+}
+
+function mg_onesignal_base_url(): string
+{
+    $host = trim((string)($_SERVER['HTTP_HOST'] ?? ''));
+    if ($host === '') {
+        return '';
+    }
+
+    $https = strtolower((string)($_SERVER['HTTPS'] ?? ''));
+    $scheme = ($https !== '' && $https !== 'off') ? 'https' : 'http';
+    $scriptName = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    $basePath = trim(dirname(dirname($scriptName)), '/');
+
+    return $scheme . '://' . $host . ($basePath !== '' ? '/' . $basePath : '');
+}
+
+function mg_onesignal_normalize_url(?string $url): ?string
+{
+    $url = trim((string)$url);
+    if ($url === '') {
+        return null;
+    }
+
+    if (preg_match('#^https?://#i', $url)) {
+        return $url;
+    }
+
+    $baseUrl = mg_onesignal_base_url();
+    if ($baseUrl === '') {
+        return null;
+    }
+
+    if ($url[0] === '/') {
+        $parts = parse_url($baseUrl);
+        if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
+            return null;
+        }
+
+        return $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '') . $url;
+    }
+
+    return rtrim($baseUrl, '/') . '/' . ltrim($url, '/');
 }
 
 function mg_onesignal_send_to_users(array $externalIds, string $title, string $message, array $extra = []): array
@@ -81,7 +134,10 @@ function mg_onesignal_send_to_users(array $externalIds, string $title, string $m
     ];
 
     if (!empty($extra['url'])) {
-        $payload['url'] = (string)$extra['url'];
+        $normalizedUrl = mg_onesignal_normalize_url((string)$extra['url']);
+        if ($normalizedUrl !== null) {
+            $payload['url'] = $normalizedUrl;
+        }
     }
     if (!empty($extra['data']) && is_array($extra['data'])) {
         $payload['data'] = $extra['data'];
@@ -92,30 +148,36 @@ function mg_onesignal_send_to_users(array $externalIds, string $title, string $m
         'Authorization: Key ' . $config['rest_api_key'],
     ];
 
+    $requestBody = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $curlFailed = false;
+    $curlError = '';
+
     if (function_exists('curl_init')) {
         $ch = curl_init($config['api_url']);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
             CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            CURLOPT_POSTFIELDS => $requestBody,
             CURLOPT_TIMEOUT => 20,
         ]);
 
         $response = curl_exec($ch);
         $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
+        $curlError = trim((string)curl_error($ch));
         curl_close($ch);
 
         if ($response === false) {
-            return ['success' => false, 'error' => $curlError !== '' ? $curlError : 'Falha ao enviar push via OneSignal.'];
+            $curlFailed = true;
         }
-    } else {
+    }
+
+    if (!function_exists('curl_init') || $curlFailed) {
         $context = stream_context_create([
             'http' => [
                 'method' => 'POST',
                 'header' => implode("\r\n", $headers),
-                'content' => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'content' => $requestBody,
                 'timeout' => 20,
                 'ignore_errors' => true,
             ],
@@ -131,7 +193,12 @@ function mg_onesignal_send_to_users(array $externalIds, string $title, string $m
         }
 
         if ($response === false) {
-            return ['success' => false, 'error' => 'Falha ao enviar push via OneSignal.'];
+            $errorMessage = 'Falha ao enviar push via OneSignal.';
+            if ($curlError !== '') {
+                $errorMessage .= ' curl=' . $curlError;
+            }
+            $errorMessage .= ' api_url=' . $config['api_url'];
+            return ['success' => false, 'error' => $errorMessage];
         }
     }
 

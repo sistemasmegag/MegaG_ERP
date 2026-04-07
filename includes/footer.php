@@ -131,36 +131,71 @@
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.MGPush = window.MGPush || {};
+  window.MGPush.state = window.MGPush.state || {
+    initialized: false,
+    initError: '',
+    ready: null
+  };
+
+  window.MGPush.state.ready = new Promise((resolve, reject) => {
+    window.MGPush._resolveReady = resolve;
+    window.MGPush._rejectReady = reject;
+  });
 
   window.OneSignalDeferred.push(async function (OneSignal) {
     const cfg = window.MG_ONESIGNAL || {};
-    if (!cfg.enabled || !cfg.app_id) return;
-
-    await OneSignal.init({
-      appId: cfg.app_id,
-      safari_web_id: cfg.safari_web_id || undefined,
-      allowLocalhostAsSecureOrigin: ['localhost', '127.0.0.1'].includes(window.location.hostname),
-      serviceWorkerPath: cfg.service_worker_path || '/OneSignalSDKWorker.js',
-      serviceWorkerUpdaterPath: cfg.service_worker_updater_path || '/OneSignalSDKUpdaterWorker.js',
-      notifyButton: { enable: false },
-    });
-
-    if (window.MG_USER) {
-      await OneSignal.login(String(window.MG_USER));
+    if (!cfg.enabled || !cfg.app_id) {
+      window.MGPush.state.initError = 'OneSignal nao esta configurado para esta aplicacao.';
+      if (typeof window.MGPush._rejectReady === 'function') {
+        window.MGPush._rejectReady(new Error(window.MGPush.state.initError));
+      }
+      return;
     }
 
-    window.MGPush.ensure = async function () {
+    try {
+      await OneSignal.init({
+        appId: cfg.app_id,
+        safari_web_id: cfg.safari_web_id || undefined,
+        allowLocalhostAsSecureOrigin: ['localhost', '127.0.0.1'].includes(window.location.hostname),
+        serviceWorkerPath: cfg.service_worker_path || 'OneSignalSDKWorker.js',
+        serviceWorkerUpdaterPath: cfg.service_worker_updater_path || 'OneSignalSDKUpdaterWorker.js',
+        notifyButton: { enable: false },
+      });
+
+      if (window.MG_USER) {
+        await OneSignal.login(String(window.MG_USER));
+      }
+
+      window.MGPush.state.initialized = true;
+      window.MGPush.state.initError = '';
+      if (typeof window.MGPush._resolveReady === 'function') {
+        window.MGPush._resolveReady(OneSignal);
+      }
+    } catch (error) {
+      window.MGPush.state.initError = (error && error.message) ? error.message : 'Falha ao inicializar o OneSignal.';
+      if (typeof window.MGPush._rejectReady === 'function') {
+        window.MGPush._rejectReady(error instanceof Error ? error : new Error(window.MGPush.state.initError));
+      }
+      console.error('OneSignal init error:', error);
+      return;
+    }
+  });
+
+  window.MGPush.ensure = async function () {
+    if (window.MGPush.state && window.MGPush.state.ready) {
+      const OneSignal = await window.MGPush.state.ready;
       if (window.MG_USER) {
         await OneSignal.login(String(window.MG_USER));
       }
       return OneSignal;
-    };
+    }
+    throw new Error('OneSignal ainda nao foi inicializado.');
+  };
 
-    window.MGPush.requestPermission = async function () {
-      await window.MGPush.ensure();
-      return OneSignal.Notifications.requestPermission();
-    };
-  });
+  window.MGPush.requestPermission = async function () {
+    const OneSignal = await window.MGPush.ensure();
+    return OneSignal.Notifications.requestPermission();
+  };
 </script>
 <?php endif; ?>
 
