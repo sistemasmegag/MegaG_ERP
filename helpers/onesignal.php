@@ -46,15 +46,25 @@ function mg_onesignal_config(): array
 function mg_onesignal_public_config(): array
 {
     $config = mg_onesignal_config();
+    $basePath = mg_onesignal_public_base_path();
 
     return [
         'enabled' => $config['web_ready'],
         'app_id' => $config['app_id'],
         'safari_web_id' => $config['safari_web_id'],
-        'service_worker_path' => 'OneSignalSDKWorker.js',
-        'service_worker_updater_path' => 'OneSignalSDKUpdaterWorker.js',
+        'service_worker_path' => $basePath . '/OneSignalSDKWorker.js',
+        'service_worker_updater_path' => $basePath . '/OneSignalSDKUpdaterWorker.js',
+        'service_worker_scope' => $basePath . '/',
         'api_url_debug' => $config['api_url'],
     ];
+}
+
+function mg_onesignal_public_base_path(): string
+{
+    $scriptName = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    $basePath = trim(dirname(dirname($scriptName)), '/.');
+
+    return $basePath === '' ? '' : '/' . $basePath;
 }
 
 function mg_onesignal_base_url(): string
@@ -66,8 +76,7 @@ function mg_onesignal_base_url(): string
 
     $https = strtolower((string)($_SERVER['HTTPS'] ?? ''));
     $scheme = ($https !== '' && $https !== 'off') ? 'https' : 'http';
-    $scriptName = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
-    $basePath = trim(dirname(dirname($scriptName)), '/');
+    $basePath = trim(mg_onesignal_public_base_path(), '/');
 
     return $scheme . '://' . $host . ($basePath !== '' ? '/' . $basePath : '');
 }

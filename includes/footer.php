@@ -159,6 +159,9 @@
         allowLocalhostAsSecureOrigin: ['localhost', '127.0.0.1'].includes(window.location.hostname),
         serviceWorkerPath: cfg.service_worker_path || 'OneSignalSDKWorker.js',
         serviceWorkerUpdaterPath: cfg.service_worker_updater_path || 'OneSignalSDKUpdaterWorker.js',
+        serviceWorkerParam: {
+          scope: cfg.service_worker_scope || '/',
+        },
         notifyButton: { enable: false },
       });
 
