@@ -1,472 +1,358 @@
-# Mega G ERP 🚀
+# Mega G ERP
 
-Sistema web desenvolvido em **PHP** para automação, importação de planilhas Excel e gestão operacional integrada ao **Oracle (ERP Consinco)**.
+Sistema web em `PHP` integrado ao `Oracle / Consinco`, com foco em operacao interna, importacoes, tarefas, despesas, permissoes e modulos corporativos.
 
-O projeto hoje contempla:
+## Visao Geral
 
-- 📊 Importações BI / Metas / Vendas (SSE)
-- 💰 Importação de Comissões (SSE)
-- 📦 Importação de Cargas/Metas Operacional (SSE)
-- 📉 GAP / Faixas / Perspectivas (SSE)
-- 🔎 Monitor de Importação Unificado (consulta dinâmica por tabela)
-- 🔐 Controle de Usuários e Permissões
-- 🗂️ **Módulo de Tarefas (Kanban + Detalhes + Comentários + Anexos)**
-- 🚀 **Aplicativos SaaS Novos (CRM, Wiki Corporativa e RH/DP)**
-- 🔔 **Sistema de Notificações Global (Toasts + Painel Inteligente)**
-- 📈 **Analytics Avançado com ApexCharts no Dashboard de Dados**
-- 🎨 UI **Clean SaaS** (tema dark/light, tokens CSS centralizados, glassmorphism)
+O projeto atualmente contempla:
 
-![Status do Projeto](https://img.shields.io/badge/Status-Em%20Produ%C3%A7%C3%A3o-brightgreen)
-![PHP](https://img.shields.io/badge/PHP-7.4%20|%208.x-blue)
-![Oracle](https://img.shields.io/badge/Database-Oracle-red)
-![Bootstrap](https://img.shields.io/badge/Frontend-Bootstrap%205-purple)
+- Importacoes BI / Metas / Vendas / Comissoes / Cargas
+- Dashboard principal com `Home Central Pessoal`
+- Modulo de tarefas em estilo kanban
+- Modulo de reembolsos / despesas corporativas
+- Modulo de inventario geral da MEGA G
+- Gestao de aprovadores, grupos e politicas de despesas
+- CRM, Wiki, RH, notificacoes globais e push web
+- UI padronizada no estilo `Clean SaaS`
 
-👨‍💻 Desenvolvido por:  
-**Felipe Fernando Gonçalves**  
-Dev Full Stack
+## Principais Entregas Desta Rodada
 
----
+### Home / Dashboard
 
-## ✨ Destaques (Clean SaaS UI)
+Arquivo principal:
 
-O sistema foi padronizado com layout **Clean SaaS**, focado em usabilidade, clareza e performance:
+- `pages/home.php`
 
-- 🌗 **Tema Dark/Light**
-  - Persistência via `localStorage`
-  - Tokens CSS globais (compatível com Bootstrap 5)
-- 🧭 **Sidebar moderna**
-  - Busca rápida
-  - Item ativo por página
-  - Mobile overlay + tecla ESC
-- 🧱 **Componentes SaaS**
-  - Cards com sombras suaves
-  - Badges e chips
-  - Tabelas com cabeçalho sticky
-  - Modais elegantes para detalhe/log
-- 📊 **Monitor unificado**
-  - Consulta dinâmica sem reload
-  - Contadores em tempo real
-  - Logs completos sem truncamento
-  - Renderização dinâmica de colunas
-  - **Diferencial:** Gráficos estáticos interativos gerados sob os dados (ApexCharts).
-- 🔔 **Ecossistema de Notificação**
-  - Painel global no Footer com divisão de "Lido/Não Lido".
-  - Notificações Toasts (popups de não-bloqueio) avisando do tráfego.
-  - Sinos com badge counter rodando de forma invisível via polling longo.
+Melhorias implementadas:
 
----
+- nova home em formato de `Central Pessoal`
+- hero com contexto do usuario logado
+- KPIs de tarefas, recados e atalhos
+- prioridades do dia
+- mural de recados
+- radar de despesas
+- atalhos dinamicos baseados em `$_SESSION['menu_apps']`
+- fallbacks seguros quando nao houver dados reais
 
-## 📋 Funcionalidades
+Fontes de dados usadas na home:
 
-### 📊 Dashboard
-- Visão geral do sistema
-- Totais por módulo
-- Atalhos para operações
+- `$_SESSION['usuario']`
+- `$_SESSION['menu_apps']`
+- `megag_task_tasks`
+- `megag_task_notificacoes`
+- `CONSINCO.MEGAG_DESP`
+- `CONSINCO.MEGAG_DESP_TIPO`
+- `CONSINCO.MEGAG_DESP_APROVACAO`
 
----
+### Modulo de Tarefas
 
-### 📦 Importação de Cargas/Metas (Operacional)
-- Upload `.xls` / `.xlsx`
-- Processamento **linha a linha**
-- Log em tempo real via **SSE**
-- Persistência em:
-  - `MEGAG_IMP_SETORMETACAPAC`
-- Status:
-  - `S` (Sucesso)
-  - `E` (Erro)
-  - `P` (Pendente)
+Arquivos principais:
 
-Processador:
-- `processar.php`
-
----
-
-### 💰 Importação de Comissões
-- Upload `.xls` / `.xlsx`
-- Processamento em tempo real (SSE)
-- Persistência em:
-  - `MEGAG_IMP_REPCCOMISSAO` *(ou equivalente no ambiente Consinco)*
-- Interface dedicada e integrada ao monitor
-
-Processador:
-- `processa_comissao.php`
-
----
-
-### 🎯 Importação de Custo de Comercialização (Tabela de Venda por Raio)
-- Upload de planilhas com:
-  - Nº Tabela de Venda
-  - Sequência do Produto
-  - Raio
-  - Percentual de Redução (PERAD)
-- Persistência em:
-  - `MEGAG_IMP_TABVDAPRODRAIO`
-- Controle de status, log e data de inclusão
-- Integrado ao Monitor de Importação
-
-Página:
-- `imp_tabvdaprodraio.php`
-
-Processador:
-- `processors/processa_tabvdaprodraio.php`
-
----
-
-## 🧩 Importações BI / Metas / Vendas
-
-Todos os módulos abaixo seguem o padrão:
-- Upload `.xls/.xlsx`
-- Processamento **SSE**
-- Cabeçalho validado por colunas obrigatórias
-- Escrita em Oracle com status e logs (quando existir na tabela)
-- UI Clean SaaS com cor de tema por módulo
-
----
-
-### 📈 Importação BI Metas (Warning)
-- Colunas esperadas:
-  - `CODMETA, CODVENDEDOR, CODPERIODO, META, CODREGIAO, SEGMENTO, TIPORETIRA, CATEGORIA, SEQPRODUTO, DTAATUALIZACAO`
-- Persistência em:
-  - `MEGAG_IMP_BI_METAS`
-
-Página:
-- `imp_bi_metas.php`
-
-Processador:
-- `processors/processa_imp_bi_metas.php`
-
----
-
-### 🧩 BI Metas Perspect (Warning)
-- Colunas esperadas:
-  - `CODMETA, PERSPEC, DATA, STATUS, ATUALIZACAO`
-- Persistência em:
-  - `MEGAG_BI_METAS_PERSPECT`
-
-Página:
-- `bi_metas_perspect.php`
-
-Processador:
-- `processors/processa_bi_metas_perspect.php`
-
----
-
-### 🧱 Importação Metas Faixas (Danger)
-- Colunas esperadas:
-  - `CODPERIODO, CODVENDEDOR, CODMETA, CODFAIXA, DESCFAIXA, DESCFAIXARCA, DESCFATURAMENTO, FAIXAINI, FAIXAFIM, GANHO, DATAATAULIZACAO`
-- Persistência em:
-  - `MEGAG_IMP_METAS_FAIXAS`
-
-Página:
-- `imp_metas_faixa.php`
-
-Processador:
-- `processors/processa_metas_faixas.php`
-
----
-
-### 🎯 Importação Metas (Danger)
-- Colunas esperadas:
-  - `CODMETA, CODVENDEDOR, META, CODREGIAO, SEGMENTO, TIPORETIRA, CATEGORIA, SEQPRODUTO, DTAATUALIZACAO`
-- Persistência em:
-  - `MEGAG_IMP_METAS`
-
-Página:
-- `imp_metas.php`
-
-Processador:
-- `processors/processa_imp_metas.php`
-
----
-
-### 🧭 Importação Metas Perspec (Danger)
-- Colunas esperadas:
-  - `CODMETA, PERSPEC, DATA, STATUS, ATUALIZACAO`
-- Persistência em:
-  - `MEGAG_IMP_METAS_PERSPEC`
-
-Página:
-- `imp_metas_perspec.php`
-
-Processador:
-- `processors/processa_imp_metas_perspec.php`
-
----
-
-### 📉 Importação Metas GAP (Danger)
-- Colunas esperadas:
-  - `CODPERIODO, CODMETA, GAP`
-- Persistência em:
-  - `MEGAG_IMP_METAS_GAP`
-
-Página:
-- `imp_metas_gap.php`
-
-Processador:
-- `processors/processa_imp_metas_gap.php`
-
----
-
-### 💼 Importação Lançamento Comissão (Extra - Oracle)
-- Colunas esperadas:
-  - `CODEVENTO, SEQPESSOA, DTAHREMISSAO, OBSERVACAO, VLRTOTAL`
-- Persistência em:
-  - `MEGAG_IMP_LANCTOCOMISSAO`
-
-Página:
-- `imp_lanctocomissao.php`
-
-Processador:
-- `processors/processa_imp_lanctocomissao.php`
-
----
-
-## 🗂️ Módulo de Tarefas (Kanban) — Novo 🚀
-
-Módulo completo de tarefas estilo Kanban, com API própria e páginas dedicadas.
-
-### ✅ Recursos
-- **Spaces** (agrupadores)
-- **Lists** (listas dentro do space)
-- **Kanban por Status** (TODO/DOING/DONE)
-- **Criar task** com:
-  - Título, descrição, status, prioridade, tags, responsável, entrega, criado_por
-- **Detalhes da task** com:
-  - Edição e salvar
-  - Excluir
-  - Comentários
-  - Anexos (upload, download, excluir)
-- UI Clean SaaS aplicada em:
-  - `tarefas.php` (Kanban)
-  - `tarefas_criar_task.php` (Create)
-  - `tarefas_detalhes.php` (Detalhes + Comentários + Anexos)
-
-### 📌 API de Tarefas
-Arquivo:
+- `pages/tarefas.php`
+- `pages/tarefas_criar_tasks.php`
+- `pages/tarefas_detalhes.php`
 - `api/tasks.php`
+- `assets/js/tasks-kanban-enhancements.js`
 
-Entities suportadas:
-- `entity=ping`
-- `entity=spaces`
-- `entity=lists`
-- `entity=tasks`
-- `entity=comments`
-- `entity=files`
+Recursos implementados:
 
-Endpoints (exemplos):
-- `GET  api/tasks.php?entity=spaces`
-- `GET  api/tasks.php?entity=lists&space_id=3`
-- `GET  api/tasks.php?entity=tasks&list_id=2`
-- `GET  api/tasks.php?entity=tasks&task_id=1`
-- `POST api/tasks.php?entity=tasks`
-- `PUT  api/tasks.php?entity=tasks&task_id=1`
-- `DELETE api/tasks.php?entity=tasks&task_id=1&user=Fulano`
+- spaces e lists para organizacao do trabalho
+- task com titulo, descricao, prioridade, tags, responsavel e entrega
+- vinculacao do kanban ao usuario logado
+- filtro de acesso por criador e participantes da list
+- suporte a participantes da list
+- suporte a status dinamicos por list
+- resumo leve na tela principal do kanban
+- botao `Ver mais` por status
+- quadro completo em modal fullscreen
+- criacao de novos status por list
+- drag and drop no quadro completo
+- navegacao para tela de detalhes/edicao da task
 
-Comentários:
-- `GET    api/tasks.php?entity=comments&task_id=1`
-- `POST   api/tasks.php?entity=comments`
-- `DELETE api/tasks.php?entity=comments&comment_id=10&user=Fulano`
+Regras de visibilidade:
 
-Anexos:
-- `GET    api/tasks.php?entity=files&task_id=1`
-- `POST   api/tasks.php?entity=files&action=upload` *(multipart/form-data)*
-- `GET    api/tasks.php?entity=files&action=download&file_id=10`
-- `DELETE api/tasks.php?entity=files&file_id=10&user=Fulano`
+- o usuario pode ver a list se for criador ou participante
+- as tasks visiveis dependem da list acessivel
+- o fluxo deixou de depender apenas do `responsavel`
 
-### 🧩 Observações técnicas (tarefas)
-- `descricao` (CLOB) tratado com `DBMS_LOB.SUBSTR(...)` no detalhe da task
-- Upload de arquivo gravando `BLOB` via `PDO::PARAM_LOB`
-- Download retornando stream ou conteúdo do blob
+Objetos novos de banco usados pelo modulo:
 
----
+- `MEGAG_TASK_LIST_PARTICIPANTES`
+- `MEGAG_TASK_LIST_STATUS`
+- `SEQ_MEGAG_TASK_LIST_STATUS`
 
-## 🚀 Novos Módulos SaaS Incorporados
+Objetos ja usados pelo modulo:
 
-Esses módulos elevam o ERP a um sistema de Gestão Integrada focada em interatividade moderna.
+- `MEGAG_TASK_SPACES`
+- `MEGAG_TASK_LISTS`
+- `MEGAG_TASK_TASKS`
+- `MEGAG_TASK_COMMENTS`
+- `MEGAG_TASK_ATTACHMENTS`
+- `MEGAG_TASK_NOTIFICACOES`
 
-### 💼 CRM & Leads (Gestão Comercial)
-- Quadro **Kanban Drag & Drop** super leve (sem lib externa).
-- Funil com etapas de venda: Novos Leads, Contato, Proposta, Ganho, Perdido.
-- Modal limpo de inserção rápida e edição de Oportunidades.
+### Modulo de Despesas / Reembolsos
 
-### 📚 Base de Conhecimento (Wiki)
-- Divisão responsiva: Lateral fixa com **Tópicos** (TI, RH, Comerciais, etc).
-- Dois Estados Visuais: Grid de visualização de Artigos e State "Reader" focado no conteúdo com fontes legíveis.
-- Formulário em simulador de Markdown.
+Arquivos principais:
 
-### 👥 Recursos Humanos (RH / Departamento Pessoal)
-- Estilo diferenciado (foco em Ruby/Pink para remeter a setores de Pessoas).
-- Tabela de **Minhas Solicitações** para empregados visualizarem seus pedidos de Atestados, Férias, Benefícios, etc.
-- **Mural de Avisos** para o setor interno se comunicar ativamente (Holerites disponíveis, Recessos, etc).
+- `pages/despesas.php`
+- `pages/despesas_aprovacao.php`
+- `pages/despesas_config.php`
+- `api/api_despesas.php`
+- `api/api_despesas_config.php`
 
----
+Recursos implementados:
 
-## 🔎 Visualização de Dados (Monitor de Importação) — Atualizado
+- solicitacao de reembolso em modal split
+- upload de anexo
+- autocomplete de fornecedor
+- autocomplete de centro de custo
+- categorias dinamicas
+- rateio entre multiplos centros de custo
+- barra de soma do rateio
+- radar de despesas na home
+- detalhe da despesa com secao de rateio
+- timeline de aprovacao
+- aprovacao hierarquica
 
-Consulta **unificada e inteligente** para **qualquer tabela de importação** cadastrada no Oracle.
+Ajustes importantes feitos na integracao:
 
-Página:
-- `dados_visualizar.php`
+- a API de despesas foi alinhada com a `PKG_MEGAG_DESP_CADASTRO`
+- o create passou a resolver e enviar `CODPOLITICA` automaticamente
+- o cadastro agora bloqueia quando:
+  - nao existe politica para o centro de custo
+  - existe mais de uma politica para o mesmo centro de custo
 
-API:
-- `api/api_dados.php`
+Observacao:
 
-### ✅ Mudanças implementadas (conforme orientação)
-- **Filtros fixos (sempre visíveis)**
-  - Tipo de dado *(via `CONSINCO.MEGAG_TABS_IMPORTACAO`)*
-  - Usuário de inclusão
-  - Data de inclusão
-  - Status (`S`, `E`, `C`, `P`)
-- **Tipo de dado dinâmico**
-  - `<select>` populado por `MEGAG_TABS_IMPORTACAO`
-  - Endpoint:
-    - `GET api/api_dados.php?action=list_tipos`
-- **Grid com tabela completa**
-  - `SELECT t.*`
-  - Adiciona campos padrão quando existirem:
-    - `USULANCTO` / `USUINCLUSAO`
-    - `DTAINCLUSAO`
-    - `MSG_LOG` / `LOG` / `OBS` / `RESULTADO`
-    - `STATUS`
-- **Renderização dinâmica de colunas**
-  - `thead/tbody` gerados conforme retorno
-  - `STATUS` com badge
-  - logs longos em modal (sem truncar)
+- o backend continua recebendo `valores_rateio` em valor absoluto
+- futuras evolucoes de percentual podem converter para valor antes do submit, sem quebrar a API
 
-### Status (legendas oficiais)
-- `S` = Sucesso  
-- `E` = Erro  
-- `C` = Cancelado  
-- `P` = Pendente  
+### Modulo de Inventario Geral e Almoxarifado
 
-> A API aplica filtros apenas se a coluna existir na tabela selecionada (detecção via `ALL_TAB_COLUMNS`).
+Arquivos principais:
 
----
+- `pages/inventario_ti.php`
+- `api/inventario_ti.php`
+- `assets/js/inventario-geral.js`
+- `PKG/CREATE_TABLE_TI_INVENTARIO.sql`
 
-## 🔐 Controle de Usuários & Permissões
+Recursos implementados:
 
-Sistema baseado em aplicações e permissões granulares:
+- dashboard com total de ativos, itens em uso, em estoque, em manutencao e garantia proxima
+- inventario geral da empresa, nao mais restrito a TI
+- listagem com busca por patrimonio, serie, colaborador, localizacao e modelo
+- cadastro e edicao de itens com dados de patrimonio, responsavel, datas e garantia
+- historico basico de movimentacoes e alteracoes cadastrais
+- termo digital de responsabilidade com duas assinaturas internas
+- requisicao digital ao almoxarifado
+- assinatura do solicitante obrigatoria
+- assinatura do almoxarifado somente no momento da entrega
+- centro de custo com autocomplete usando `ABA_CENTRORESULTADO`
+- filial com selecao assistida
+- responsavel da proxima etapa carregado a partir dos aprovadores vinculados ao centro de custo no modulo de despesas
+- estrutura Oracle dedicada para equipamentos, trilha de auditoria e solicitacoes do almoxarifado
 
-- Permissões carregadas em sessão
-- Função central:
-  - `temPermissao($app, $acao)`
-- Alias inteligente para mapear módulos
-- Admin (`ADMIN`) possui acesso total
+### Integracao de Push com OneSignal
 
-### UX
-- Módulos sem permissão:
-  - aparecem desabilitados na sidebar
-  - clique exibe modal informativo
-- Backend valida permissão sempre (segurança real)
+Arquivos principais:
 
----
+- `includes/footer.php`
+- `helpers/onesignal.php`
+- `api/onesignal.php`
+- `api/notif.php`
+- `api/api_despesas.php`
+- `includes/onesignal.local.php`
+- `includes/onesignal.local.example.php`
+- `OneSignalSDKWorker.js`
+- `OneSignalSDKUpdaterWorker.js`
 
-## 🧠 Processamento em Tempo Real (SSE)
+Recursos implementados:
 
-O sistema utiliza **Server-Sent Events** para acompanhar o processamento das planilhas sem travar o navegador.
+- inicializacao global do SDK web do OneSignal no layout compartilhado
+- vinculacao do navegador ao usuario logado via `external_id`
+- botao `Ativar push` no painel global de notificacoes
+- botao `Teste push` no painel global de notificacoes
+- endpoint interno para teste de envio
+- disparo de push junto das notificacoes internas ja criadas por `notif.php`
+- disparo de push junto das notificacoes do modulo de despesas
 
-Fluxo:
-1. Upload do arquivo
-2. Salvamento no servidor
-3. Abertura do `EventSource`
-4. Processamento linha a linha
-5. Log em tempo real
-6. Evento `close` encerra o stream
+Configuracao:
 
-Scripts (exemplos):
-- `processar.php`
-- `processa_comissao.php`
-- `processors/processa_*.php`
+- preencher `includes/onesignal.local.php` com `app_id` e `rest_api_key`
+- manter `enabled => true` para exibir os botoes no painel
+- o ambiente precisa estar em `HTTPS` e no mesmo dominio configurado no OneSignal
 
----
+## APIs Principais
 
-## 🛠️ Tecnologias Utilizadas
+### `api/tasks.php`
 
-- **Backend:** PHP (Vanilla)
-- **Banco de Dados:** Oracle Database (PDO_OCI)
-- **Frontend:**
-  - HTML5
-  - CSS3 (tokens SaaS)
-  - Bootstrap 5
-  - JavaScript (Fetch API + SSE)
-- **Bibliotecas:**
-  - PhpSpreadsheet
+Entidades principais:
 
----
+- `spaces`
+- `lists`
+- `tasks`
+- `comments`
+- `attachments`
+- `statuses`
 
-## 📂 Estrutura do Projeto (Atualizada)
+Capacidades:
 
-- `pages/`
-  - `home.php` (dashboard)
-  - `cargas.php` (importação cargas/metas)
-  - `comissoes.php` (importação comissões)
-  - `imp_tabvdaprodraio.php` (custo comercialização)
-  - `imp_lanctocomissao.php` (lançamento comissão)
-  - `imp_bi_metas.php` (BI Metas)
-  - `bi_metas_perspect.php` (BI Metas Perspect)
-  - `imp_metas_faixa.php` (Metas Faixas)
-  - `imp_metas.php` (Metas)
-  - `imp_metas_perspec.php` (Metas Perspec)
-  - `imp_metas_gap.php` (Metas GAP)
-  - `dados_visualizar.php` (monitor unificado com ApexCharts)
-  - `tarefas.php` (kanban)
-  - `tarefas_criar_task.php` (criar task)
-  - `tarefas_detalhes.php` (detalhes + comentários + anexos)
-  - `usuarios.php` (admin)
-  - `crm.php` (Kanban Comercial)
-  - `wiki.php` (Base de Conhecimento)
-  - `rh.php` (Painel Departamento Pessoal)
-- `api/`
-  - `api_dados.php`
-  - `tasks.php` (API tarefas)
-  - `api_usuarios.php`
-  - `crm.php` (API CRM)
-  - `wiki.php` (API Wiki)
-  - `rh.php` (API RH)
-  - `notif.php` (Gerenciador de Notificações Globally)
-- `processors/`
-  - `processa_tabvdaprodraio.php`
-  - `processa_imp_lanctocomissao.php`
-  - `processa_imp_bi_metas.php`
-  - `processa_bi_metas_perspect.php`
-  - `processa_metas_faixas.php`
-  - `processa_imp_metas.php`
-  - `processa_imp_metas_perspec.php`
-  - `processa_imp_metas_gap.php`
-- `includes/`
-  - `header.php` (layout + tokens + tema)
-  - `sidebar.php` (menu)
-  - `footer.php` (scripts + toggle mobile/overlay/ESC)
-- `db_config/`
-  - `db_connect.php`
-- `assets/`
-  - `images/logo.png`
-- `routes/`
-  - `check_session.php`
-- `uploads/`
-- `vendor/`
-- `index.php` (controlador central com whitelist dinâmica de páginas)
+- CRUD de spaces e lists
+- CRUD de tasks
+- mover task entre status
+- suporte a participantes
+- suporte a status dinamicos
 
----
+### `api/api_despesas.php`
 
-## ✅ Requisitos
+Acoes principais:
 
-- PHP **7.4+** (recomendado 8.x)
-- Extensão/driver Oracle para PHP (**PDO_OCI**)
-- Composer (dependências como PhpSpreadsheet)
-- Acesso ao Oracle (Consinco) com permissões de leitura/escrita nas tabelas usadas
+- `get_doms`
+- `search_fornecedores`
+- `create`
+- `list_mine`
+- `list_approvals`
+- `update_approval`
+- `get_history`
+- `get_rateio`
+- `get_dashboard_data`
 
----
+### `api/inventario_ti.php`
 
-## 📌 Status do Projeto
+Acoes principais:
 
-✅ Estável  
-🚀 Em produção  
-🧩 Arquitetura modular e APIs RESTful  
-🎨 UI Clean SaaS Padronizada  
-🔐 Segurança por permissão  
-⚡ Processamento em tempo real (SSE)  
-🗂️ Kanban de Tarefas com Comentários e Anexos  
-🚀 Central Global Integrada (Wiki, CRM, RH e Notificações Toasts)
+- `dashboard`
+- `list`
+- `get`
+- `save`
+- `history`
+- `save_term`
+- `list_requests`
+- `get_request`
+- `save_request`
+- `request_form_domains`
+- `request_responsibles`
 
----
+### `api/api_despesas_config.php`
+
+Acoes principais:
+
+- `list_grupos`
+- `add_grupo`
+- `del_grupo`
+- `list_politicas`
+- `add_politica`
+- `del_politica`
+- `list_tipos`
+- `add_tipo`
+- `del_tipo`
+- `list_aprovadores`
+- `add_aprovador`
+- `del_aprovador`
+
+## Tabelas Oracle Envolvidas
+
+### Tarefas
+
+- `MEGAG_TASK_SPACES`
+- `MEGAG_TASK_LISTS`
+- `MEGAG_TASK_TASKS`
+- `MEGAG_TASK_COMMENTS`
+- `MEGAG_TASK_ATTACHMENTS`
+- `MEGAG_TASK_NOTIFICACOES`
+- `MEGAG_TASK_LIST_PARTICIPANTES`
+- `MEGAG_TASK_LIST_STATUS`
+
+### Despesas
+
+- `MEGAG_DESP`
+- `MEGAG_DESP_TIPO`
+- `MEGAG_DESP_RATEIO`
+- `MEGAG_DESP_APROVADORES`
+- `MEGAG_DESP_APROVACAO`
+- `MEGAG_DESP_ARQUIVO`
+- `MEGAG_DESP_POLIT_CENTRO_CUSTO`
+- `MEGAG_DESP_GRUPO`
+- `MEGAG_DESP_FORNEC_AUX`
+
+### Inventario Geral / Almoxarifado
+
+- `MEGAG_TI_EQUIPAMENTOS`
+- `MEGAG_TI_EQUIP_HIST`
+- `MEGAG_TI_TERMOS`
+- `MEGAG_ALMOX_SOLICITACOES`
+- `SEQ_MEGAG_TI_EQUIPAMENTOS`
+- `SEQ_MEGAG_TI_EQUIP_HIST`
+- `SEQ_MEGAG_TI_TERMOS`
+- `SEQ_MEGAG_ALMOX_SOLICITACOES`
+
+### Tabelas de apoio do ERP
+
+- `ABA_CENTRORESULTADO`
+- `GE_USUARIO`
+- `GE_PESSOA`
+
+## Estrutura Resumida
+
+```text
+importadorV2/
+|-- pages/
+|   |-- home.php
+|   |-- tarefas.php
+|   |-- tarefas_criar_tasks.php
+|   |-- tarefas_detalhes.php
+|   |-- despesas.php
+|   |-- despesas_aprovacao.php
+|   |-- despesas_config.php
+|   |-- crm.php
+|   |-- wiki.php
+|   `-- rh.php
+|-- api/
+|   |-- tasks.php
+|   |-- api_despesas.php
+|   |-- api_despesas_config.php
+|   |-- inventario_ti.php
+|   |-- notif.php
+|   `-- onesignal.php
+|-- assets/
+|   `-- js/
+|       |-- tasks-kanban-enhancements.js
+|       `-- inventario-geral.js
+|-- includes/
+|   |-- header.php
+|   |-- sidebar.php
+|   |-- footer.php
+|   |-- onesignal.local.php
+|   `-- onesignal.local.example.php
+|-- helpers/
+|   `-- onesignal.php
+|-- PKG/
+|   |-- CREATE_TABLE.sql
+|   |-- CREATE_TABLE_TI_INVENTARIO.sql
+|   `-- scripts / packages Oracle
+|-- OneSignalSDKWorker.js
+|-- OneSignalSDKUpdaterWorker.js
+`-- index.php
+```
+
+## Requisitos
+
+- PHP `7.4+`
+- Oracle com acesso por `PDO_OCI`
+- Composer
+- permissao de leitura e escrita nas tabelas Oracle usadas pelo sistema
+
+## Observacoes para Publicacao
+
+- validar a existencia das tabelas novas do modulo de tarefas em producao
+- validar a package `PKG_MEGAG_DESP_CADASTRO` atualizada em producao
+- validar politicas por centro de custo no modulo de despesas
+- validar a estrutura `MEGAG_ALMOX_SOLICITACOES` em producao
+- validar grants do schema para as tabelas e sequences do inventario / almox
+- configurar `includes/onesignal.local.php` com as credenciais reais do OneSignal
+- testar permissao de push em navegador sob `HTTPS`
+- revisar permissoes do schema utilizado pela aplicacao
+
+## Ultima Atualizacao
+
+- `Marco / 2026`

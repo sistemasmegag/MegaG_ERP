@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../routes/check_session.php';
 header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../helpers/onesignal.php';
 // Procura o db_connect em pastas acima
 $pathConexaoCandidates = [
     __DIR__ . '/../db_config/db_connect.php',
@@ -36,6 +37,407 @@ function body_json()
     return is_array($j) ? $j : [];
 }
 
+function normalize_uploaded_files(string $field): array
+{
+    if (empty($_FILES[$field])) {
+        return [];
+    }
+
+    $file = $_FILES[$field];
+    if (!is_array($file['name'])) {
+        return [$file];
+    }
+
+    $normalized = [];
+    $total = count($file['name']);
+    for ($i = 0; $i < $total; $i++) {
+        $normalized[] = [
+            'name' => $file['name'][$i] ?? '',
+            'type' => $file['type'][$i] ?? '',
+            'tmp_name' => $file['tmp_name'][$i] ?? '',
+            'error' => $file['error'][$i] ?? UPLOAD_ERR_NO_FILE,
+            'size' => $file['size'][$i] ?? 0,
+        ];
+    }
+
+    return $normalized;
+}
+
+function resolve_politica_despesa(PDO $conn, int $seqCentroResultado): int
+{
+    $sql = "SELECT DISTINCT CODPOLITICA
+              FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO
+             WHERE CENTROCUSTO = :CC
+             ORDER BY CODPOLITICA";
+    $st = $conn->prepare($sql);
+    $st->bindValue(':CC', $seqCentroResultado);
+    $st->execute();
+    $rows = $st->fetchAll(PDO::FETCH_COLUMN);
+
+    if (!$rows) {
+        throw new Exception('Nenhuma política de aprovação encontrada para o centro de custo informado.');
+    }
+
+    $rows = array_values(array_unique(array_map('intval', $rows)));
+    if (count($rows) > 1) {
+        throw new Exception('Existe mais de uma política vinculada a este centro de custo. Ajuste a configuração antes de lançar a despesa.');
+    }
+
+    return (int) $rows[0];
+}
+
+function resolve_session_sequsuario(PDO $conn, $sessionUser): int
+{
+    if (is_numeric($sessionUser)) {
+        return (int)$sessionUser;
+    }
+
+    $user = strtoupper(trim((string)$sessionUser));
+    if ($user === '') {
+        throw new Exception('Usuário da sessão inválido.');
+    }
+
+    $tentativas = [
+        "SELECT SEQUSUARIO FROM CONSINCO.GE_USUARIO WHERE UPPER(LOGINID) = :U AND ROWNUM = 1",
+        "SELECT SEQUSUARIO FROM CONSINCO.GE_USUARIO WHERE UPPER(CODUSUARIO) = :U AND ROWNUM = 1",
+        "SELECT SEQUSUARIO FROM CONSINCO.GE_USUARIO WHERE UPPER(LOGIN) = :U AND ROWNUM = 1",
+        "SELECT SEQUSUARIO FROM CONSINCO.GE_USUARIO WHERE UPPER(NOME) = :U AND ROWNUM = 1",
+    ];
+
+    foreach ($tentativas as $sql) {
+        try {
+            $st = $conn->prepare($sql);
+            $st->bindValue(':U', $user);
+            $st->execute();
+            $seq = (int)($st->fetchColumn() ?: 0);
+            if ($seq > 0) {
+                return $seq;
+            }
+        } catch (Exception $e) {
+            continue;
+        }
+    }
+
+    throw new Exception('Não foi possível identificar o SEQUSUARIO do usuário logado.');
+}
+
+function resolve_list_mine_user_candidates($sessionUser, int $sessionSeqUsuario): array
+{
+    $candidates = [$sessionSeqUsuario];
+    $sessionUser = strtoupper(trim((string)$sessionUser));
+
+    if ($sessionUser === 'CONSINCO') {
+        $candidates[] = 1;
+    }
+
+    return array_values(array_unique(array_filter(array_map('intval', $candidates))));
+}
+
+function resolve_loginid_by_sequsuario(PDO $conn, int $seqUsuario): string
+{
+    if ($seqUsuario <= 0) {
+        return '';
+    }
+
+    $sql = "SELECT LOGINID
+              FROM CONSINCO.GE_USUARIO
+             WHERE SEQUSUARIO = :SEQ
+               AND ROWNUM = 1";
+    $st = $conn->prepare($sql);
+    $st->bindValue(':SEQ', $seqUsuario, PDO::PARAM_INT);
+    $st->execute();
+
+    return trim((string)($st->fetchColumn() ?: ''));
+}
+
+function create_notification(PDO $conn, string $usuario, string $tipo, string $titulo, string $mensagem, ?int $taskId = null): void
+{
+    $usuario = trim($usuario);
+    if ($usuario === '') {
+        return;
+    }
+
+    $sql = "INSERT INTO CONSINCO.MEGAG_TASK_NOTIFICACOES
+                (ID, USUARIO, TIPO, TITULO, MENSAGEM, TASK_ID, LIDA, CRIADO_EM)
+            VALUES
+                (CONSINCO.SEQ_MEGAG_TASK_NOTIFICACOES.NEXTVAL, :USUARIO, :TIPO, :TITULO, :MENSAGEM, :TASK_ID, 'N', SYSDATE)";
+    $st = $conn->prepare($sql);
+    $st->bindValue(':USUARIO', $usuario, PDO::PARAM_STR);
+    $st->bindValue(':TIPO', $tipo, PDO::PARAM_STR);
+    $st->bindValue(':TITULO', $titulo, PDO::PARAM_STR);
+    $st->bindValue(':MENSAGEM', $mensagem, PDO::PARAM_STR);
+    $st->bindValue(':TASK_ID', $taskId, $taskId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+    $st->execute();
+
+    mg_onesignal_notify_user($usuario, $titulo, $mensagem, [
+        'url' => $tipo === 'DESPESA' || $tipo === 'APROVACAO' ? 'index.php?page=despesas_aprovacao' : 'index.php',
+        'data' => [
+            'tipo' => $tipo,
+            'task_id' => $taskId,
+        ],
+    ]);
+}
+
+function notify_pending_approvers_for_despesa(PDO $conn, int $codDespesa, string $solicitanteLogin, string $fornecedor, float $valor): void
+{
+    $sql = "SELECT DISTINCT USUARIOAPROVADOR, NIVEL_APROVACAO
+              FROM CONSINCO.MEGAG_DESP_APROVACAO
+             WHERE CODDESPESA = :ID
+               AND STATUS = 'LANCADO'
+               AND NIVEL_APROVACAO = (
+                    SELECT MIN(NIVEL_APROVACAO)
+                      FROM CONSINCO.MEGAG_DESP_APROVACAO
+                     WHERE CODDESPESA = :ID2
+                       AND STATUS = 'LANCADO'
+               )";
+    $st = $conn->prepare($sql);
+    $st->execute([
+        ':ID' => $codDespesa,
+        ':ID2' => $codDespesa,
+    ]);
+    $rows = $st->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    foreach ($rows as $row) {
+        $loginDestino = resolve_loginid_by_sequsuario($conn, (int)($row['USUARIOAPROVADOR'] ?? 0));
+        if ($loginDestino === '') {
+            continue;
+        }
+
+        $nivel = (int)($row['NIVEL_APROVACAO'] ?? 0);
+        create_notification(
+            $conn,
+            $loginDestino,
+            'DESPESA',
+            'Nova despesa aguardando sua aprovação',
+            "A despesa EXP-{$codDespesa} de {$solicitanteLogin} foi enviada para sua alçada no nível {$nivel}. Fornecedor: {$fornecedor}. Valor: " . number_format($valor, 2, ',', '.')
+        );
+    }
+}
+
+function is_update_approval_error_message(string $msg): bool
+{
+    $msgUpper = strtoupper(trim($msg));
+    if ($msgUpper === '') {
+        return true;
+    }
+
+    $bloqueios = [
+        'ERRO',
+        'SEM PERMISS',
+        'FORA DA ORDEM',
+        'SOLICITANTE NÃO PODE APROVAR',
+        'SOLICITANTE NAO PODE APROVAR',
+        'DESPESA JÁ FINALIZADA',
+        'DESPESA JA FINALIZADA',
+        'NÃO FOI POSSÍVEL',
+        'NAO FOI POSSIVEL',
+    ];
+
+    foreach ($bloqueios as $trecho) {
+        if (strpos($msgUpper, $trecho) !== false) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function process_approval_action(PDO $conn, int $codDespesa, int $seqUsuario, string $status, string $pago, string $observacao): string
+{
+    $status = strtoupper(trim($status));
+    if (!in_array($status, ['APROVADO', 'REJEITADO'], true)) {
+        throw new Exception('Status de aprovação inválido.');
+    }
+
+    $conn->beginTransaction();
+
+    try {
+        $stDesp = $conn->prepare("
+            SELECT CODDESPESA,
+                   USUARIOSOLICITANTE,
+                   STATUS
+              FROM CONSINCO.MEGAG_DESP
+             WHERE CODDESPESA = :ID
+             FOR UPDATE
+        ");
+        $stDesp->execute([':ID' => $codDespesa]);
+        $despesa = $stDesp->fetch(PDO::FETCH_ASSOC);
+        $solicitanteSeq = (int)($despesa['USUARIOSOLICITANTE'] ?? 0);
+        $solicitanteLogin = resolve_loginid_by_sequsuario($conn, $solicitanteSeq);
+        $aprovadorLogin = resolve_loginid_by_sequsuario($conn, $seqUsuario);
+
+        if (!$despesa) {
+            throw new Exception('Despesa não encontrada.');
+        }
+
+        if ($solicitanteSeq === $seqUsuario) {
+            throw new Exception('Solicitante não pode aprovar a própria despesa.');
+        }
+
+        $statusAtual = strtoupper((string)($despesa['STATUS'] ?? ''));
+        if (in_array($statusAtual, ['APROVADO', 'REJEITADO'], true)) {
+            throw new Exception('Despesa já finalizada.');
+        }
+
+        $stNivelGlobal = $conn->prepare("
+            SELECT MIN(NIVEL_APROVACAO)
+              FROM CONSINCO.MEGAG_DESP_APROVACAO
+             WHERE CODDESPESA = :ID
+               AND STATUS = 'LANCADO'
+        ");
+        $stNivelGlobal->execute([':ID' => $codDespesa]);
+        $nivelGlobal = $stNivelGlobal->fetchColumn();
+
+        if ($nivelGlobal === false || $nivelGlobal === null) {
+            throw new Exception('Não há aprovação pendente para esta despesa.');
+        }
+
+        $stNivelUsuario = $conn->prepare("
+            SELECT MIN(NIVEL_APROVACAO)
+              FROM CONSINCO.MEGAG_DESP_APROVACAO
+             WHERE CODDESPESA = :ID
+               AND USUARIOAPROVADOR = :USU
+               AND STATUS = 'LANCADO'
+        ");
+        $stNivelUsuario->execute([
+            ':ID' => $codDespesa,
+            ':USU' => $seqUsuario,
+        ]);
+        $nivelUsuario = $stNivelUsuario->fetchColumn();
+
+        if ($nivelUsuario === false || $nivelUsuario === null) {
+            throw new Exception('Nenhuma aprovação pendente encontrada para este usuário.');
+        }
+
+        if ((int)$nivelUsuario !== (int)$nivelGlobal) {
+            throw new Exception('Esta despesa ainda aguarda aprovação de um nível anterior.');
+        }
+
+        $stUpdate = $conn->prepare("
+            UPDATE CONSINCO.MEGAG_DESP_APROVACAO
+               SET STATUS = :STATUS,
+                   DTAACAO = SYSDATE,
+                   OBSERVACAO = :OBS
+             WHERE CODDESPESA = :ID
+               AND USUARIOAPROVADOR = :USU
+               AND STATUS = 'LANCADO'
+               AND NIVEL_APROVACAO = :NIVEL
+        ");
+        $stUpdate->execute([
+            ':STATUS' => $status,
+            ':OBS' => $observacao !== '' ? $observacao : null,
+            ':ID' => $codDespesa,
+            ':USU' => $seqUsuario,
+            ':NIVEL' => (int)$nivelUsuario,
+        ]);
+
+        if ($stUpdate->rowCount() === 0) {
+            throw new Exception('Não foi possível registrar esta aprovação.');
+        }
+
+        if ($status === 'REJEITADO') {
+            $stDespRej = $conn->prepare("
+                UPDATE CONSINCO.MEGAG_DESP
+                   SET STATUS = 'REJEITADO',
+                       DTAALTERACAO = SYSDATE
+                 WHERE CODDESPESA = :ID
+            ");
+            $stDespRej->execute([':ID' => $codDespesa]);
+            create_notification(
+                $conn,
+                $solicitanteLogin,
+                'APROVACAO',
+                'Despesa reprovada',
+                "A despesa EXP-{$codDespesa} foi reprovada por {$aprovadorLogin}."
+            );
+            $conn->commit();
+            return 'Despesa reprovada com sucesso.';
+        }
+
+        $stRestantes = $conn->prepare("
+            SELECT COUNT(*)
+              FROM CONSINCO.MEGAG_DESP_APROVACAO
+             WHERE CODDESPESA = :ID
+               AND STATUS = 'LANCADO'
+        ");
+        $stRestantes->execute([':ID' => $codDespesa]);
+        $restantes = (int)$stRestantes->fetchColumn();
+
+        if ($restantes === 0) {
+            $stDespApr = $conn->prepare("
+                UPDATE CONSINCO.MEGAG_DESP
+                   SET STATUS = 'APROVADO',
+                       PAGO = :PAGO,
+                       DTAALTERACAO = SYSDATE
+                 WHERE CODDESPESA = :ID
+            ");
+            $stDespApr->execute([
+                ':PAGO' => strtoupper($pago) === 'S' ? 'S' : 'N',
+                ':ID' => $codDespesa,
+            ]);
+            create_notification(
+                $conn,
+                $solicitanteLogin,
+                'APROVACAO',
+                'Despesa aprovada',
+                "A despesa EXP-{$codDespesa} foi aprovada por {$aprovadorLogin} e concluiu o fluxo de aprovação."
+            );
+            $conn->commit();
+            return 'Despesa aprovada com sucesso.';
+        }
+
+        $stDespFluxo = $conn->prepare("
+            UPDATE CONSINCO.MEGAG_DESP
+               SET STATUS = 'APROVACAO',
+                   DTAALTERACAO = SYSDATE
+             WHERE CODDESPESA = :ID
+        ");
+        $stDespFluxo->execute([':ID' => $codDespesa]);
+
+        $stNext = $conn->prepare("
+            SELECT DISTINCT USUARIOAPROVADOR, NIVEL_APROVACAO
+              FROM CONSINCO.MEGAG_DESP_APROVACAO
+             WHERE CODDESPESA = :ID
+               AND STATUS = 'LANCADO'
+               AND NIVEL_APROVACAO = (
+                    SELECT MIN(NIVEL_APROVACAO)
+                      FROM CONSINCO.MEGAG_DESP_APROVACAO
+                     WHERE CODDESPESA = :ID2
+                       AND STATUS = 'LANCADO'
+               )
+        ");
+        $stNext->execute([
+            ':ID' => $codDespesa,
+            ':ID2' => $codDespesa,
+        ]);
+        $proximos = $stNext->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+        foreach ($proximos as $proximo) {
+            $loginDestino = resolve_loginid_by_sequsuario($conn, (int)($proximo['USUARIOAPROVADOR'] ?? 0));
+            if ($loginDestino === '') {
+                continue;
+            }
+
+            $nivelDestino = (int)($proximo['NIVEL_APROVACAO'] ?? 0);
+            create_notification(
+                $conn,
+                $loginDestino,
+                'APROVACAO',
+                'Despesa aguardando sua aprovação',
+                "A despesa EXP-{$codDespesa} avançou no fluxo e agora aguarda sua aprovação no nível {$nivelDestino}."
+            );
+        }
+
+        $conn->commit();
+        return 'Aprovação registrada. Aguardando próximos níveis.';
+    } catch (Throwable $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
+        throw $e;
+    }
+}
+
 try {
     if (empty($_SESSION['logado']) || empty($_SESSION['usuario'])) {
         jexit(false, [], 'Sessão expirada. Faça login novamente.');
@@ -43,7 +445,8 @@ try {
 
     // $conn é a PDO de Oracle presente no db_connect.php (esperado)
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $user = $_SESSION['usuario']; // ou outro identificador (NUMBER) se for o caso
+    $user = $_SESSION['usuario']; // login textual na sessão
+    $sessionSeqUsuario = resolve_session_sequsuario($conn, $user);
 
     // Decide if handling JSON payload or FormData (multipart/form-data)
     $req = body_json();
@@ -68,68 +471,142 @@ try {
         $stCc->execute();
         $ccs = $stCc->fetchAll(PDO::FETCH_ASSOC);
 
+        // Lista equivalente ao que a PRC_LIST_MEGAG_DESP_FORNECEDOR expõe.
+        // Mantido em SELECT direto para evitar limitações de REF CURSOR no driver PDO OCI.
+
         jexit(true, ['dados' => ['tipos' => $tipos, 'ccs' => $ccs]]);
+    }
+
+    if ($action === 'search_fornecedores') {
+        $q = trim((string)($req['q'] ?? ''));
+        if (strlen($q) < 2) {
+            jexit(true, ['dados' => []]);
+        }
+
+        $sql = "
+            SELECT *
+              FROM (
+                    SELECT SEQPESSOA,
+                           NOMERAZAO,
+                           FANTASIA
+                      FROM CONSINCO.GE_PESSOA
+                     WHERE TRIM(NOMERAZAO) IS NOT NULL
+                       AND (
+                            UPPER(NOMERAZAO) LIKE UPPER(:Q)
+                            OR UPPER(NVL(FANTASIA, '')) LIKE UPPER(:Q)
+                       )
+                     ORDER BY NOMERAZAO
+              )
+             WHERE ROWNUM <= 30
+        ";
+        $stForn = $conn->prepare($sql);
+        $like = '%' . $q . '%';
+        $stForn->bindValue(':Q', $like);
+        $stForn->execute();
+
+        jexit(true, ['dados' => $stForn->fetchAll(PDO::FETCH_ASSOC)]);
     }
 
     // ============================================
     // CRIAR DESPESA
     // ============================================
     if ($action === 'create') {
-        $vlr = str_replace(['R$', '.', ' '], '', $req['valor'] ?? '0');
-        $vlr = str_replace(',', '.', $vlr);
+        // Lógica robusta para parse monetário (BR e Internacional)
+        $valorRaw = str_replace(['R$', ' '], '', $req['valor'] ?? '0');
+        if (strpos($valorRaw, ',') !== false) {
+            // Formato brasileiro: 1.234,56 -> 1234.56
+            $valorRaw = str_replace('.', '', $valorRaw);
+            $valorRaw = str_replace(',', '.', $valorRaw);
+        }
+        $vlr = (float) $valorRaw;
 
         $forn = trim($req['estabelecimento'] ?? '');
         $data = trim($req['data_despesa'] ?? '');
         $tipo = (int) ($req['categoria'] ?? 0);
-        $cc_str = trim($req['centro_custo'] ?? '');
         $venc = trim($req['vencimento'] ?? '');
         $obs = trim($req['comentario'] ?? '');
+
+        // Suporta múltiplos centros de custo enviados como JSON array em 'centros_custo'
+        $centros_custo_raw = [];
+        if (!empty($req['centros_custo'])) {
+            $centros_custo_raw = json_decode($req['centros_custo'], true);
+        }
+        // Fallback: campo legado 'centro_custo' (1º CC)
+        if (empty($centros_custo_raw)) {
+            $cc_str = trim($req['centro_custo'] ?? '');
+            if ($cc_str !== '') $centros_custo_raw = [$cc_str];
+        }
 
         if ($tipo === 0)
             jexit(false, [], 'Categoria é obrigatória.');
         if ($vlr <= 0)
             jexit(false, [], 'Valor inválido.');
-        if ($cc_str === '')
+        if (empty($centros_custo_raw))
             jexit(false, [], 'Centro de custo é obrigatório.');
 
-        $cc_parts = explode('|', $cc_str);
-        $centro_custo = (int) ($cc_parts[0] ?? 0);
+        // 1º CC → usado no insert principal (MEGAG_DESP)
+        $cc_parts = explode('|', $centros_custo_raw[0]);
         $seq_cc = (int) ($cc_parts[1] ?? 0);
+        $centro_custo = (int) ($cc_parts[0] ?? 0);
+        $cod_politica = resolve_politica_despesa($conn, $seq_cc);
 
         // USUARIO logado: para testes, enviamos 1 se não for numero
-        $usr_solicitante = is_numeric($user) ? (int) $user : 1;
+        $usr_solicitante = $sessionSeqUsuario;
 
         // Upload verification
-        $fileNameParam = null;
-        $tipoArquivo = null;
-        if (isset($_FILES['arquivo']) && $_FILES['arquivo']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = __DIR__ . '/../uploads/';
-            if (!is_dir($uploadDir))
-                mkdir($uploadDir, 0777, true);
-
-            $ext = pathinfo($_FILES['arquivo']['name'], PATHINFO_EXTENSION);
-            $fileNameParam = 'despesa_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-            $tipoArquivo = $_FILES['arquivo']['type'];
-
-            if (!move_uploaded_file($_FILES['arquivo']['tmp_name'], $uploadDir . $fileNameParam)) {
-                jexit(false, [], 'Erro ao salvar o arquivo no servidor.');
-            }
+        $uploadedFiles = [];
+        $rawFiles = array_merge(
+            normalize_uploaded_files('arquivo'),
+            normalize_uploaded_files('arquivo[]')
+        );
+        $uploadDir = __DIR__ . '/../uploads/';
+        if (!empty($rawFiles) && !is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
         }
+
+        foreach ($rawFiles as $file) {
+            $error = (int)($file['error'] ?? UPLOAD_ERR_NO_FILE);
+            if ($error === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+            if ($error !== UPLOAD_ERR_OK) {
+                jexit(false, [], 'Erro ao processar um dos arquivos enviados.');
+            }
+
+            $ext = pathinfo((string)$file['name'], PATHINFO_EXTENSION);
+            $safeExt = $ext !== '' ? '.' . strtolower($ext) : '';
+            $storedName = 'despesa_' . time() . '_' . rand(1000, 9999) . '_' . count($uploadedFiles) . $safeExt;
+
+            if (!move_uploaded_file($file['tmp_name'], $uploadDir . $storedName)) {
+                jexit(false, [], 'Erro ao salvar um dos arquivos no servidor.');
+            }
+
+            $uploadedFiles[] = [
+                'original_name' => (string)$file['name'],
+                'stored_name' => $storedName,
+                'type' => (string)($file['type'] ?? ''),
+            ];
+        }
+
+        $fileNameParam = $uploadedFiles[0]['stored_name'] ?? null;
 
         $sql = "BEGIN
                   CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP(
-                      p_USUARIOSOLICITANTE => :USU,
-                      p_USUARIOAPROVADOR   => NULL,
-                      p_CODTIPODESPESA     => :TIPO,
-                      p_PAGO               => 'N',
-                      p_VLRRATDESPESA      => :VLR,
-                      p_FORNECEDOR         => :FORN,
-                      p_NOMEARQUIVO        => :NOMEARQ,
-                      p_OBSERVACAO         => :OBS,
-                      p_SEQCENTRORESULTADO => :SEQCC,
-                      p_CENTROCUSTO        => :CC,
-                      p_STATUS             => 'LANCADO',
-                      p_CODDESPESA_OUT     => :OUT_ID
+                      p_USUARIOSOLICITANTE   => :USU,
+                      p_CODTIPODESPESA       => :TIPO,
+                      p_PAGO                 => 'N',
+                      p_VLRRATDESPESA        => :VLR,
+                      p_FORNECEDOR           => :FORN,
+                      p_NOMEARQUIVO          => :NOMEARQ,
+                      p_OBSERVACAO           => :OBS,
+                      p_SEQCENTRORESULTADO   => :SEQCC,
+                      p_CENTROCUSTO          => :CC,
+                      p_STATUS               => 'LANCADO',
+                      p_DESCRICAOCENTROCUSTO => NULL,
+                      p_CODPOLITICA          => :CODPOL,
+                      p_DTAVENCIMENTO        => TO_DATE(:VENC, 'YYYY-MM-DD'),
+                      p_DTADESPESA           => TO_DATE(:DTADESP, 'YYYY-MM-DD'),
+                      p_CODDESPESA_OUT       => :OUT_ID
                   );
                 END;";
 
@@ -141,15 +618,18 @@ try {
         $st->bindValue(':NOMEARQ', $fileNameParam);
         $st->bindValue(':OBS', $obs);
         $st->bindValue(':SEQCC', $seq_cc);
-        $st->bindValue(':CC', $centro_custo);
+        $st->bindValue(':CC', $seq_cc);
+        $st->bindValue(':CODPOL', $cod_politica);
+        $st->bindValue(':VENC', $venc !== '' ? $venc : null);
+        $st->bindValue(':DTADESP', $data !== '' ? $data : null);
 
         $out_id = 0;
         $st->bindParam(':OUT_ID', $out_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
 
         $st->execute();
 
-        // Se gravou a despesa e tem arquivo, grava na tabela de arquivos anexa (PKG: PRC_INS_MEGAG_DESP_ARQUIVO)
-        if ($out_id > 0 && $fileNameParam) {
+        // Se gravou a despesa e tem arquivo(s), grava na tabela de arquivos anexa (PKG: PRC_INS_MEGAG_DESP_ARQUIVO)
+        if ($out_id > 0 && !empty($uploadedFiles)) {
             $sqlArq = "BEGIN
                         CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_ARQUIVO(
                             p_CODDESPESA     => :COD_DESP,
@@ -158,34 +638,132 @@ try {
                             p_CODARQUIVO_OUT => :OUT_ARQ
                         );
                       END;";
-            $stArq = $conn->prepare($sqlArq);
-            $stArq->bindValue(':COD_DESP', $out_id);
-            $stArq->bindValue(':NOME_ARQ', $fileNameParam);
-            $stArq->bindValue(':TIPO_ARQ', $tipoArquivo);
-            $out_arq_id = 0;
-            $stArq->bindParam(':OUT_ARQ', $out_arq_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
-            $stArq->execute();
+            foreach ($uploadedFiles as $uploadedFile) {
+                $stArq = $conn->prepare($sqlArq);
+                $stArq->bindValue(':COD_DESP', $out_id);
+                $stArq->bindValue(':NOME_ARQ', $uploadedFile['stored_name']);
+                $stArq->bindValue(':TIPO_ARQ', $uploadedFile['type']);
+                $out_arq_id = 0;
+                $stArq->bindParam(':OUT_ARQ', $out_arq_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+                $stArq->execute();
+            }
+        }
+
+        // -------------------------------------------------------
+        // Valores individuais por CC (fornecidos pelo usuário)
+        // -------------------------------------------------------
+        $valores_rateio_raw = [];
+        if (!empty($req['valores_rateio'])) {
+            $valores_rateio_raw = json_decode($req['valores_rateio'], true);
+        }
+
+        // Inserir TODOS os centros de custo no MEGAG_DESP_RATEIO
+        if ($out_id > 0 && !empty($centros_custo_raw)) {
+            $qtd_ccs = count($centros_custo_raw);
+
+            // Se o usuário forneceu valores individuais e o array tem o tamanho certo → usa-os
+            $usa_valores_individuais = (
+                !empty($valores_rateio_raw) &&
+                count($valores_rateio_raw) === $qtd_ccs
+            );
+
+            // Fallback: divisão igualitária
+            if (!$usa_valores_individuais) {
+                $vlr_base   = round($vlr / $qtd_ccs, 2);
+                $vlr_ultimo = round($vlr - ($vlr_base * ($qtd_ccs - 1)), 2);
+            }
+
+            $sqlRateio = "BEGIN
+                            CONSINCO.PKG_MEGAG_DESP_CADASTRO.PRC_INS_MEGAG_DESP_RATEIO(
+                                p_coddespesa         => :COD_DESP,
+                                p_seqcentroresultado => :SEQ_CC,
+                                p_centrocusto        => :CC,
+                                p_valorrateio        => :VLR_RAT,
+                                p_codrateio          => :OUT_RAT
+                            );
+                          END;";
+
+            foreach ($centros_custo_raw as $idx => $cc_item) {
+                $parts   = explode('|', $cc_item);
+                $cc_val  = (int)($parts[0] ?? 0);
+                $seq_val = (int)($parts[1] ?? 0);
+
+                if ($usa_valores_individuais) {
+                    $vlr_rat = (float)($valores_rateio_raw[$idx] ?? 0);
+                } else {
+                    $vlr_rat = ($idx === $qtd_ccs - 1) ? $vlr_ultimo : $vlr_base;
+                }
+
+                $stRat = $conn->prepare($sqlRateio);
+                $stRat->bindValue(':COD_DESP', $out_id);
+                $stRat->bindValue(':SEQ_CC',   $seq_val);
+                $stRat->bindValue(':CC',        $seq_val);
+                $stRat->bindValue(':VLR_RAT',  $vlr_rat);
+                $out_rat_id = 0;
+                $stRat->bindParam(':OUT_RAT', $out_rat_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
+                $stRat->execute();
+            }
         }
 
         // Commit da transação pois os PL/SQL anônimos não dão autocommit nativamente no PDO OCI
         $conn->exec('COMMIT');
 
+        $solicitanteLogin = resolve_loginid_by_sequsuario($conn, $usr_solicitante);
+        notify_pending_approvers_for_despesa(
+            $conn,
+            (int)$out_id,
+            $solicitanteLogin !== '' ? $solicitanteLogin : (string)$user,
+            $forn,
+            (float)$vlr
+        );
+
         jexit(true, ['dados' => ['id' => $out_id, 'mensagem' => 'Despesa cadastrada com sucesso!']]);
+    }
+
+    // ============================================
+    // ATUALIZAR STATUS DE APROVAÇÃO
+    // ============================================
+    if ($action === 'update_approval') {
+        $id = (int)($req['id'] ?? 0);
+        $status = trim($req['status'] ?? '');
+        $pago = trim($req['pago'] ?? 'N');
+        $obs = trim($req['observacao'] ?? '');
+        $usr_aprovador = $sessionSeqUsuario;
+
+        if (!$id || !$status) jexit(false, [], 'ID e Status são obrigatórios.');
+
+        $msg = process_approval_action($conn, $id, $usr_aprovador, $status, $pago, $obs);
+        jexit(true, ['dados' => ['mensagem' => $msg]]);
     }
 
     // ============================================
     // LISTAR MINHAS DESPESAS (Para despesas.php)
     // ============================================
     if ($action === 'list_mine') {
-        $usr_solicitante = is_numeric($user) ? (int) $user : 1;
+        $usuariosSolicitante = resolve_list_mine_user_candidates($user, $sessionSeqUsuario);
+        $placeholders = [];
+        $paramsMine = [];
+        foreach ($usuariosSolicitante as $idx => $seqSolicitante) {
+            $ph = ':U' . $idx;
+            $placeholders[] = $ph;
+            $paramsMine[$ph] = $seqSolicitante;
+        }
 
         $sql = "SELECT D.*, 
-                       (SELECT DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.CENTRORESULTADO = D.CENTROCUSTO AND ROWNUM = 1) as DESC_CC
+                       TO_CHAR(D.DTAINCLUSAO, 'YYYY-MM-DD HH24:MI:SS') as DTAINCLUSAO_FORMAT,
+                       TO_CHAR(D.DTAVENCIMENTO, 'YYYY-MM-DD') as DTAVENCIMENTO_FORMAT,
+                       TO_CHAR(D.DTADESPESA, 'YYYY-MM-DD') as DTADESPESA_FORMAT,
+                       (SELECT DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.SEQCENTRORESULTADO = D.SEQCENTRORESULTADO AND ROWNUM = 1) as DESC_CC,
+                       (SELECT CENTRORESULTADO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.SEQCENTRORESULTADO = D.SEQCENTRORESULTADO AND ROWNUM = 1) as CODIGO_CC,
+                       (SELECT DESCRICAO FROM CONSINCO.MEGAG_DESP_TIPO T WHERE T.CODTIPODESPESA = D.CODTIPODESPESA AND ROWNUM = 1) as DESC_TIPO,
+                       (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_RATEIO R WHERE R.CODDESPESA = D.CODDESPESA) as QTD_RATEIO,
+                       (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_ARQUIVO ARQ WHERE ARQ.CODDESPESA = D.CODDESPESA) as QTD_ARQUIVOS,
+                       (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_APROVACAO A WHERE A.CODDESPESA = D.CODDESPESA) as QTD_APROVACOES
                 FROM CONSINCO.MEGAG_DESP D 
-                WHERE D.USUARIOSOLICITANTE = :U 
+                WHERE D.USUARIOSOLICITANTE IN (" . implode(', ', $placeholders) . ")
                 ORDER BY D.DTAINCLUSAO DESC";
         $st = $conn->prepare($sql);
-        $st->execute([':U' => $usr_solicitante]);
+        $st->execute($paramsMine);
         $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
         $metrics = [
@@ -199,8 +777,15 @@ try {
             'reprovado_valor' => 0
         ];
 
-        foreach ($rows as $r) {
+        foreach ($rows as &$r) {
             $v = (float) $r['VLRRATDESPESA'];
+            
+            // LÓGICA DE STATUS DINÂMICO:
+            // Se o status é 'LANCADO' mas já existem registros de aprovação, consideramos 'EM_APROVACAO'
+            if ($r['STATUS'] === 'LANCADO' && (int)$r['QTD_APROVACOES'] > 0) {
+                $r['STATUS'] = 'EM_APROVACAO';
+            }
+
             $metrics['total']++;
             $metrics['total_valor'] += $v;
 
@@ -221,28 +806,219 @@ try {
     }
 
     if ($action === 'list_approvals') {
-        $usr_aprovador = is_numeric($user) ? (int) $user : 1;
+        $usr_aprovador = $sessionSeqUsuario;
 
+        // Query direta adaptada da lógica da procedure para evitar erros de cursor no driver pdo_oci
         $sql = "SELECT desp.*,
-                       (SELECT NOME FROM CONSINCO.GE_USUARIO U WHERE U.SEQUSUARIO = desp.USUARIOSOLICITANTE AND ROWNUM = 1) as NOME_SOLICITANTE,
-                       (SELECT DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.CENTRORESULTADO = desp.CENTROCUSTO AND ROWNUM = 1) as DESC_CC
-                FROM CONSINCO.MEGAG_DESP desp
-                INNER JOIN CONSINCO.MEGAG_DESP_APROVADORES aprov
-                   ON desp.CENTROCUSTO = aprov.CENTROCUSTO
-                WHERE (desp.STATUS = 'LANCADO' OR desp.STATUS = 'EM_APROVACAO' OR desp.STATUS = 'APROVACAO')
-                  AND aprov.SEQUSUARIO = :U
-                ORDER BY desp.DTAINCLUSAO DESC";
+                       hist.CENTROCUSTO_APROVACAO,
+                       hist.NIVEL_PENDENTE,
+                       hist.STATUS_APROVADOR,
+                       hist.TEM_PENDENTE,
+                       hist.APROVOU_HOJE,
+                       hist.REPROVOU_HOJE,
+                       TO_CHAR(desp.DTAVENCIMENTO, 'YYYY-MM-DD') as DTAVENCIMENTO_FORMAT,
+                       TO_CHAR(desp.DTADESPESA, 'YYYY-MM-DD') as DTADESPESA_FORMAT,
+                       (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_APROVACAO A WHERE A.CODDESPESA = desp.CODDESPESA) as QTD_APROVACOES
+                  FROM CONSINCO.MEGAG_DESP desp
+                  JOIN (
+                        SELECT apr.CODDESPESA,
+                               MIN(CASE WHEN apr.STATUS = 'LANCADO' THEN apr.CENTROCUSTO END) AS CENTROCUSTO_APROVACAO,
+                               MIN(CASE WHEN apr.STATUS = 'LANCADO' THEN apr.NIVEL_APROVACAO END) AS NIVEL_PENDENTE,
+                               MAX(CASE WHEN apr.STATUS = 'LANCADO' THEN 1 ELSE 0 END) AS TEM_PENDENTE,
+                               MAX(CASE WHEN apr.STATUS = 'APROVADO' AND TRUNC(apr.DTAACAO) = TRUNC(SYSDATE) THEN 1 ELSE 0 END) AS APROVOU_HOJE,
+                               MAX(CASE WHEN apr.STATUS = 'REJEITADO' AND TRUNC(apr.DTAACAO) = TRUNC(SYSDATE) THEN 1 ELSE 0 END) AS REPROVOU_HOJE,
+                               CASE
+                                   WHEN MAX(CASE WHEN apr.STATUS = 'REJEITADO' THEN 1 ELSE 0 END) = 1 THEN 'REJEITADO'
+                                   WHEN MAX(CASE WHEN apr.STATUS = 'LANCADO' THEN 1 ELSE 0 END) = 1 THEN 'LANCADO'
+                                   WHEN MAX(CASE WHEN apr.STATUS = 'APROVADO' THEN 1 ELSE 0 END) = 1 THEN 'APROVADO'
+                                   ELSE MAX(apr.STATUS)
+                               END AS STATUS_APROVADOR
+                          FROM CONSINCO.MEGAG_DESP_APROVACAO apr
+                         WHERE apr.USUARIOAPROVADOR = :U
+                         GROUP BY apr.CODDESPESA
+                  ) hist
+                    ON hist.CODDESPESA = desp.CODDESPESA
+                 WHERE desp.USUARIOSOLICITANTE <> :U
+                 ORDER BY hist.TEM_PENDENTE DESC,
+                          desp.DTAINCLUSAO DESC,
+                          hist.NIVEL_PENDENTE ASC NULLS LAST";
+        
         $st = $conn->prepare($sql);
         $st->execute([':U' => $usr_aprovador]);
         $rows = $st->fetchAll(PDO::FETCH_ASSOC);
 
+        // Enriquecer os dados com descrições (conforme esperado pelo frontend)
+        foreach ($rows as &$r) {
+            // Lógica de Status Dinâmico
+            $r['STATUS'] = $r['STATUS_APROVADOR'] ?? $r['STATUS'];
+            if ($r['STATUS'] === 'LANCADO' && (int)($r['TEM_PENDENTE'] ?? 0) === 1) {
+                $r['STATUS'] = 'EM_APROVACAO';
+            }
+
+            $r['DTAINCLUSAO_FORMAT'] = date('Y-m-d H:i:s', strtotime($r['DTAINCLUSAO'] ?? ''));
+            
+            // Busca nome do solicitante
+            $stUsr = $conn->prepare("SELECT NOME FROM CONSINCO.GE_USUARIO WHERE SEQUSUARIO = :S AND ROWNUM = 1");
+            $stUsr->execute([':S' => $r['USUARIOSOLICITANTE']]);
+            $r['NOME_SOLICITANTE'] = $stUsr->fetchColumn() ?: 'Usuário';
+
+            // Busca descrição do Centro de Custo
+            $stCc = $conn->prepare("SELECT DESCRICAO, CENTRORESULTADO FROM CONSINCO.ABA_CENTRORESULTADO WHERE SEQCENTRORESULTADO = :C AND ROWNUM = 1");
+            $stCc->execute([':C' => $r['SEQCENTRORESULTADO']]);
+            $ccInfo = $stCc->fetch(PDO::FETCH_ASSOC) ?: [];
+            $r['DESC_CC'] = $ccInfo['DESCRICAO'] ?? 'Centro de Custo';
+            $r['CODIGO_CC'] = $ccInfo['CENTRORESULTADO'] ?? ($r['CENTROCUSTO'] ?? null);
+
+            // A categoria já vem no campo DESCRICAO da tabela MEGAG_DESP
+            $r['DESC_TIPO'] = $r['DESCRICAO'];
+        }
+
         $metrics = [
-            'pendentes' => count($rows),
-            'aprovadas_hoje' => 0, // Mockado por enquanto até haver log de ação
+            'pendentes' => 0,
+            'aprovadas_hoje' => 0,
             'reprovadas_hoje' => 0
         ];
 
+        foreach ($rows as $r) {
+            if ((int)($r['TEM_PENDENTE'] ?? 0) === 1) {
+                $metrics['pendentes']++;
+            }
+            if ((int)($r['APROVOU_HOJE'] ?? 0) === 1) {
+                $metrics['aprovadas_hoje']++;
+            }
+            if ((int)($r['REPROVOU_HOJE'] ?? 0) === 1) {
+                $metrics['reprovadas_hoje']++;
+            }
+        }
+
         jexit(true, ['dados' => ['dados' => $rows, 'metricas' => $metrics]]);
+    }
+
+    // ============================================
+    // DASHBOARD / RELATÓRIOS (ITEM 2)
+    // ============================================
+    if ($action === 'get_dashboard_data') {
+        // Geral: Total por Categoria
+        $sqlCat = "SELECT T.DESCRICAO, SUM(D.VLRRATDESPESA) as TOTAL
+                     FROM CONSINCO.MEGAG_DESP D
+                     JOIN CONSINCO.MEGAG_DESP_TIPO T ON D.CODTIPODESPESA = T.CODTIPODESPESA
+                    GROUP BY T.DESCRICAO";
+        $stCat = $conn->prepare($sqlCat); $stCat->execute();
+        $byCategory = $stCat->fetchAll(PDO::FETCH_ASSOC);
+
+        // Mensal: Evolução
+        $sqlMes = "SELECT TO_CHAR(DTAINCLUSAO, 'MM/YYYY') as MES, SUM(VLRRATDESPESA) as TOTAL
+                     FROM CONSINCO.MEGAG_DESP
+                    GROUP BY TO_CHAR(DTAINCLUSAO, 'MM/YYYY')
+                    ORDER BY TO_CHAR(DTAINCLUSAO, 'YYYY-MM')";
+        $stMes = $conn->prepare($sqlMes); $stMes->execute();
+        $evolution = $stMes->fetchAll(PDO::FETCH_ASSOC);
+
+        // Top Centros de Custo
+        $sqlCC = "SELECT CENTROCUSTO, SUM(VLRRATDESPESA) as TOTAL
+                    FROM CONSINCO.MEGAG_DESP
+                   GROUP BY CENTROCUSTO
+                   ORDER BY TOTAL DESC FETCH FIRST 5 ROWS ONLY";
+        $stCC = $conn->prepare($sqlCC); $stCC->execute();
+        $topCC = $stCC->fetchAll(PDO::FETCH_ASSOC);
+
+        jexit(true, ['dados' => [
+            'byCategory' => $byCategory,
+            'evolution'  => $evolution,
+            'topCC'      => $topCC
+        ]]);
+    }
+
+    // ============================================
+    // TRILHA DE AUDITORIA / HISTÓRICO (ITEM 3)
+    // ============================================
+    if ($action === 'get_history') {
+        // Tenta pegar o ID de todas as fontes possíveis para garantir
+        $id_desp = 0;
+        if (isset($req['id'])) $id_desp = (int)$req['id'];
+        elseif (isset($_POST['id'])) $id_desp = (int)$_POST['id'];
+        elseif (isset($_GET['id'])) $id_desp = (int)$_GET['id'];
+
+        if (!$id_desp) jexit(false, [], 'ID da despesa não fornecido.');
+
+        $sql = "SELECT H.*, 
+                       H.CODDESPESA,
+                       H.NIVEL_APROVACAO,
+                       TO_CHAR(H.DTAACAO, 'DD/MM/YYYY HH24:MI') as DTAACAO_FORMAT,
+                       U.NOME as NOME_APROVADOR
+                  FROM CONSINCO.MEGAG_DESP_APROVACAO H
+                  LEFT JOIN CONSINCO.GE_USUARIO U ON H.USUARIOAPROVADOR = U.SEQUSUARIO
+                 WHERE H.CODDESPESA = :ID
+                 ORDER BY H.DTAACAO ASC";
+        
+        $st = $conn->prepare($sql);
+        $st->execute([':ID' => $id_desp]);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Retorna sucesso com os dados encontrados
+        jexit(true, ['dados' => $rows]);
+    }
+
+    if ($action === 'get_attachments') {
+        $id = (int)($req['id'] ?? 0);
+        if (!$id) {
+            jexit(false, [], 'ID da despesa inválido.');
+        }
+
+        $sql = "SELECT CODARQUIVO,
+                       CODDESPESA,
+                       NOMEARQUIVO,
+                       TIPOARQUIVO,
+                       TO_CHAR(DTAINCLUSAO, 'YYYY-MM-DD HH24:MI:SS') AS DTAINCLUSAO_FORMAT
+                  FROM CONSINCO.MEGAG_DESP_ARQUIVO
+                 WHERE CODDESPESA = :ID
+                 ORDER BY CODARQUIVO";
+        $st = $conn->prepare($sql);
+        $st->execute([':ID' => $id]);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($rows)) {
+            $stDesp = $conn->prepare("SELECT NOMEARQUIVO FROM CONSINCO.MEGAG_DESP WHERE CODDESPESA = :ID");
+            $stDesp->execute([':ID' => $id]);
+            $fallback = $stDesp->fetch(PDO::FETCH_ASSOC);
+            if (!empty($fallback['NOMEARQUIVO'])) {
+                $rows[] = [
+                    'CODARQUIVO' => 0,
+                    'CODDESPESA' => $id,
+                    'NOMEARQUIVO' => $fallback['NOMEARQUIVO'],
+                    'TIPOARQUIVO' => '',
+                    'DTAINCLUSAO_FORMAT' => null,
+                ];
+            }
+        }
+
+        jexit(true, ['dados' => $rows]);
+    }
+
+    // ============================================
+    // RATEIO DE DESPESA
+    // ============================================
+    if ($action === 'get_rateio') {
+        $id = (int)($req['id'] ?? 0);
+        if (!$id) jexit(false, [], 'ID da despesa inválido.');
+
+        $sql = "SELECT
+                    R.CODRATEIO,
+                    R.CODDESPESA,
+                    R.CENTROCUSTO,
+                    R.SEQCENTRORESULTADO,
+                    R.VALORRATEIO,
+                    (SELECT AC.DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO AC
+                     WHERE AC.SEQCENTRORESULTADO = R.SEQCENTRORESULTADO AND ROWNUM = 1) AS DESC_CC,
+                    (SELECT AC.CENTRORESULTADO FROM CONSINCO.ABA_CENTRORESULTADO AC
+                     WHERE AC.SEQCENTRORESULTADO = R.SEQCENTRORESULTADO AND ROWNUM = 1) AS CODIGO_CC
+                FROM CONSINCO.MEGAG_DESP_RATEIO R
+                WHERE R.CODDESPESA = :ID
+                ORDER BY R.CENTROCUSTO";
+        $st = $conn->prepare($sql);
+        $st->execute([':ID' => $id]);
+        $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+        jexit(true, ['dados' => $rows]);
     }
 
     jexit(false, [], 'Ação inválida.');

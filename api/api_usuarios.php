@@ -12,9 +12,20 @@ if (!isset($_SESSION['logado']) || $_SESSION['nivel'] !== 'ADMIN') {
 
 // 2. Conexão
 try {
-    $pathConexao = __DIR__ . '/db_config/db_connect.php';
-    if (!file_exists($pathConexao)) $pathConexao = dirname(__DIR__) . '/db_config/db_connect.php';
-    if (!file_exists($pathConexao)) throw new Exception("Config db_connect.php não encontrada.");
+    $pathConexaoCandidates = [
+        __DIR__ . '/../db_config/db_connect.php',
+        __DIR__ . '/../../db_config/db_connect.php',
+        __DIR__ . '/config/db_connect.php'
+    ];
+    $pathConexao = null;
+    foreach ($pathConexaoCandidates as $cand) {
+        if (file_exists($cand)) {
+            $pathConexao = $cand;
+            break;
+        }
+    }
+
+    if (!$pathConexao) throw new Exception("Arquivo de conexão não encontrado!");
     
     require_once($pathConexao);
     if (!isset($conn) || !$conn) throw new Exception("Falha na conexão.");
