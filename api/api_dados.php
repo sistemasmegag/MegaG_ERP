@@ -12,10 +12,11 @@ ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../routes/check_session.php';
+require_once __DIR__ . '/../bootstrap/db.php';
 
 /*
  |------------------------------------------------------------
- | Sessão (evita session_start duplicado)
+ | SessÃ£o (evita session_start duplicado)
  |------------------------------------------------------------
 */
 if (session_status() === PHP_SESSION_NONE) {
@@ -26,7 +27,7 @@ try {
 
     /*
      |------------------------------------------------------------
-     | 0) Usuário logado
+     | 0) UsuÃ¡rio logado
      |------------------------------------------------------------
     */
     $usuarioLogado =
@@ -41,41 +42,10 @@ try {
 
     /*
      |------------------------------------------------------------
-     | 1) Conexão Oracle (robusta)
+     | 1) ConexÃ£o Oracle (robusta)
      |------------------------------------------------------------
     */
-    $pathConexaoCandidates = [];
-
-    if (!empty($_SERVER['DOCUMENT_ROOT'])) {
-        $pathConexaoCandidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/db_config/db_connect.php';
-    }
-
-    $pathConexaoCandidates[] = dirname(__DIR__) . '/config/db.php';
-    $pathConexaoCandidates[] = dirname(__DIR__) . '/config/db_connect.php';
-    $pathConexaoCandidates[] = dirname(__DIR__) . '/db_config/db_connect.php';
-
-    $pathConexao = null;
-    foreach ($pathConexaoCandidates as $cand) {
-        if (file_exists($cand)) { $pathConexao = $cand; break; }
-    }
-
-    if ($pathConexao === null) {
-        throw new Exception("Arquivo de conexão não encontrado.");
-    }
-
-    require_once $pathConexao;
-
-    if (!isset($conn) || !$conn) {
-        throw new Exception("Falha na conexão com o banco.");
-    }
-
-    if ($conn instanceof PDO) {
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    }
-
-    $conn->exec("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'");
-    $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+    $conn = mg_get_global_pdo();
 
     /*
      |------------------------------------------------------------
@@ -105,21 +75,21 @@ try {
     };
 
     $isValidOracleIdent = function(string $name): bool {
-        // Identificador Oracle simples (sem aspas): LETRA/_ no começo, depois LETRA/NUM/_
+        // Identificador Oracle simples (sem aspas): LETRA/_ no comeÃ§o, depois LETRA/NUM/_
         return (bool)preg_match('/^[A-Z_][A-Z0-9_]*$/', strtoupper($name));
     };
 
     /*
      |------------------------------------------------------------
-     | 3) Fonte dos tipos (VIEW do usuário)
+     | 3) Fonte dos tipos (VIEW do usuÃ¡rio)
      |------------------------------------------------------------
     */
-    $OWNER_VIEW = 'CONSINCO';
+    $OWNER_VIEW = mg_db_schema_name();
     $VIEW_TIPOS = 'MEGAG_VW_TABS_IMPORTACAOUSU';
 
     $colsView = $getColumns($OWNER_VIEW, $VIEW_TIPOS);
     if (!$colsView) {
-        throw new Exception("View {$OWNER_VIEW}.{$VIEW_TIPOS} não encontrada.");
+        throw new Exception("View {$OWNER_VIEW}.{$VIEW_TIPOS} nÃ£o encontrada.");
     }
 
     // Pelo seu print: CODTABELA, DESCRICAO, NOMEARQUIVO, SQLEXECUTE, CODUSUARIO
@@ -128,11 +98,11 @@ try {
     $V_COL_USER  = $pick($colsView, ['CODUSUARIO','USUINCLUSAO','USUARIO','LOGIN','USU','SEQPESSOA']);
 
     if (!$V_COL_TIPO) throw new Exception("View de tipos sem coluna CODTABELA/TIPO.");
-    if (!$V_COL_USER) throw new Exception("View de tipos sem coluna de usuário (ex: CODUSUARIO).");
+    if (!$V_COL_USER) throw new Exception("View de tipos sem coluna de usuÃ¡rio (ex: CODUSUARIO).");
 
     /*
      |------------------------------------------------------------
-     | 4) LISTAR TIPOS (combo) - filtrado pelo usuário
+     | 4) LISTAR TIPOS (combo) - filtrado pelo usuÃ¡rio
      |------------------------------------------------------------
     */
     if (($_GET['action'] ?? '') === 'list_tipos') {
@@ -179,13 +149,13 @@ try {
 
     /*
      |------------------------------------------------------------
-     | 5) Filtros (tipo + data obrigatórios)
+     | 5) Filtros (tipo + data obrigatÃ³rios)
      |------------------------------------------------------------
     */
     $tipo   = trim((string)($_GET['tipo'] ?? ''));
     $data   = trim((string)($_GET['dataInclusao'] ?? ''));
     $status = trim((string)($_GET['status'] ?? ''));
-    $usuarioFiltro = trim((string)($_GET['usuario'] ?? '')); // opcional: campo na tela (mas sempre vai ser limitado ao usuário logado)
+    $usuarioFiltro = trim((string)($_GET['usuario'] ?? '')); // opcional: campo na tela (mas sempre vai ser limitado ao usuÃ¡rio logado)
 
     if ($tipo === '' || $data === '') {
         echo json_encode([
@@ -199,17 +169,17 @@ try {
     }
 
     if (!preg_match('/^\d{4}\-\d{2}\-\d{2}$/', $data)) {
-        throw new Exception("Data de inclusão inválida. Formato esperado: YYYY-MM-DD.");
+        throw new Exception("Data de inclusÃ£o invÃ¡lida. Formato esperado: YYYY-MM-DD.");
     }
 
     if ($status !== '' && !in_array($status, ['S','E','C','P'], true)) {
-        throw new Exception("Status inválido. Use: S, E, C ou P.");
+        throw new Exception("Status invÃ¡lido. Use: S, E, C ou P.");
     }
 
     // Valida o tipo para evitar injection
     $tipoUpper = strtoupper($tipo);
     if (!$isValidOracleIdent($tipoUpper)) {
-        throw new Exception("Tipo inválido (nome de tabela inválido).");
+        throw new Exception("Tipo invÃ¡lido (nome de tabela invÃ¡lido).");
     }
 
     /*
@@ -222,26 +192,26 @@ try {
 
     $colsData = $getColumns($OWNER_DATA, $TABLE_DATA);
     if (!$colsData) {
-        throw new Exception("Tabela {$OWNER_DATA}.{$TABLE_DATA} não encontrada ou sem colunas visíveis.");
+        throw new Exception("Tabela {$OWNER_DATA}.{$TABLE_DATA} nÃ£o encontrada ou sem colunas visÃ­veis.");
     }
 
-    // Colunas padrão na tabela destino
+    // Colunas padrÃ£o na tabela destino
     $COL_STATUS = $pick($colsData, ['STATUS']);
 
-    // Usuário na tabela (tenta várias possibilidades)
+    // UsuÃ¡rio na tabela (tenta vÃ¡rias possibilidades)
     $COL_USER = $pick($colsData, [
         'USUINCLUSAO','USUARIO','LOGIN','USU','USU_INCLUSAO',
         'CODUSUARIO','SEQUSUARIO','SEQPESSOA',
         'USULANCTO'
     ]);
 
-    // Data inclusão na tabela
+    // Data inclusÃ£o na tabela
     $COL_DTAINC = $pick($colsData, [
         'DTAINCLUSAO','DTINCLUSAO','DATAINCLUSAO',
         'DTA_INCLUSAO','DT_INCLUSAO','DATA_INCLUSAO'
     ]);
 
-    // Data processamento/importação (opcional)
+    // Data processamento/importaÃ§Ã£o (opcional)
     $COL_DTAPROC = $pick($colsData, [
         'DTAIMPORTACAO','DTIMPORTACAO',
         'DTAPROCESSAMENTO','DTPROCESSAMENTO',
@@ -250,7 +220,7 @@ try {
     ]);
 
     if (!$COL_DTAINC) {
-        throw new Exception("Tabela {$OWNER_DATA}.{$TABLE_DATA} não possui coluna de data de inclusão (DTAINCLUSAO...).");
+        throw new Exception("Tabela {$OWNER_DATA}.{$TABLE_DATA} nÃ£o possui coluna de data de inclusÃ£o (DTAINCLUSAO...).");
     }
 
     /*
@@ -275,16 +245,16 @@ try {
             WHERE TRUNC(t.{$COL_DTAINC}) = TO_DATE(:dta,'YYYY-MM-DD')
     ";
 
-    // Filtro por usuário:
-    // regra: sempre limitar ao usuário logado se existir coluna de usuário na tabela.
+    // Filtro por usuÃ¡rio:
+    // regra: sempre limitar ao usuÃ¡rio logado se existir coluna de usuÃ¡rio na tabela.
     if ($COL_USER) {
-        // Se o sistema grava exatamente o usuário, usa igualdade;
-        // Se houver divergências (ex: ADMIN vs admin), usa upper trim.
+        // Se o sistema grava exatamente o usuÃ¡rio, usa igualdade;
+        // Se houver divergÃªncias (ex: ADMIN vs admin), usa upper trim.
         $sql .= " AND UPPER(TRIM(t.{$COL_USER})) = UPPER(:usu_logado)";
         $params[':usu_logado'] = $usuarioLogado;
 
-        // (Opcional) se você quiser permitir o campo "Usuário de Inclusão" como LIKE dentro do universo do usuário logado
-        // normalmente não faz sentido porque já é o próprio usuário, mas mantenho caso você queira filtrar por outra representação
+        // (Opcional) se vocÃª quiser permitir o campo "UsuÃ¡rio de InclusÃ£o" como LIKE dentro do universo do usuÃ¡rio logado
+        // normalmente nÃ£o faz sentido porque jÃ¡ Ã© o prÃ³prio usuÃ¡rio, mas mantenho caso vocÃª queira filtrar por outra representaÃ§Ã£o
         if ($usuarioFiltro !== '' && strtoupper($usuarioFiltro) !== strtoupper($usuarioLogado)) {
             $sql .= " AND UPPER(TRIM(t.{$COL_USER})) LIKE UPPER(:usu_like)";
             $params[':usu_like'] = '%' . $usuarioFiltro . '%';
@@ -297,7 +267,7 @@ try {
         $params[':status'] = $status;
     }
 
-    // ordenação
+    // ordenaÃ§Ã£o
     $sql .= " ORDER BY t.{$COL_DTAINC} DESC
         )
         WHERE ROWNUM <= 5000

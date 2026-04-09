@@ -1,6 +1,7 @@
 <?php
 // processa_imp_metas_perspec.php
 session_start();
+require_once __DIR__ . '/../bootstrap/db.php';
 
 header('Content-Type: text/event-stream; charset=utf-8');
 header('Cache-Control: no-cache, no-store, must-revalidate');
@@ -80,7 +81,7 @@ try {
     require_once $autoload;
 
     // Conexão Oracle
-    $dbCfg = __DIR__ . '/db_config/db_connect.php';
+    $dbCfg = mg_db_config_path();
     if (!file_exists($dbCfg)) {
         throw new Exception('db_config/db_connect.php não encontrado.');
     }

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../bootstrap/db.php';
 
 // Configurações para STREAM (Não faça cache e envie linha a linha)
 header('Content-Type: text/event-stream');
@@ -35,7 +36,7 @@ $usuarioLogado = $_SESSION['usuario'] ?? 'SYSTEM';
 // ===============================
 // CONEXÃO ORACLE (caminho robusto)
 // ===============================
-$pathConexaoCandidates = [];
+$pathConexaoCandidates = [mg_db_config_path()];
 
 // 1) Dentro do projeto (padrão atual)
 $pathConexaoCandidates[] = __DIR__ . '/../db_config/db_connect.php';
@@ -126,7 +127,7 @@ file_put_contents("log_processar.txt", "EXCEL LIDO COM SUCESSO\n", FILE_APPEND);
 // ======================================================================
 
 // Utilizando a constante DB_SCHEMA conforme seu padrão
-$sql = "INSERT INTO ".DB_SCHEMA.".$importTable (
+$sql = "INSERT INTO ".mg_db_schema_name().".$importTable (
             seqsetor,
             turno,
             dta,
