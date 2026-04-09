@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/../helpers/onesignal.php'; ?>
+<?php require_once __DIR__ . '/../helpers/firebase.php'; ?>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMenu()"></div>
@@ -122,85 +122,167 @@
 <script>
   // ✅ usuário logado vindo do PHP (ajuste a variável conforme seu bootstrap)
   window.MG_USER = <?= json_encode($_SESSION['loginid'] ?? $_SESSION['usuario'] ?? $_SESSION['user'] ?? '') ?>;
-  window.MG_ONESIGNAL = <?= json_encode(mg_onesignal_public_config(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+  window.MG_FIREBASE = <?= json_encode(mg_firebase_public_config(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 </script>
 
-<?php $mgOneSignal = mg_onesignal_public_config(); ?>
-<?php if (!empty($mgOneSignal['enabled'])): ?>
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-  window.OneSignalDeferred = window.OneSignalDeferred || [];
-  window.MGPush = window.MGPush || {};
-  window.MGPush.state = window.MGPush.state || {
-    initialized: false,
-    initError: '',
-    ready: null
-  };
+<script type="module">
+  (async () => {
+    const cfg = window.MG_FIREBASE || {};
+    const state = {
+      enabled: !!cfg.enabled,
+      initialized: false,
+      initError: '',
+      token: '',
+      ready: null,
+      sdk: null,
+      messaging: null,
+      registration: null
+    };
 
-  window.MGPush.state.ready = new Promise((resolve, reject) => {
-    window.MGPush._resolveReady = resolve;
-    window.MGPush._rejectReady = reject;
-  });
+    window.MGPush = window.MGPush || {};
+    window.MGPush.state = state;
+    window.MGPush._notifyState = () => window.dispatchEvent(new CustomEvent('mg:push-state', { detail: { ...state } }));
 
-  window.OneSignalDeferred.push(async function (OneSignal) {
-    const cfg = window.MG_ONESIGNAL || {};
-    if (!cfg.enabled || !cfg.app_id) {
-      window.MGPush.state.initError = 'OneSignal nao esta configurado para esta aplicacao.';
-      if (typeof window.MGPush._rejectReady === 'function') {
-        window.MGPush._rejectReady(new Error(window.MGPush.state.initError));
+    async function postJson(url, body) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {})
+      });
+      const json = await response.json().catch(() => null);
+      if (!json || !json.success) {
+        throw new Error((json && json.error) || 'Falha na comunicacao com o servidor.');
       }
-      return;
+      return json.data;
     }
 
-    try {
-      await OneSignal.init({
+    state.ready = (async () => {
+      if (!cfg.enabled) {
+        state.initError = 'Firebase nao configurado para esta aplicacao.';
+        window.MGPush._notifyState();
+        return null;
+      }
+
+      if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+        state.initError = 'Este navegador nao suporta notificacoes push.';
+        window.MGPush._notifyState();
+        return null;
+      }
+
+      const [{ initializeApp }, messagingModule] = await Promise.all([
+        import('https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js'),
+        import('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging.js')
+      ]);
+
+      if (typeof messagingModule.isSupported === 'function') {
+        const supported = await messagingModule.isSupported().catch(() => false);
+        if (!supported) {
+          state.initError = 'Push nao suportado neste navegador.';
+          window.MGPush._notifyState();
+          return null;
+        }
+      }
+
+      const app = initializeApp({
+        apiKey: cfg.api_key,
+        authDomain: cfg.auth_domain || undefined,
+        projectId: cfg.project_id,
+        storageBucket: cfg.storage_bucket || undefined,
+        messagingSenderId: cfg.messaging_sender_id,
         appId: cfg.app_id,
-        safari_web_id: cfg.safari_web_id || undefined,
-        allowLocalhostAsSecureOrigin: ['localhost', '127.0.0.1'].includes(window.location.hostname),
-        serviceWorkerPath: cfg.service_worker_path || 'OneSignalSDKWorker.js',
-        serviceWorkerUpdaterPath: cfg.service_worker_updater_path || 'OneSignalSDKUpdaterWorker.js',
-        serviceWorkerParam: {
-          scope: cfg.service_worker_scope || '/',
-        },
-        notifyButton: { enable: false },
+        measurementId: cfg.measurement_id || undefined
       });
 
-      if (window.MG_USER) {
-        await OneSignal.login(String(window.MG_USER));
+      const registration = await navigator.serviceWorker.register(cfg.service_worker_path, {
+        scope: cfg.service_worker_scope || '/'
+      });
+
+      state.sdk = messagingModule;
+      state.registration = registration;
+      state.messaging = messagingModule.getMessaging(app);
+      state.initialized = true;
+      state.initError = '';
+
+      messagingModule.onMessage(state.messaging, (payload) => {
+        const title = payload?.notification?.title || payload?.data?.title || 'Notificacao';
+        const body = payload?.notification?.body || payload?.data?.body || 'Voce recebeu uma nova notificacao.';
+        if (typeof window.showToast === 'function') {
+          window.showToast(body, 'info', title);
+        }
+        window.dispatchEvent(new CustomEvent('mg:notif-received', { detail: payload }));
+      });
+
+      window.MGPush._notifyState();
+      return state;
+    })().catch((error) => {
+      state.initError = (error && error.message) ? error.message : 'Falha ao inicializar o Firebase.';
+      console.error('Firebase init error:', error);
+      window.MGPush._notifyState();
+      return null;
+    });
+
+    window.MGPush.ensure = async function () {
+      const resolved = await state.ready;
+      if (!resolved || !state.initialized || !state.messaging || !state.registration || !state.sdk) {
+        throw new Error(state.initError || 'Firebase ainda nao foi inicializado.');
+      }
+      return resolved;
+    };
+
+    window.MGPush.syncToken = async function (requestPermission = false) {
+      await window.MGPush.ensure();
+
+      let permission = Notification.permission;
+      if (requestPermission || permission === 'default') {
+        permission = await Notification.requestPermission();
       }
 
-      window.MGPush.state.initialized = true;
-      window.MGPush.state.initError = '';
-      if (typeof window.MGPush._resolveReady === 'function') {
-        window.MGPush._resolveReady(OneSignal);
+      if (permission !== 'granted') {
+        throw new Error('Permissao de notificacoes nao concedida.');
       }
-    } catch (error) {
-      window.MGPush.state.initError = (error && error.message) ? error.message : 'Falha ao inicializar o OneSignal.';
-      if (typeof window.MGPush._rejectReady === 'function') {
-        window.MGPush._rejectReady(error instanceof Error ? error : new Error(window.MGPush.state.initError));
+
+      const token = await state.sdk.getToken(state.messaging, {
+        vapidKey: cfg.vapid_key,
+        serviceWorkerRegistration: state.registration
+      });
+
+      if (!token) {
+        throw new Error('Nao foi possivel gerar o token do dispositivo.');
       }
-      console.error('OneSignal init error:', error);
-      return;
+
+      await postJson(cfg.api_endpoint + '?action=register_token', {
+        token,
+        platform: 'web',
+        user_agent: navigator.userAgent,
+        endpoint: window.location.href
+      });
+
+      state.token = token;
+      window.MGPush._notifyState();
+      return token;
+    };
+
+    window.MGPush.requestPermission = async function () {
+      return window.MGPush.syncToken(true);
+    };
+
+    window.MGPush.sendTest = async function () {
+      await window.MGPush.ensure();
+      if (!state.token) {
+        await window.MGPush.syncToken(Notification.permission !== 'granted');
+      }
+      return postJson(cfg.api_endpoint + '?action=test', {});
+    };
+
+    if (cfg.enabled && Notification.permission === 'granted') {
+      try {
+        await window.MGPush.syncToken(false);
+      } catch (error) {
+        console.warn('Firebase token sync warning:', error);
+      }
     }
-  });
-
-  window.MGPush.ensure = async function () {
-    if (window.MGPush.state && window.MGPush.state.ready) {
-      const OneSignal = await window.MGPush.state.ready;
-      if (window.MG_USER) {
-        await OneSignal.login(String(window.MG_USER));
-      }
-      return OneSignal;
-    }
-    throw new Error('OneSignal ainda nao foi inicializado.');
-  };
-
-  window.MGPush.requestPermission = async function () {
-    const OneSignal = await window.MGPush.ensure();
-    return OneSignal.Notifications.requestPermission();
-  };
+  })();
 </script>
-<?php endif; ?>
 
 <!-- Toast Container (Global) -->
 <div aria-live="polite" aria-atomic="true" class="position-relative">
@@ -298,16 +380,18 @@
     const pushTestBtn = document.getElementById('mgPushTest');
 
     function pushEnabled() {
-      return !!(window.MG_ONESIGNAL && window.MG_ONESIGNAL.enabled);
+      return !!(window.MG_FIREBASE && window.MG_FIREBASE.enabled);
     }
 
     function syncPushButtons() {
       if (!pushEnableBtn || !pushTestBtn) return;
+
       if (!pushEnabled()) {
         pushEnableBtn.style.display = 'none';
         pushTestBtn.style.display = 'none';
         return;
       }
+
       pushEnableBtn.style.display = 'inline-flex';
       pushTestBtn.style.display = 'inline-flex';
     }
@@ -319,10 +403,10 @@
       pushEnableBtn.addEventListener('click', async () => {
         try {
           if (!window.MGPush || typeof window.MGPush.requestPermission !== 'function') {
-            throw new Error('OneSignal ainda nao foi inicializado.');
+            throw new Error('Firebase ainda nao foi inicializado.');
           }
           await window.MGPush.requestPermission();
-          window.showToast('Permissao de push solicitada ao navegador.', 'success', 'Push');
+          window.showToast('Permissao de push ativada para este navegador.', 'success', 'Push');
         } catch (e) {
           window.showToast(e.message || 'Nao foi possivel ativar o push.', 'error', 'Push');
         }
@@ -331,16 +415,11 @@
     if (pushTestBtn) {
       pushTestBtn.addEventListener('click', async () => {
         try {
-          const r = await fetch('api/onesignal.php?action=test', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
-          });
-          const j = await r.json().catch(() => null);
-          if (!j || !j.success) {
-            throw new Error((j && j.error) || 'Falha ao enviar push de teste.');
+          if (!window.MGPush || typeof window.MGPush.sendTest !== 'function') {
+            throw new Error('Firebase ainda nao foi inicializado.');
           }
-          window.showToast('Push de teste enviado. Confira o navegador/dispositivo inscrito.', 'success', 'Push');
+          await window.MGPush.sendTest();
+          window.showToast('Push de teste enviado. Confira este navegador.', 'success', 'Push');
         } catch (e) {
           window.showToast(e.message || 'Falha ao enviar push de teste.', 'error', 'Push');
         }
@@ -504,6 +583,12 @@
 
     // Auto-refresh inteligente (a cada 30s)
     let lastUnreadCount = 0;
+
+    window.addEventListener('mg:notif-received', async () => {
+      try {
+        await loadNotifs();
+      } catch (e) { /* silencioso */ }
+    });
 
     setInterval(async () => {
       try {

@@ -4,5 +4,6 @@
 # Permitir versionar o diretório (opcional)
 !/uploads/.gitkeep
 
-# Configuracao local do OneSignal
-/includes/onesignal.local.php
+# Configuracoes locais do Firebase
+/includes/firebase.local.php
+/includes/firebase-service-account.json

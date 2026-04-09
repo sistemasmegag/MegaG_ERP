@@ -6,7 +6,7 @@ if (ob_get_level() === 0) {
 }
 require_once __DIR__ . '/../bootstrap/db.php';
 require_once __DIR__ . '/mg_api_bootstrap.php';
-require_once __DIR__ . '/../helpers/onesignal.php';
+require_once __DIR__ . '/../helpers/firebase.php';
 $pathConexao = mg_db_config_path();
 if (!$pathConexao) {
     jexit(false, [], "Arquivo de conexão não encontrado!");
@@ -193,7 +193,7 @@ function create_notification(PDO $conn, string $usuario, string $tipo, string $t
     $st->bindValue(':TASK_ID', $taskId, $taskId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
     $st->execute();
 
-    mg_onesignal_notify_user($usuario, $titulo, $mensagem, [
+    mg_firebase_notify_user($conn, $usuario, $titulo, $mensagem, [
         'url' => $tipo === 'DESPESA' || $tipo === 'APROVACAO' ? 'index.php?page=despesas_aprovacao' : 'index.php',
         'data' => [
             'tipo' => $tipo,

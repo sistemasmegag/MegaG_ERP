@@ -12,7 +12,7 @@ O projeto atualmente contempla:
 - Modulo de reembolsos / despesas corporativas
 - Modulo de inventario geral da MEGA G
 - Gestao de aprovadores, grupos e politicas de despesas
-- CRM, Wiki, RH, notificacoes globais e push web
+- CRM, Wiki, RH e notificacoes globais
 - UI padronizada no estilo `Clean SaaS`
 
 ## Principais Entregas Desta Rodada
@@ -152,35 +152,36 @@ Recursos implementados:
 - responsavel da proxima etapa carregado a partir dos aprovadores vinculados ao centro de custo no modulo de despesas
 - estrutura Oracle dedicada para equipamentos, trilha de auditoria e solicitacoes do almoxarifado
 
-### Integracao de Push com OneSignal
+### Notificacoes
 
 Arquivos principais:
 
 - `includes/footer.php`
-- `helpers/onesignal.php`
-- `api/onesignal.php`
 - `api/notif.php`
 - `api/api_despesas.php`
-- `includes/onesignal.local.php`
-- `includes/onesignal.local.example.php`
-- `OneSignalSDKWorker.js`
-- `OneSignalSDKUpdaterWorker.js`
+- `api/firebase.php`
+- `helpers/firebase.php`
+- `firebase-messaging-sw.php`
+- `includes/firebase.local.php`
+- `includes/firebase.local.example.php`
 
 Recursos implementados:
 
-- inicializacao global do SDK web do OneSignal no layout compartilhado
-- vinculacao do navegador ao usuario logado via `external_id`
-- botao `Ativar push` no painel global de notificacoes
-- botao `Teste push` no painel global de notificacoes
-- endpoint interno para teste de envio
-- disparo de push junto das notificacoes internas ja criadas por `notif.php`
-- disparo de push junto das notificacoes do modulo de despesas
+- painel global de notificacoes no layout compartilhado
+- criacao de notificacoes internas pelo endpoint `api/notif.php`
+- disparo de notificacoes internas junto ao fluxo do modulo de despesas
+- leitura individual e em lote das notificacoes do usuario
+- registro de tokens web push por usuario com Firebase Cloud Messaging
+- endpoint de teste de push para o usuario autenticado
+- service worker para recebimento de push em background
 
-Configuracao:
+Configuracao do Firebase:
 
-- preencher `includes/onesignal.local.php` com `app_id` e `rest_api_key`
-- manter `enabled => true` para exibir os botoes no painel
-- o ambiente precisa estar em `HTTPS` e no mesmo dominio configurado no OneSignal
+- preencher `includes/firebase.local.php` com os dados do app web no Firebase
+- informar a chave `vapid_key` do Web Push Certificate
+- apontar `service_account_json_path` para o JSON da conta de servico com permissao de `Firebase Cloud Messaging API Admin`
+- executar a criacao da tabela `MEGAG_PUSH_TOKENS` e da sequence `SEQ_MEGAG_PUSH_TOKENS`
+- manter o site em `HTTPS` para o push funcionar fora de `localhost`
 
 ## APIs Principais
 
@@ -260,6 +261,7 @@ Acoes principais:
 - `MEGAG_TASK_COMMENTS`
 - `MEGAG_TASK_ATTACHMENTS`
 - `MEGAG_TASK_NOTIFICACOES`
+- `MEGAG_PUSH_TOKENS`
 - `MEGAG_TASK_LIST_PARTICIPANTES`
 - `MEGAG_TASK_LIST_STATUS`
 
@@ -311,9 +313,9 @@ importadorV2/
 |   |-- tasks.php
 |   |-- api_despesas.php
 |   |-- api_despesas_config.php
+|   |-- firebase.php
 |   |-- inventario_ti.php
-|   |-- notif.php
-|   `-- onesignal.php
+|   `-- notif.php
 |-- assets/
 |   `-- js/
 |       |-- tasks-kanban-enhancements.js
@@ -321,17 +323,17 @@ importadorV2/
 |-- includes/
 |   |-- header.php
 |   |-- sidebar.php
-|   |-- footer.php
-|   |-- onesignal.local.php
-|   `-- onesignal.local.example.php
+|   |-- firebase.local.php
+|   |-- firebase.local.example.php
+|   `-- footer.php
 |-- helpers/
-|   `-- onesignal.php
+|   `-- firebase.php
 |-- PKG/
 |   |-- CREATE_TABLE.sql
+|   |-- CREATE_TABLE_TASKS.sql
 |   |-- CREATE_TABLE_TI_INVENTARIO.sql
 |   `-- scripts / packages Oracle
-|-- OneSignalSDKWorker.js
-|-- OneSignalSDKUpdaterWorker.js
+|-- firebase-messaging-sw.php
 `-- index.php
 ```
 
@@ -349,8 +351,8 @@ importadorV2/
 - validar politicas por centro de custo no modulo de despesas
 - validar a estrutura `MEGAG_ALMOX_SOLICITACOES` em producao
 - validar grants do schema para as tabelas e sequences do inventario / almox
-- configurar `includes/onesignal.local.php` com as credenciais reais do OneSignal
-- testar permissao de push em navegador sob `HTTPS`
+- validar a tabela `MEGAG_PUSH_TOKENS` em producao
+- validar as credenciais do Firebase no ambiente publicado
 - revisar permissoes do schema utilizado pela aplicacao
 
 ## Ultima Atualizacao

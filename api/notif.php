@@ -2,7 +2,7 @@
 session_start();
 
 require_once __DIR__ . '/mg_api_bootstrap.php';
-require_once __DIR__ . '/../helpers/onesignal.php';
+require_once __DIR__ . '/../helpers/firebase.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -162,7 +162,7 @@ function notif_create(PDO $conn): void
     $stmt->bindValue(':TASK_ID', $taskId, $taskId === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
     $stmt->execute();
 
-    mg_onesignal_notify_user($usuario, $titulo, $mensagem, [
+    mg_firebase_notify_user($conn, $usuario, $titulo, $mensagem, [
         'url' => notif_pick_link(['TIPO' => $tipo]),
         'data' => [
             'tipo' => $tipo,
