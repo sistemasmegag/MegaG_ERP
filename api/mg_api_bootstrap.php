@@ -13,22 +13,14 @@ ini_set('default_charset', 'UTF-8');
 
 // ==========================================
 
-require_once __DIR__ . '/../../db_config/db_connect.php';
+require_once __DIR__ . '/../bootstrap/db.php';
 
 /* |-------------------------------------------------------------------------- | Conexão PDO (padrão projeto) |-------------------------------------------------------------------------- */
 
 function getConexaoPDO()
 {
     try {
-
-        $conn = new PDO(DB_CONN_STR, DB_USER, DB_PASSWORD, DB_OPT);
-
-        // Sessão Oracle padrão do projeto
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $conn->exec("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'");
-        $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
-
-        return $conn;
+        return mg_get_global_pdo();
     }
     catch (PDOException $e) {
 
@@ -88,9 +80,38 @@ function mg_need_permission($perm)
     return true;
 }
 
+function mg_schema(): string
+{
+    return mg_db_schema_name();
+}
+
+function mg_table(string $object): string
+{
+    return mg_schema() . '.' . strtoupper(trim($object));
+}
+
+function mg_sequence(string $object): string
+{
+    return mg_schema() . '.' . strtoupper(trim($object));
+}
+
+function mg_package(string $object): string
+{
+    return mg_schema() . '.' . strtoupper(trim($object));
+}
+
+function mg_with_schema(string $sql): string
+{
+    return str_replace(
+        ['{{SCHEMA}}.', 'CONSINCO.'],
+        [mg_schema() . '.', mg_schema() . '.'],
+        $sql
+    );
+}
+
 /* |-------------------------------------------------------------------------- | Helper para nome de package |-------------------------------------------------------------------------- */
 
 function mg_pkg($pkg)
 {
-    return strtoupper($pkg);
+    return mg_package($pkg);
 }

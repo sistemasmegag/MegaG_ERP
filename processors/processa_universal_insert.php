@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../bootstrap/db.php';
 // processors/processa_universal_insert.php
 // Processador Universal (SSE) - INSERT puro + pós-import (megag_fn_tabs_importacao_sqlexec)
 // Uso: processors/processa_universal_insert.php?tipo=lanctocomissao&arquivo=xxxx.xlsx
@@ -750,7 +751,7 @@ try {
     // ==================================================================
     // 5.1) Conexão Oracle (caminho robusto)
     // ==================================================================
-    $pathConexaoCandidates = [];
+    $pathConexaoCandidates = [mg_db_config_path()];
 
     // Dentro do projeto
     $pathConexaoCandidates[] = __DIR__ . '/../db_config/db_connect.php';

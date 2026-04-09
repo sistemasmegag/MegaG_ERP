@@ -3,3 +3,7 @@
 
 # Permitir versionar o diretório (opcional)
 !/uploads/.gitkeep
+
+# Configuracoes locais do Firebase
+/includes/firebase.local.php
+/includes/firebase-service-account.json

@@ -34,7 +34,8 @@ session_start();
 $usuarioLogado = isset($_SESSION['usuario']) ? $_SESSION['usuario'] : 'ADMIN';
 
 try {
-    $pathConexao = __DIR__ . '/db_config/db_connect.php';
+    require_once __DIR__ . '/../bootstrap/db.php';
+    $pathConexao = mg_db_config_path();
     if (!file_exists($pathConexao)) {
         $pathConexao = dirname(__DIR__) . '/db_config/db_connect.php';
     }
