@@ -325,6 +325,23 @@ function mg_firebase_save_token(PDO $conn, string $usuario, string $token, array
         return ['success' => false, 'error' => 'Usuario e token sao obrigatorios.'];
     }
 
+    $sqlExistingUser = "SELECT COUNT(*)
+                          FROM " . mg_firebase_table('MEGAG_PUSH_TOKENS') . "
+                         WHERE UPPER(USUARIO) = UPPER(:USUARIO)
+                           AND ATIVO = 'S'";
+    $stmtExistingUser = $conn->prepare($sqlExistingUser);
+    $stmtExistingUser->bindValue(':USUARIO', $usuario, PDO::PARAM_STR);
+    $stmtExistingUser->execute();
+    $activeTokensBefore = (int)$stmtExistingUser->fetchColumn();
+
+    $sqlExistingToken = "SELECT COUNT(*)
+                           FROM " . mg_firebase_table('MEGAG_PUSH_TOKENS') . "
+                          WHERE TOKEN = :TOKEN";
+    $stmtExistingToken = $conn->prepare($sqlExistingToken);
+    $stmtExistingToken->bindValue(':TOKEN', $token, PDO::PARAM_STR);
+    $stmtExistingToken->execute();
+    $tokenAlreadyKnown = (int)$stmtExistingToken->fetchColumn() > 0;
+
     $sql = "MERGE INTO " . mg_firebase_table('MEGAG_PUSH_TOKENS') . " T
             USING (SELECT :TOKEN_SRC AS TOKEN FROM DUAL) SRC
                ON (T.TOKEN = SRC.TOKEN)
@@ -353,7 +370,11 @@ function mg_firebase_save_token(PDO $conn, string $usuario, string $token, array
     $stmt->bindValue(':ENDPOINT_INS', substr((string)($meta['endpoint'] ?? ''), 0, 500), PDO::PARAM_STR);
     $stmt->execute();
 
-    return ['success' => true];
+    return [
+        'success' => true,
+        'is_first_activation' => $activeTokensBefore === 0,
+        'is_new_token' => !$tokenAlreadyKnown,
+    ];
 }
 
 function mg_firebase_deactivate_token(PDO $conn, string $token): void

@@ -42,7 +42,23 @@ try {
             mg_json_error($result['error'] ?? 'Falha ao registrar o token do dispositivo.');
         }
 
-        mg_json_success(['ok' => true]);
+        $welcomeSent = false;
+        if (!empty($result['is_first_activation'])) {
+            $welcome = mg_firebase_notify_user($conn, $currentUser, 'Push ativado com sucesso', 'Voce agora vai receber alertas importantes do ERP neste navegador.', [
+                'url' => 'index.php',
+                'data' => [
+                    'source' => 'erp-megag',
+                    'kind' => 'welcome',
+                ],
+            ]);
+            $welcomeSent = !empty($welcome['success']);
+        }
+
+        mg_json_success([
+            'ok' => true,
+            'is_first_activation' => !empty($result['is_first_activation']),
+            'welcome_sent' => $welcomeSent,
+        ]);
     }
 
     if ($method === 'POST' && $action === 'unregister_token') {
