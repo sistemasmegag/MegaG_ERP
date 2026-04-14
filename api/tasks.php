@@ -43,6 +43,10 @@ try {
             handle_lists($conn, $PKG, $method);
             break;
 
+        case 'statuses':
+            handle_statuses($conn, $PKG, $method);
+            break;
+
         case 'tasks':
             handle_tasks($conn, $PKG, $method);
             break;
@@ -154,6 +158,212 @@ function resolve_loginid(PDO $conn, ?string $user_in): ?string
     throw new Exception('Responsável inválido/não encontrado: "' . $v . '"');
 }
 
+function normalize_task_user(?string $value): ?string
+{
+    $value = trim((string)$value);
+    return $value === '' ? null : $value;
+}
+
+function task_participants_table_exists(PDO $conn): bool
+{
+    static $exists = null;
+
+    if ($exists !== null) {
+        return $exists;
+    }
+
+    try {
+        $conn->query("SELECT 1 FROM megag_task_list_participantes WHERE 1 = 0");
+        $exists = true;
+    } catch (Throwable $e) {
+        $exists = false;
+    }
+
+    return $exists;
+}
+
+function parse_participants_input(PDO $conn, $raw): array
+{
+    if (is_array($raw)) {
+        $tokens = $raw;
+    } else {
+        $tokens = preg_split('/[\r\n,;]+/', (string)$raw) ?: [];
+    }
+
+    $participants = [];
+    $seen = [];
+
+    foreach ($tokens as $token) {
+        $token = trim((string)$token);
+        if ($token === '') {
+            continue;
+        }
+
+        $loginid = resolve_loginid($conn, $token);
+        $key = strtoupper($loginid);
+
+        if (isset($seen[$key])) {
+            continue;
+        }
+
+        $seen[$key] = true;
+        $participants[] = $loginid;
+    }
+
+    return $participants;
+}
+
+function sync_list_participants(PDO $conn, int $list_id, ?string $criado_por, array $participants): void
+{
+    if ($list_id <= 0) {
+        throw new Exception('List invÃ¡lida para gravar participantes.');
+    }
+
+    if (!task_participants_table_exists($conn)) {
+        if (!empty($participants)) {
+            throw new Exception('Tabela MEGAG_TASK_LIST_PARTICIPANTES nÃ£o encontrada. Rode o script de criaÃ§Ã£o antes de usar participantes da list.');
+        }
+        return;
+    }
+
+    $sqlDelete = "DELETE FROM megag_task_list_participantes WHERE list_id = :list_id";
+    $stmtDelete = $conn->prepare($sqlDelete);
+    $stmtDelete->bindParam(':list_id', $list_id, PDO::PARAM_INT);
+    $stmtDelete->execute();
+
+    if (empty($participants)) {
+        return;
+    }
+
+    $sqlInsert = "
+        INSERT INTO megag_task_list_participantes (list_id, loginid, criado_por, criado_em)
+        SELECT :list_id, :loginid, :criado_por, SYSDATE
+          FROM dual
+    ";
+
+    $stmtInsert = $conn->prepare($sqlInsert);
+
+    foreach ($participants as $loginid) {
+        $stmtInsert->bindParam(':list_id', $list_id, PDO::PARAM_INT);
+        $stmtInsert->bindParam(':loginid', $loginid, PDO::PARAM_STR);
+        $stmtInsert->bindParam(':criado_por', $criado_por, PDO::PARAM_STR);
+        $stmtInsert->execute();
+    }
+}
+
+function user_can_access_list(PDO $conn, int $list_id, ?string $user): bool
+{
+    if ($list_id <= 0) {
+        return false;
+    }
+
+    $user = normalize_task_user($user);
+    if ($user === null) {
+        return true;
+    }
+
+    if (task_participants_table_exists($conn)) {
+        $sql = "
+            SELECT COUNT(*) AS CNT
+              FROM megag_task_lists l
+             WHERE l.id = :list_id
+               AND (
+                    UPPER(l.criado_por) = UPPER(:user_filter)
+                    OR EXISTS (
+                        SELECT 1
+                          FROM megag_task_list_participantes p
+                         WHERE p.list_id = l.id
+                           AND UPPER(p.loginid) = UPPER(:user_filter)
+                    )
+               )
+        ";
+    } else {
+        $sql = "
+            SELECT COUNT(*) AS CNT
+              FROM megag_task_lists l
+             WHERE l.id = :list_id
+               AND UPPER(l.criado_por) = UPPER(:user_filter)
+        ";
+    }
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':list_id', $list_id, PDO::PARAM_INT);
+    $stmt->bindParam(':user_filter', $user, PDO::PARAM_STR);
+    $stmt->execute();
+
+    return ((int)$stmt->fetchColumn()) > 0;
+}
+
+function get_task_list_id(PDO $conn, int $task_id): int
+{
+    $sql = "SELECT list_id FROM megag_task_tasks WHERE id = :task_id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':task_id', $task_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $list_id = $stmt->fetchColumn();
+    return $list_id ? (int)$list_id : 0;
+}
+
+function user_can_access_task(PDO $conn, int $task_id, ?string $user): bool
+{
+    $list_id = get_task_list_id($conn, $task_id);
+    if ($list_id <= 0) {
+        return false;
+    }
+
+    return user_can_access_list($conn, $list_id, $user);
+}
+
+function task_statuses_table_exists(PDO $conn): bool
+{
+    static $exists = null;
+
+    if ($exists !== null) {
+        return $exists;
+    }
+
+    try {
+        $conn->query("SELECT 1 FROM megag_task_list_status WHERE 1 = 0");
+        $exists = true;
+    } catch (Throwable $e) {
+        $exists = false;
+    }
+
+    return $exists;
+}
+
+function get_default_task_statuses(): array
+{
+    return [
+        ['id' => 'TODO', 'list_id' => null, 'nome' => 'TODO', 'ordem' => 1, 'cor' => '#3b82f6', 'ativo' => 'S'],
+        ['id' => 'DOING', 'list_id' => null, 'nome' => 'DOING', 'ordem' => 2, 'cor' => '#f59e0b', 'ativo' => 'S'],
+        ['id' => 'DONE', 'list_id' => null, 'nome' => 'DONE', 'ordem' => 3, 'cor' => '#10b981', 'ativo' => 'S'],
+    ];
+}
+
+function get_list_statuses(PDO $conn, int $list_id): array
+{
+    if ($list_id <= 0 || !task_statuses_table_exists($conn)) {
+        return get_default_task_statuses();
+    }
+
+    $sql = "
+        SELECT id, list_id, nome, ordem, cor, ativo, criado_por, criado_em
+          FROM megag_task_list_status
+         WHERE list_id = :list_id
+           AND NVL(ativo, 'S') = 'S'
+         ORDER BY ordem, nome
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':list_id', $list_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return $rows ?: get_default_task_statuses();
+}
+
 /**
  * PING
  */
@@ -182,16 +392,47 @@ function handle_spaces(PDO $conn, string $PKG, string $method)
     if ($method === 'GET') {
 
         $only_active = $_GET['only_active'] ?? 'S';
+        $user_filter = trim((string)($_GET['user'] ?? ''));
+        if ($user_filter === '') $user_filter = null;
 
-        $sql = "
-            SELECT id, nome, ativo, criado_por, criado_em
-              FROM megag_task_spaces
-             WHERE (:only_active <> 'S' OR ativo = 'S')
-             ORDER BY nome
-        ";
+        if (task_participants_table_exists($conn)) {
+            $sql = "
+                SELECT s.id, s.nome, s.ativo, s.criado_por, s.criado_em
+                  FROM megag_task_spaces s
+                 WHERE (:only_active <> 'S' OR s.ativo = 'S')
+                   AND (
+                        :user_filter IS NULL
+                        OR UPPER(s.criado_por) = UPPER(:user_filter)
+                        OR EXISTS (
+                            SELECT 1
+                              FROM megag_task_lists l
+                             WHERE l.space_id = s.id
+                               AND UPPER(l.criado_por) = UPPER(:user_filter)
+                        )
+                        OR EXISTS (
+                            SELECT 1
+                              FROM megag_task_lists l
+                              JOIN megag_task_list_participantes p
+                                ON p.list_id = l.id
+                             WHERE l.space_id = s.id
+                               AND UPPER(p.loginid) = UPPER(:user_filter)
+                        )
+                   )
+                 ORDER BY s.nome
+            ";
+        } else {
+            $sql = "
+                SELECT id, nome, ativo, criado_por, criado_em
+                  FROM megag_task_spaces
+                 WHERE (:only_active <> 'S' OR ativo = 'S')
+                   AND (:user_filter IS NULL OR UPPER(criado_por) = UPPER(:user_filter))
+                 ORDER BY nome
+            ";
+        }
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':only_active', $only_active);
+        $stmt->bindParam(':user_filter', $user_filter);
         $stmt->execute();
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -290,17 +531,40 @@ function handle_lists(PDO $conn, string $PKG, string $method)
 {
     if ($method === 'GET') {
         $space_id = isset($_GET['space_id']) ? (int)$_GET['space_id'] : 0;
+        $user_filter = trim((string)($_GET['user'] ?? ''));
+        if ($user_filter === '') $user_filter = null;
         if ($space_id <= 0) throw new Exception('Parâmetro "space_id" obrigatório.');
 
-        $sql = "
-            SELECT id, space_id, nome, ordem, ativo, criado_por, criado_em
-              FROM megag_task_lists
-             WHERE space_id = :space_id
-             ORDER BY ordem, nome
-        ";
+        if (task_participants_table_exists($conn)) {
+            $sql = "
+                SELECT l.id, l.space_id, l.nome, l.ordem, l.ativo, l.criado_por, l.criado_em
+                  FROM megag_task_lists l
+                 WHERE l.space_id = :space_id
+                   AND (
+                        :user_filter IS NULL
+                        OR UPPER(l.criado_por) = UPPER(:user_filter)
+                        OR EXISTS (
+                            SELECT 1
+                              FROM megag_task_list_participantes p
+                             WHERE p.list_id = l.id
+                               AND UPPER(p.loginid) = UPPER(:user_filter)
+                        )
+                   )
+                 ORDER BY l.ordem, l.nome
+            ";
+        } else {
+            $sql = "
+                SELECT id, space_id, nome, ordem, ativo, criado_por, criado_em
+                  FROM megag_task_lists
+                 WHERE space_id = :space_id
+                   AND (:user_filter IS NULL OR UPPER(criado_por) = UPPER(:user_filter))
+                 ORDER BY ordem, nome
+            ";
+        }
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':space_id', $space_id);
+        $stmt->bindParam(':user_filter', $user_filter);
         $stmt->execute();
 
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -310,10 +574,11 @@ function handle_lists(PDO $conn, string $PKG, string $method)
     if ($method === 'POST') {
         $body = read_json_body();
 
-        $space_id   = isset($body['space_id']) ? (int)$body['space_id'] : 0;
-        $nome       = $body['nome'] ?? null;
-        $ordem      = isset($body['ordem']) ? (int)$body['ordem'] : null;
-        $criado_por = $body['criado_por'] ?? null;
+        $space_id     = isset($body['space_id']) ? (int)$body['space_id'] : 0;
+        $nome         = $body['nome'] ?? null;
+        $ordem        = isset($body['ordem']) ? (int)$body['ordem'] : null;
+        $criado_por   = $body['criado_por'] ?? null;
+        $participants = parse_participants_input($conn, $body['participantes'] ?? []);
 
         $conn->beginTransaction();
 
@@ -351,6 +616,7 @@ function handle_lists(PDO $conn, string $PKG, string $method)
         $stmt->bindParam(':p_id', $p_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 20);
 
         $stmt->execute();
+        sync_list_participants($conn, (int)$p_id, $criado_por, $participants);
         $conn->commit();
 
         mg_json_success(['id' => (int)$p_id]);
@@ -399,6 +665,75 @@ function handle_lists(PDO $conn, string $PKG, string $method)
 }
 
 /**
+ * STATUSES
+ */
+function handle_statuses(PDO $conn, string $PKG, string $method)
+{
+    if ($method === 'GET') {
+        $list_id = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
+        $user_filter = normalize_task_user($_GET['user'] ?? null);
+
+        if ($list_id <= 0) {
+            throw new Exception('ParÃ¢metro "list_id" obrigatÃ³rio.');
+        }
+
+        if (!user_can_access_list($conn, $list_id, $user_filter)) {
+            mg_json_success([]);
+            return;
+        }
+
+        mg_json_success(get_list_statuses($conn, $list_id));
+        return;
+    }
+
+    if ($method === 'POST') {
+        if (!task_statuses_table_exists($conn)) {
+            throw new Exception('Tabela MEGAG_TASK_LIST_STATUS nÃ£o encontrada. Rode o script de criaÃ§Ã£o antes de cadastrar novos status.');
+        }
+
+        $body = read_json_body();
+        $list_id = isset($body['list_id']) ? (int)$body['list_id'] : 0;
+        $nome = trim((string)($body['nome'] ?? ''));
+        $ordem = isset($body['ordem']) ? (int)$body['ordem'] : 0;
+        $cor = trim((string)($body['cor'] ?? ''));
+        $criado_por = normalize_task_user($body['criado_por'] ?? null);
+
+        if ($list_id <= 0) throw new Exception('Campo "list_id" obrigatÃ³rio.');
+        if ($nome === '') throw new Exception('Campo "nome" obrigatÃ³rio.');
+        if (!$criado_por) throw new Exception('Campo "criado_por" obrigatÃ³rio.');
+        if (!user_can_access_list($conn, $list_id, $criado_por)) {
+            throw new Exception('VocÃª nÃ£o tem acesso para criar status nesta list.');
+        }
+
+        $conn->beginTransaction();
+
+        $sql = "
+            INSERT INTO megag_task_list_status (id, list_id, nome, ordem, cor, ativo, criado_por, criado_em)
+            VALUES (seq_megag_task_list_status.NEXTVAL, :list_id, :nome, :ordem, :cor, 'S', :criado_por, SYSDATE)
+            RETURNING id INTO :new_id
+        ";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':list_id', $list_id, PDO::PARAM_INT);
+        $stmt->bindParam(':nome', $nome, PDO::PARAM_STR);
+        $stmt->bindParam(':ordem', $ordem, PDO::PARAM_INT);
+        $stmt->bindParam(':cor', $cor, PDO::PARAM_STR);
+        $stmt->bindParam(':criado_por', $criado_por, PDO::PARAM_STR);
+
+        $new_id = 0;
+        $stmt->bindParam(':new_id', $new_id, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 20);
+        $stmt->execute();
+
+        $conn->commit();
+
+        mg_json_success(['id' => (int)$new_id]);
+        return;
+    }
+
+    throw new Exception('MÃ©todo nÃ£o permitido para statuses.');
+}
+
+/**
  * TASKS
  */
 function handle_tasks(PDO $conn, string $PKG, string $method)
@@ -407,9 +742,14 @@ function handle_tasks(PDO $conn, string $PKG, string $method)
 
         $task_id = isset($_GET['task_id']) ? (int)$_GET['task_id'] : 0;
         $list_id = isset($_GET['list_id']) ? (int)$_GET['list_id'] : 0;
+        $user_filter = trim((string)($_GET['user'] ?? ''));
+        if ($user_filter === '') $user_filter = null;
 
         // DETALHE (SEM REFCURSOR)
         if ($task_id > 0) {
+            if (!user_can_access_task($conn, $task_id, $user_filter)) {
+                throw new Exception('VocÃª nÃ£o tem acesso a esta task.');
+            }
 
             $sql = "
                 SELECT id,
@@ -443,6 +783,11 @@ function handle_tasks(PDO $conn, string $PKG, string $method)
             throw new Exception('Informe "list_id" (para listar) ou "task_id" (para obter).');
         }
 
+        if (!user_can_access_list($conn, $list_id, $user_filter)) {
+            mg_json_success([]);
+            return;
+        }
+
         $sql = "
             SELECT id, list_id, titulo, status, prioridade, responsavel, data_entrega, tags, criado_por, criado_em
               FROM megag_task_tasks
@@ -473,6 +818,10 @@ function handle_tasks(PDO $conn, string $PKG, string $method)
         if ($responsavel === '') $responsavel = null;
         $data_entrega = $body['data_entrega'] ?? null;
         $criado_por   = $body['criado_por'] ?? null;
+
+        if (!user_can_access_list($conn, $list_id, $criado_por)) {
+            throw new Exception('VocÃª nÃ£o tem acesso para criar tasks nesta list.');
+        }
 
         $conn->beginTransaction();
 
@@ -555,6 +904,9 @@ function handle_tasks(PDO $conn, string $PKG, string $method)
         $task_id = isset($body['task_id']) ? (int)$body['task_id'] : 0;
         $status  = $body['status'] ?? null;
         $user    = $body['user'] ?? null;
+        if (!user_can_access_task($conn, $task_id, $user)) {
+            throw new Exception('VocÃª nÃ£o tem acesso para mover esta task.');
+        }
 
         if ($task_id <= 0) throw new Exception('task_id obrigatório.');
         if (!$status) throw new Exception('status obrigatório.');
@@ -608,6 +960,9 @@ function handle_tasks(PDO $conn, string $PKG, string $method)
         $responsavel  = $body['responsavel'] ?? null;
         $data_entrega = $body['data_entrega'] ?? null;
         $user         = $body['user'] ?? null;
+        if (!user_can_access_task($conn, $task_id, $user)) {
+            throw new Exception('VocÃª nÃ£o tem acesso para editar esta task.');
+        }
 
         if (!$user) throw new Exception('Campo "user" obrigatório.');
 
@@ -658,6 +1013,9 @@ function handle_tasks(PDO $conn, string $PKG, string $method)
 
         $task_id = isset($_GET['task_id']) ? (int)$_GET['task_id'] : 0;
         $user    = $_GET['user'] ?? null;
+        if (!user_can_access_task($conn, $task_id, $user)) {
+            throw new Exception('VocÃª nÃ£o tem acesso para excluir esta task.');
+        }
 
         if ($task_id <= 0) throw new Exception('Parâmetro "task_id" obrigatório.');
         if (!$user) throw new Exception('Parâmetro "user" obrigatório.');
