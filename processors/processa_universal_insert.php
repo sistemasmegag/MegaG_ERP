@@ -156,13 +156,37 @@ function to_oracle_datetime_str($value): ?string {
 }
 
 function to_number($value): ?float {
+    if ($value === null || $value === '') return null;
+
+    if (is_int($value) || is_float($value)) {
+        return (float)$value;
+    }
+
     $txt = trim((string)$value);
     if ($txt === '') return null;
 
-    // "1.234,56" -> "1234.56"
-    $txt = str_replace('.', '', $txt);
-    $txt = str_replace(',', '.', $txt);
+    // Se já veio em formato numérico simples, respeita como está.
+    if (is_numeric($txt)) {
+        return (float)$txt;
+    }
 
+    $hasComma = strpos($txt, ',') !== false;
+    $hasDot = strpos($txt, '.') !== false;
+
+    // pt-BR: "1.234,56" -> "1234.56"
+    if ($hasComma && $hasDot) {
+        $txt = str_replace('.', '', $txt);
+        $txt = str_replace(',', '.', $txt);
+        return is_numeric($txt) ? (float)$txt : null;
+    }
+
+    // decimal com vírgula: "269,53" -> "269.53"
+    if ($hasComma) {
+        $txt = str_replace(',', '.', $txt);
+        return is_numeric($txt) ? (float)$txt : null;
+    }
+
+    // decimal com ponto: "269.53" -> 269.53
     return is_numeric($txt) ? (float)$txt : null;
 }
 
@@ -315,7 +339,7 @@ $configs = [
             [
                 'db' => 'OBSERVACAO',
                 'type' => 'string',
-                'required' => false,
+                'required' => true,
                 'aliases' => ['OBSERVACAO','OBSERVAÇÃO','OBS','OBSERV']
             ],
             [
@@ -377,7 +401,7 @@ $configs = [
             [
                 'db' => 'SEGMENTO',
                 'type' => 'string',
-                'required' => false,
+                'required' => true,
                 'aliases' => ['SEGMENTO']
             ],
             [
@@ -663,6 +687,7 @@ $configs = [
         'table' => 'MEGAG_IMP_BI_METAS',
         'start_row' => 2,
         'header_row' => 1,
+        'upsert_keys' => ['CODMETA', 'SEQPRODUTO', 'COMPRADOR', 'CODPERIODO', 'CODEMP', 'CODSETOR'],
 
         // usuário logado
         'session_user_column' => null,
@@ -701,13 +726,13 @@ $configs = [
             [
                 'db' => 'CODEMP',
                 'type' => 'number',
-                'required' => false,
+                'required' => true,
                 'aliases' => ['CODEMP','CODEMPRESA','EMPRESA','COD_EMPRESA']
             ],
             [
                 'db' => 'CODSETOR',
                 'type' => 'number',
-                'required' => false,
+                'required' => true,
                 'aliases' => ['CODSETOR','SETOR','COD_SETOR']
             ],
         ],
@@ -967,6 +992,60 @@ try {
     $sqlInsert = "INSERT INTO {$tableFull} (" . implode(", ", $insertCols) . ") VALUES (" . implode(", ", $insertVals) . ")";
     $stmtInsert = $conn->prepare($sqlInsert);
 
+    $upsertKeys = array_map('strtoupper', (array)($cfg['upsert_keys'] ?? []));
+    $stmtWrite = $stmtInsert;
+    $writeVerb = 'Inserindo';
+
+    if ($upsertKeys) {
+        foreach ($upsertKeys as $keyCol) {
+            if (!in_array($keyCol, $insertCols, true)) {
+                throw new Exception("Chave de upsert nÃ£o encontrada nas colunas configuradas: {$keyCol}");
+            }
+        }
+
+        $sourceCols = [];
+        foreach ($insertCols as $idx => $dbCol) {
+            $expr = $insertVals[$idx];
+            $sourceCols[] = "{$expr} AS {$dbCol}";
+        }
+
+        $onParts = [];
+        foreach ($upsertKeys as $keyCol) {
+            $onParts[] = "t.{$keyCol} = src.{$keyCol}";
+        }
+
+        $updateParts = [];
+        foreach ($insertCols as $dbCol) {
+            if (in_array($dbCol, $upsertKeys, true)) {
+                continue;
+            }
+            if ($dbCol === 'DTAINCLUSAO') {
+                continue;
+            }
+            $updateParts[] = "t.{$dbCol} = src.{$dbCol}";
+        }
+
+        $sqlMerge = "MERGE INTO {$tableFull} t
+            USING (
+                SELECT " . implode(", ", $sourceCols) . "
+                FROM dual
+            ) src
+            ON (" . implode(' AND ', $onParts) . ")";
+
+        if ($updateParts) {
+            $sqlMerge .= "
+            WHEN MATCHED THEN UPDATE SET " . implode(", ", $updateParts);
+        }
+
+        $sqlMerge .= "
+            WHEN NOT MATCHED THEN
+                INSERT (" . implode(", ", $insertCols) . ")
+                VALUES (" . implode(", ", array_map(static fn($c) => "src.{$c}", $insertCols)) . ")";
+
+        $stmtWrite = $conn->prepare($sqlMerge);
+        $writeVerb = 'Gravando';
+    }
+
     // ==================================================================
     // 5.6) Processa linhas
     // ==================================================================
@@ -979,7 +1058,7 @@ try {
 
     for ($r = $startRow; $r <= $highestRow; $r++) {
         if ($r % 500 === 0) {
-            sse_send("Inserindo linha {$r} de {$highestRow}...", 'sistema');
+            sse_send("{$writeVerb} linha {$r} de {$highestRow}...", 'sistema');
         }
 
         $rowArr = $sheet->rangeToArray("A{$r}:{$highestCol}{$r}", null, true, false)[0] ?? [];
@@ -1028,7 +1107,7 @@ try {
         }
 
         try {
-            $stmtInsert->execute($params);
+            $stmtWrite->execute($params);
             $ok++;
         } catch (Exception $e) {
             $fail++;
