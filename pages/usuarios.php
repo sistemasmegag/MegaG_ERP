@@ -306,7 +306,7 @@ html[data-theme="dark"] #modalUsuario .helpbox{
         tbody.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-muted">Carregando...</td></tr>';
 
         try {
-            const resp = await fetch('../api_usuarios.php');
+            const resp = await fetch('api/api_usuarios.php');
             const json = await resp.json();
 
             if(!json.sucesso) {
@@ -353,7 +353,7 @@ html[data-theme="dark"] #modalUsuario .helpbox{
         const nivel = document.getElementById('inputNivel').value;
 
         try {
-            const resp = await fetch('../api_usuarios.php', {
+            const resp = await fetch('api/api_usuarios.php', {
                 method: 'POST',
                 body: JSON.stringify({ usuario, nivel })
             });

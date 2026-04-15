@@ -1,4 +1,8 @@
 <?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    @session_start();
+}
+$usuarioAtual = (string)($_SESSION['usuario'] ?? '');
 // pages/tarefas_detalhes.php
 // URL: index.php?page=tarefas_detalhes&task_id=1&space_id=3&list_id=2
 
@@ -533,7 +537,7 @@ if ($task_id <= 0) {
 
                 <div class="row g-2 align-items-center mt-2">
                     <div class="col-12 col-md-7">
-                        <input class="k-input" id="cUser" placeholder="Seu nome (ex: Felipe)" />
+                        <input class="k-input" id="cUser" placeholder="Seu nome (ex: Felipe)" value="<?php echo htmlspecialchars($usuarioAtual, ENT_QUOTES, 'UTF-8'); ?>" />
                     </div>
                     <div class="col-12 col-md-5 d-grid">
                         <button class="btn-saas" id="btnAddComment" type="button">Adicionar</button>
@@ -563,7 +567,7 @@ if ($task_id <= 0) {
 
                 <div class="row g-2 align-items-center mt-2">
                     <div class="col-12 col-md-7">
-                        <input class="k-input" id="upUser" placeholder="Seu nome (ex: Felipe)" />
+                        <input class="k-input" id="upUser" placeholder="Seu nome (ex: Felipe)" value="<?php echo htmlspecialchars($usuarioAtual, ENT_QUOTES, 'UTF-8'); ?>" />
                     </div>
                     <div class="col-12 col-md-5 d-grid">
                         <button class="btn-saas" id="btnUpload" type="button">Enviar</button>

@@ -1,40 +1,14 @@
 <?php
 // api/api_visualizar_dados.php
 header('Content-Type: application/json');
+require_once __DIR__ . '/../bootstrap/db.php';
 
 try {
     // ==================================================================
     // 1) CONEXÃO (caminho robusto)
     // ==================================================================
-    $pathConexaoCandidates = [];
-
-    if (!empty($_SERVER['DOCUMENT_ROOT'])) {
-        $pathConexaoCandidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/db_config/db_connect.php';
-    }
-
-    $pathConexaoCandidates[] = dirname(__DIR__) . '/config/db.php';
-    $pathConexaoCandidates[] = dirname(__DIR__) . '/config/db_connect.php';
-    $pathConexaoCandidates[] = dirname(__DIR__) . '/db_config/db_connect.php';
-
-    $pathConexao = null;
-    foreach ($pathConexaoCandidates as $cand) {
-        if (file_exists($cand)) { $pathConexao = $cand; break; }
-    }
-    if ($pathConexao === null) {
-        throw new Exception("Arquivo de conexão não encontrado. Tentei: " . implode(" | ", $pathConexaoCandidates));
-    }
-
-    require_once($pathConexao);
-
-    if (!isset($conn) || !$conn) throw new Exception("Falha na conexão.");
-
-    if ($conn instanceof PDO) {
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    }
-
-    $conn->exec("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'");
-    $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+    $conn = mg_get_global_pdo();
+    $schema = mg_db_schema_name();
 
     // ==================================================================
     // 2) FILTROS FIXOS (gestor)
@@ -52,7 +26,7 @@ try {
     // ==================================================================
     // 3) LISTA PERMITIDA (anti SQL injection) via megag_tabs_importacao
     // ==================================================================
-    $ownerTabs = 'CONSINCO';
+    $ownerTabs = $schema;
     $tabTabs   = 'MEGAG_TABS_IMPORTACAO';
 
     // Descobre a coluna que guarda o "tipo" (nome da tabela)
@@ -98,11 +72,11 @@ try {
     if ($tipoNorm === '') {
         // tenta uma view padrão (se existir) para “todos os dados”
         // Se você tiver uma view consolidada, coloque o nome aqui.
-        $tipoNorm = 'CONSINCO.MEGAG_VW_IMPORTACAO';
+        $tipoNorm = $schema . '.MEGAG_VW_IMPORTACAO';
     }
 
     // valida se tipoNorm é permitido OU é a view padrão
-    if ($tipoNorm !== 'CONSINCO.MEGAG_VW_IMPORTACAO' && !in_array($tipoNorm, $allowedNorm, true)) {
+    if ($tipoNorm !== ($schema . '.MEGAG_VW_IMPORTACAO') && !in_array($tipoNorm, $allowedNorm, true)) {
         throw new Exception("Tipo de dado inválido (não está em megag_tabs_importacao): {$tipoNorm}");
     }
 
@@ -111,7 +85,7 @@ try {
     // ==================================================================
     // separa OWNER e TABLE
     $parts = explode('.', $tipoNorm, 2);
-    $owner = strtoupper(trim($parts[0] ?? 'CONSINCO'));
+    $owner = strtoupper(trim($parts[0] ?? $schema));
     $tab   = strtoupper(trim($parts[1] ?? ''));
 
     if ($tab === '') throw new Exception("Tipo de dado inválido: {$tipoNorm}");

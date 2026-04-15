@@ -1,11 +1,5 @@
 <?php
-// processors/processa_universal_insert.php
-// Processador Universal (SSE) - INSERT puro + pós-import (megag_fn_tabs_importacao_sqlexec)
-// Uso: processors/processa_universal_insert.php?tipo=lanctocomissao&arquivo=xxxx.xlsx
-
-// ======================================================================
-// 0) SSE HEADERS + Flush
-// ======================================================================
+require_once __DIR__ . '/../bootstrap/db.php';
 header('Content-Type: text/event-stream; charset=utf-8');
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
@@ -35,11 +29,14 @@ function sse_close(): void {
 }
 
 // ======================================================================
-// 1) DEBUG PHP (se quiser desligar depois)
+// 1) DEBUG + RECURSOS (para planilhas grandes)
 // ======================================================================
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+@set_time_limit(0); 
+@ini_set('memory_limit', '1024M');
 
 // ======================================================================
 // 2) SESSÃO (usuário logado)
@@ -77,6 +74,7 @@ function normalize_header(string $v): string {
     return $v;
 }
 
+/** Para colunas de DATA PURA no banco (TO_DATE(X, 'YYYY-MM-DD')) */
 function to_oracle_date_str($value): ?string {
     if ($value === null || $value === '') return null;
 
@@ -99,16 +97,8 @@ function to_oracle_date_str($value): ?string {
     $txt = str_replace('T', ' ', $txt);
 
     $fmts = [
-        'd/m/Y',
-        'd/m/y',
-        'Y-m-d',
-        'd-m-Y',
-        'd-m-y',
-        'Y/m/d',
-        'd/m/Y H:i:s',
-        'd/m/Y H:i',
-        'Y-m-d H:i:s',
-        'Y-m-d H:i',
+        'd/m/Y', 'd/m/y', 'Y-m-d', 'd-m-Y', 'd-m-y', 'Y/m/d',
+        'd/m/Y H:i:s', 'd/m/Y H:i', 'Y-m-d H:i:s', 'Y-m-d H:i',
     ];
 
     foreach ($fmts as $f) {
@@ -124,6 +114,7 @@ function to_oracle_date_str($value): ?string {
     return null;
 }
 
+/** Para colunas de DATA E HORA no banco (TO_DATE(X, 'YYYY-MM-DD HH24:MI:SS')) */
 function to_oracle_datetime_str($value): ?string {
     if ($value === null || $value === '') return null;
 
@@ -146,12 +137,8 @@ function to_oracle_datetime_str($value): ?string {
     $txt = str_replace('T', ' ', $txt);
 
     $fmts = [
-        'd/m/Y H:i:s',
-        'd/m/Y H:i',
-        'd/m/Y',
-        'Y-m-d H:i:s',
-        'Y-m-d H:i',
-        'Y-m-d',
+        'd/m/Y H:i:s', 'd/m/Y H:i', 'd/m/Y',
+        'Y-m-d H:i:s', 'Y-m-d H:i', 'Y-m-d',
     ];
 
     foreach ($fmts as $f) {
@@ -170,15 +157,36 @@ function to_oracle_datetime_str($value): ?string {
 
 function to_number($value): ?float {
     if ($value === null || $value === '') return null;
-    if (is_numeric($value)) return (float)$value;
+
+    if (is_int($value) || is_float($value)) {
+        return (float)$value;
+    }
 
     $txt = trim((string)$value);
     if ($txt === '') return null;
 
-    // "1.234,56" -> "1234.56"
-    $txt = str_replace('.', '', $txt);
-    $txt = str_replace(',', '.', $txt);
+    // Se já veio em formato numérico simples, respeita como está.
+    if (is_numeric($txt)) {
+        return (float)$txt;
+    }
 
+    $hasComma = strpos($txt, ',') !== false;
+    $hasDot = strpos($txt, '.') !== false;
+
+    // pt-BR: "1.234,56" -> "1234.56"
+    if ($hasComma && $hasDot) {
+        $txt = str_replace('.', '', $txt);
+        $txt = str_replace(',', '.', $txt);
+        return is_numeric($txt) ? (float)$txt : null;
+    }
+
+    // decimal com vírgula: "269,53" -> "269.53"
+    if ($hasComma) {
+        $txt = str_replace(',', '.', $txt);
+        return is_numeric($txt) ? (float)$txt : null;
+    }
+
+    // decimal com ponto: "269.53" -> 269.53
     return is_numeric($txt) ? (float)$txt : null;
 }
 
@@ -186,6 +194,49 @@ function to_string($value): ?string {
     if ($value === null) return null;
     $s = trim((string)$value);
     return $s === '' ? null : $s;
+}
+
+function sheet_header_map(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $headerRowNum): array {
+    $highestCol = $sheet->getHighestColumn();
+    $headerRow = $sheet->rangeToArray("A{$headerRowNum}:{$highestCol}{$headerRowNum}", null, true, false)[0] ?? [];
+    $headerMap = [];
+    foreach ($headerRow as $idx => $name) {
+        $key = normalize_header((string)$name);
+        if ($key !== '') $headerMap[$key] = $idx;
+    }
+    return $headerMap;
+}
+
+function sheet_header_keys_preview(array $headerMap): string {
+    $keys = array_keys($headerMap);
+    if (!$keys) {
+        return '(vazio)';
+    }
+    return implode(', ', array_slice($keys, 0, 12));
+}
+
+function sheet_matches_required_headers(array $headerMap, array $columns): bool {
+    foreach ($columns as $colCfg) {
+        $required = (bool)($colCfg['required'] ?? false);
+        if (!$required) {
+            continue;
+        }
+
+        $found = false;
+        foreach ((array)($colCfg['aliases'] ?? []) as $alias) {
+            $key = normalize_header((string)$alias);
+            if ($key !== '' && isset($headerMap[$key])) {
+                $found = true;
+                break;
+            }
+        }
+
+        if (!$found) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 // ======================================================================
@@ -288,7 +339,7 @@ $configs = [
             [
                 'db' => 'OBSERVACAO',
                 'type' => 'string',
-                'required' => false,
+                'required' => true,
                 'aliases' => ['OBSERVACAO','OBSERVAÇÃO','OBS','OBSERV']
             ],
             [
@@ -350,7 +401,7 @@ $configs = [
             [
                 'db' => 'SEGMENTO',
                 'type' => 'string',
-                'required' => false,
+                'required' => true,
                 'aliases' => ['SEGMENTO']
             ],
             [
@@ -627,43 +678,38 @@ $configs = [
     // ==================================================================
     // 4.9) BI Metas
     // Tabela: CONSINCO.MEGAG_IMP_BI_METAS
-    // Colunas (print):
-    // CODMETA, SEQPRODUTO, COMPRADOR, CODPERIODO, META, CODEMPRESA, CODSETOR,
-    // DTAINCLUSAO, USUINCLUSAO, STATUS, RESIMPORTACAO, DTAIMPORTACAO
+    // Colunas esperadas pela tela imp_bi_metas:
+    // CODMETA, CODVENDEDOR, CODPERIODO, META, CODREGIAO, SEGMENTO,
+    // TIPORETIRA, CATEGORIA, SEQPRODUTO, DTAATUALIZACAO
     // ==================================================================
     'bi_metas' => [
         'owner' => 'CONSINCO',
         'table' => 'MEGAG_IMP_BI_METAS',
         'start_row' => 2,
         'header_row' => 1,
+        'upsert_keys' => ['CODMETA', 'SEQPRODUTO', 'COMPRADOR', 'CODPERIODO', 'CODEMP', 'CODSETOR'],
 
         // usuário logado
-        'session_user_column' => 'USUINCLUSAO',
+        'session_user_column' => null,
 
         'columns' => [
             [
                 'db' => 'CODMETA',
-                'type' => 'number',
+                'type' => 'string',
                 'required' => true,
                 'aliases' => ['CODMETA','COD_META','METAID','IDMETA']
-            ],
-            [
-                'db' => 'SEQPRODUTO',
-                'type' => 'number',
-                'required' => true,
-                'aliases' => ['SEQPRODUTO','SEQ_PRODUTO','PRODUTO','CODPRODUTO','COD_PRODUTO']
             ],
             [
                 'db' => 'COMPRADOR',
                 'type' => 'string',
                 'required' => true,
-                'aliases' => ['COMPRADOR','BUYER','USUARIOCOMPRADOR','USUARIO_COMPRADOR']
+                'aliases' => ['COMPRADOR','CODVENDEDOR','COD_VENDEDOR','VENDEDOR','CODIGO_VENDEDOR']
             ],
             [
                 'db' => 'CODPERIODO',
-                'type' => 'number',
+                'type' => 'string',
                 'required' => true,
-                'aliases' => ['CODPERIODO','COD_PERIODO','PERIODO','IDPERIODO','PERIODOID']
+                'aliases' => ['CODPERIODO','COD_PERIODO','PERIODO','IDPERIODO','PERIODOID','COOPERIODO']
             ],
             [
                 'db' => 'META',
@@ -672,16 +718,22 @@ $configs = [
                 'aliases' => ['META','VALORMETA','VALOR_META','VLRMETA']
             ],
             [
-                'db' => 'CODEMPRESA',
+                'db' => 'SEQPRODUTO',
                 'type' => 'number',
                 'required' => true,
-                'aliases' => ['CODEMPRESA','COD_EMPRESA','EMPRESA','IDEMPRESA']
+                'aliases' => ['SEQPRODUTO','SEQ_PRODUTO','PRODUTO','CODPRODUTO','COD_PRODUTO']
+            ],
+            [
+                'db' => 'CODEMP',
+                'type' => 'number',
+                'required' => true,
+                'aliases' => ['CODEMP','CODEMPRESA','EMPRESA','COD_EMPRESA']
             ],
             [
                 'db' => 'CODSETOR',
                 'type' => 'number',
                 'required' => true,
-                'aliases' => ['CODSETOR','COD_SETOR','SETOR','IDSETOR']
+                'aliases' => ['CODSETOR','SETOR','COD_SETOR']
             ],
         ],
     ],
@@ -750,7 +802,7 @@ try {
     // ==================================================================
     // 5.1) Conexão Oracle (caminho robusto)
     // ==================================================================
-    $pathConexaoCandidates = [];
+    $pathConexaoCandidates = [mg_db_config_path()];
 
     // Dentro do projeto
     $pathConexaoCandidates[] = __DIR__ . '/../db_config/db_connect.php';
@@ -801,7 +853,23 @@ try {
     $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($filePath);
     $reader->setReadDataOnly(true);
     $spreadsheet = $reader->load($filePath);
+    $headerRowNum = (int)($cfg['header_row'] ?? 1);
     $sheet = $spreadsheet->getActiveSheet();
+    $headerMap = sheet_header_map($sheet, $headerRowNum);
+    sse_send("Aba ativa inicial: " . $sheet->getTitle() . " | cabecalho lido: " . sheet_header_keys_preview($headerMap), 'sistema');
+
+    if (!sheet_matches_required_headers($headerMap, $cfg['columns'])) {
+        foreach ($spreadsheet->getWorksheetIterator() as $candidateSheet) {
+            $candidateHeaderMap = sheet_header_map($candidateSheet, $headerRowNum);
+            sse_send("Verificando aba: " . $candidateSheet->getTitle() . " | cabecalho: " . sheet_header_keys_preview($candidateHeaderMap), 'sistema');
+            if (sheet_matches_required_headers($candidateHeaderMap, $cfg['columns'])) {
+                $sheet = $candidateSheet;
+                $headerMap = $candidateHeaderMap;
+                sse_send("Aba selecionada automaticamente: " . $sheet->getTitle(), 'sistema');
+                break;
+            }
+        }
+    }
 
     $highestRow = (int)$sheet->getHighestRow();
     $highestCol = $sheet->getHighestColumn();
@@ -811,14 +879,6 @@ try {
     // ==================================================================
     // 5.3) Lê cabeçalho e monta map
     // ==================================================================
-    $headerRowNum = (int)($cfg['header_row'] ?? 1);
-    $headerRow = $sheet->rangeToArray("A{$headerRowNum}:{$highestCol}{$headerRowNum}", null, true, false)[0] ?? [];
-
-    $headerMap = [];
-    foreach ($headerRow as $idx => $name) {
-        $key = normalize_header((string)$name);
-        if ($key !== '') $headerMap[$key] = $idx;
-    }
 
     // monta índices das colunas
     $colIndex = [];
@@ -889,11 +949,9 @@ try {
         $insertCols[] = $dbCol;
 
         if ($type === 'date') {
-            // TO_DATE(:COL, 'YYYY-MM-DD')
             $insertVals[] = "TO_DATE(:{$dbCol}, 'YYYY-MM-DD')";
             $bindIsRawDate[$dbCol] = 'date';
         } elseif ($type === 'datetime') {
-            // TO_DATE(:COL, 'YYYY-MM-DD HH24:MI:SS')
             $insertVals[] = "TO_DATE(:{$dbCol}, 'YYYY-MM-DD HH24:MI:SS')";
             $bindIsRawDate[$dbCol] = 'datetime';
         } else {
@@ -905,31 +963,23 @@ try {
     }
 
     // padrões staging automáticos (se existirem na tabela)
-    // STATUS default 'P'
     if ($has('STATUS') && !in_array('STATUS', $insertCols, true)) {
         $insertCols[] = 'STATUS';
         $insertVals[] = "'P'";
     }
-
-    // RESIMPORTACAO default NULL (conforme sua tabela)
     if ($has('RESIMPORTACAO') && !in_array('RESIMPORTACAO', $insertCols, true)) {
         $insertCols[] = 'RESIMPORTACAO';
         $insertVals[] = "NULL";
     }
-
-    // alguns ambientes podem ter RESIMPOTACAO (typo histórico) em outras tabelas
     if ($has('RESIMPOTACAO') && !in_array('RESIMPOTACAO', $insertCols, true)) {
         $insertCols[] = 'RESIMPOTACAO';
         $insertVals[] = "NULL";
     }
-
-    // DTAINCLUSAO default SYSDATE
     if ($has('DTAINCLUSAO') && !in_array('DTAINCLUSAO', $insertCols, true)) {
         $insertCols[] = 'DTAINCLUSAO';
         $insertVals[] = "SYSDATE";
     }
 
-    // USUINCLUSAO (ou outro) vindo da sessão, se a config pediu e a coluna existe
     $sessUserCol = $cfg['session_user_column'] ?? null;
     if ($sessUserCol) {
         $sessUserCol = strtoupper((string)$sessUserCol);
@@ -942,22 +992,76 @@ try {
     $sqlInsert = "INSERT INTO {$tableFull} (" . implode(", ", $insertCols) . ") VALUES (" . implode(", ", $insertVals) . ")";
     $stmtInsert = $conn->prepare($sqlInsert);
 
+    $upsertKeys = array_map('strtoupper', (array)($cfg['upsert_keys'] ?? []));
+    $stmtWrite = $stmtInsert;
+    $writeVerb = 'Inserindo';
+
+    if ($upsertKeys) {
+        foreach ($upsertKeys as $keyCol) {
+            if (!in_array($keyCol, $insertCols, true)) {
+                throw new Exception("Chave de upsert nÃ£o encontrada nas colunas configuradas: {$keyCol}");
+            }
+        }
+
+        $sourceCols = [];
+        foreach ($insertCols as $idx => $dbCol) {
+            $expr = $insertVals[$idx];
+            $sourceCols[] = "{$expr} AS {$dbCol}";
+        }
+
+        $onParts = [];
+        foreach ($upsertKeys as $keyCol) {
+            $onParts[] = "t.{$keyCol} = src.{$keyCol}";
+        }
+
+        $updateParts = [];
+        foreach ($insertCols as $dbCol) {
+            if (in_array($dbCol, $upsertKeys, true)) {
+                continue;
+            }
+            if ($dbCol === 'DTAINCLUSAO') {
+                continue;
+            }
+            $updateParts[] = "t.{$dbCol} = src.{$dbCol}";
+        }
+
+        $sqlMerge = "MERGE INTO {$tableFull} t
+            USING (
+                SELECT " . implode(", ", $sourceCols) . "
+                FROM dual
+            ) src
+            ON (" . implode(' AND ', $onParts) . ")";
+
+        if ($updateParts) {
+            $sqlMerge .= "
+            WHEN MATCHED THEN UPDATE SET " . implode(", ", $updateParts);
+        }
+
+        $sqlMerge .= "
+            WHEN NOT MATCHED THEN
+                INSERT (" . implode(", ", $insertCols) . ")
+                VALUES (" . implode(", ", array_map(static fn($c) => "src.{$c}", $insertCols)) . ")";
+
+        $stmtWrite = $conn->prepare($sqlMerge);
+        $writeVerb = 'Gravando';
+    }
+
     // ==================================================================
-    // 5.6) Processa linhas (INSERT puro)
+    // 5.6) Processa linhas
     // ==================================================================
     $startRow = (int)($cfg['start_row'] ?? 2);
     sse_send("Cabeçalho OK. Processando linhas ({$startRow}..{$highestRow})", 'sistema');
 
     $ok = 0;
     $fail = 0;
-
     $conn->beginTransaction();
 
     for ($r = $startRow; $r <= $highestRow; $r++) {
+        if ($r % 500 === 0) {
+            sse_send("{$writeVerb} linha {$r} de {$highestRow}...", 'sistema');
+        }
 
         $rowArr = $sheet->rangeToArray("A{$r}:{$highestCol}{$r}", null, true, false)[0] ?? [];
-
-        // detecta linha vazia "total"
         $allNull = true;
         foreach ($rowArr as $v) {
             if ($v !== null && trim((string)$v) !== '') { $allNull = false; break; }
@@ -965,116 +1069,65 @@ try {
         if ($allNull) continue;
 
         $params = [];
-
-        // monta binds para colunas vindas do excel
         foreach ($bindFromExcel as $dbCol => $excelIdx) {
-
             $raw = ($excelIdx === null) ? null : ($rowArr[$excelIdx] ?? null);
             $type = $bindTypes[$dbCol] ?? 'string';
 
             if ($type === 'number') {
-                $val = to_number($raw);
-                $params[":{$dbCol}"] = $val;
+                $params[":{$dbCol}"] = to_number($raw);
             } elseif ($type === 'date') {
-                $val = to_oracle_date_str($raw);
-                $params[":{$dbCol}"] = $val;
+                $params[":{$dbCol}"] = to_oracle_date_str($raw);
             } elseif ($type === 'datetime') {
-                $val = to_oracle_datetime_str($raw);
-                $params[":{$dbCol}"] = $val;
+                $params[":{$dbCol}"] = to_oracle_datetime_str($raw);
             } else {
-                $val = to_string($raw);
-                $params[":{$dbCol}"] = $val;
+                $params[":{$dbCol}"] = to_string($raw);
             }
         }
 
-        // injeta usuário logado se a coluna estiver no INSERT
         if ($sessUserCol && in_array($sessUserCol, $insertCols, true)) {
             $params[":{$sessUserCol}"] = $usuarioLogado;
         }
 
-        // valida obrigatórios configurados (se required=true)
         $invalid = false;
+        $missingCol = '';
         foreach ($cfg['columns'] as $colCfg) {
             $dbCol = strtoupper($colCfg['db']);
-            $required = (bool)($colCfg['required'] ?? false);
-            if (!$required) continue;
-
-            $type = strtolower((string)($colCfg['type'] ?? 'string'));
-            $v = $params[":{$dbCol}"] ?? null;
-
-            // regra simples:
-            // - string: não pode ser null/'' (a to_string já vira null)
-            // - number: não pode ser null
-            // - date/datetime: não pode ser null
-            if ($type === 'string') {
-                if ($v === null) { $invalid = true; break; }
-            } else {
-                if ($v === null) { $invalid = true; break; }
+            if (!($colCfg['required'] ?? false)) continue;
+            if (($params[":{$dbCol}"] ?? null) === null) {
+                $invalid = true;
+                $missingCol = $dbCol;
+                break;
             }
         }
 
         if ($invalid) {
             $fail++;
-            sse_send("Linha {$r}: campos obrigatórios inválidos (verifique colunas requeridas).", 'aviso');
+            if ($fail <= 50) sse_send("Linha {$r}: coluna '{$missingCol}' vazia.", 'aviso');
             continue;
         }
 
         try {
-            $stmtInsert->execute($params);
+            $stmtWrite->execute($params);
             $ok++;
-
-            if ($ok % 50 === 0) {
-                sse_send("Processadas {$ok} linhas com sucesso...", 'sistema');
-            }
-
         } catch (Exception $e) {
             $fail++;
-            sse_send("Linha {$r}: erro ao gravar -> " . $e->getMessage(), 'erro');
+            sse_send("Linha {$r}: erro -> " . $e->getMessage(), 'erro');
         }
     }
 
-    // commit do staging
     $conn->commit();
+    sse_send("IMPORTAÇÃO FINALIZADA! Sucessos: {$ok} | Falhas: {$fail}", $fail ? 'aviso' : 'sucesso');
 
-    sse_send("----------------------------------", "info");
-    sse_send("IMPORTAÇÃO FINALIZADA (staging)!", $fail ? 'aviso' : 'sucesso');
-    sse_send("Sucessos: {$ok} | Falhas: {$fail}", $fail ? 'aviso' : 'sucesso');
-
-    // ==================================================================
-    // 5.7) Pós-import: sempre executa megag_fn_tabs_importacao_sqlexec
-    // ==================================================================
     try {
-        sse_send("Executando rotina pós-importação: consinco.megag_fn_tabs_importacao_sqlexec...", 'sistema');
-
-        // Função recebe nome da tabela em minúsculo (como você já usa)
-        $importTableFnLower = strtolower($tableBase);
-
+        sse_send("Executando rotina pós-importação...", 'sistema');
         $stmtFn = $conn->prepare("SELECT consinco.megag_fn_tabs_importacao_sqlexec(:p_table) AS RET FROM dual");
-        $stmtFn->execute([':p_table' => $importTableFnLower]);
-
-        $ret = $stmtFn->fetch(PDO::FETCH_ASSOC);
-        $retMsg = '';
-
-        if (is_array($ret)) {
-            if (isset($ret['RET'])) $retMsg = (string)$ret['RET'];
-            elseif (isset($ret['ret'])) $retMsg = (string)$ret['ret'];
-            else {
-                $first = array_values($ret);
-                $retMsg = isset($first[0]) ? (string)$first[0] : '';
-            }
-        }
-
-        if ($retMsg !== '') {
-            sse_send("Rotina pós-importação finalizada. Retorno: {$retMsg}", 'sucesso');
-        } else {
-            sse_send("Rotina pós-importação finalizada com sucesso.", 'sucesso');
-        }
-
+        $stmtFn->execute([':p_table' => strtolower($tableBase)]);
+        sse_send("Rotina finalizada.", 'sucesso');
     } catch (Exception $e) {
-        sse_send("Falha na rotina pós-importação: " . $e->getMessage(), 'erro');
+        sse_send("Erro na rotina pós-importação: " . $e->getMessage(), 'erro');
     }
 
-    sse_send("Processo finalizado pelo servidor.", 'sucesso');
+    sse_send("Processo finalizado.", 'sucesso');
     sse_close();
 
 } catch (Exception $e) {
