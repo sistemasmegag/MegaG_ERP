@@ -9,6 +9,8 @@
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
+require_once __DIR__ . '/bootstrap/db.php';
+
 $input   = json_decode(file_get_contents('php://input'), true) ?? [];
 $usuario = isset($input['usuario']) ? strtoupper(trim($input['usuario'])) : '';
 $senha   = isset($input['senha']) ? (string)$input['senha'] : '';
@@ -22,50 +24,11 @@ try {
     // =========================
     // CONEXÃO (caminho robusto)
     // =========================
-    $pathConexaoCandidates = [];
-
-    // 1) Raiz do servidor (htdocs)
-    if (!empty($_SERVER['DOCUMENT_ROOT'])) {
-        $pathConexaoCandidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/db_config/db_connect.php';
-    }
-
-    // 2) Fallback: se algum dia você mover o db_config para dentro do projeto
-    $pathConexaoCandidates[] = dirname(__DIR__, 1) . '/db_config/db_connect.php';
-
-    // 3) Fallback extra
-    $pathConexaoCandidates[] = dirname(__DIR__, 1) . '/config/db_connect.php';
-
-    $pathConexao = null;
-    foreach ($pathConexaoCandidates as $cand) {
-        if (file_exists($cand)) {
-            $pathConexao = $cand;
-            break;
-        }
-    }
-
-    if ($pathConexao === null) {
-        throw new Exception(
-            "Arquivo de configuração de banco não encontrado. Tentei: " .
-            implode(" | ", $pathConexaoCandidates)
-        );
-    }
-
-    require_once($pathConexao);
-
-    if (!isset($conn) || !$conn) {
-        throw new Exception("Falha na conexão com banco Consinco.");
-    }
-
-    if ($conn instanceof PDO) {
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    }
+    $pathConexao = mg_load_db_config();
+    $conn = mg_get_global_pdo();
 
     // Normaliza schema
-    $schema = defined('DB_SCHEMA') ? strtoupper((string)DB_SCHEMA) : '';
-    if ($schema === '') {
-        throw new Exception("Constante DB_SCHEMA não definida ou vazia.");
-    }
+    $schema = mg_db_schema_name();
 
     // =========================
     // 1) AUTENTICAÇÃO

@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/../helpers/firebase.php'; ?>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMenu()"></div>
@@ -83,6 +84,8 @@
   <div class="mg-notif-head">
     <p class="mg-notif-title">Notificações</p>
     <div class="mg-notif-actions">
+      <button class="mg-notif-btn" id="mgPushEnable" type="button" style="display:none;">Ativar push</button>
+      <button class="mg-notif-btn" id="mgPushTest" type="button" style="display:none;">Teste push</button>
       <button class="mg-notif-btn" id="mgNotifReadAll" type="button">Ler todas</button>
       <button class="mg-notif-btn" id="mgNotifClose" type="button">Fechar</button>
     </div>
@@ -119,6 +122,166 @@
 <script>
   // ✅ usuário logado vindo do PHP (ajuste a variável conforme seu bootstrap)
   window.MG_USER = <?= json_encode($_SESSION['loginid'] ?? $_SESSION['usuario'] ?? $_SESSION['user'] ?? '') ?>;
+  window.MG_FIREBASE = <?= json_encode(mg_firebase_public_config(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+</script>
+
+<script type="module">
+  (async () => {
+    const cfg = window.MG_FIREBASE || {};
+    const state = {
+      enabled: !!cfg.enabled,
+      initialized: false,
+      initError: '',
+      token: '',
+      ready: null,
+      sdk: null,
+      messaging: null,
+      registration: null
+    };
+
+    window.MGPush = window.MGPush || {};
+    window.MGPush.state = state;
+    window.MGPush._notifyState = () => window.dispatchEvent(new CustomEvent('mg:push-state', { detail: { ...state } }));
+
+    async function postJson(url, body) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {})
+      });
+      const json = await response.json().catch(() => null);
+      if (!json || !json.success) {
+        throw new Error((json && json.error) || 'Falha na comunicacao com o servidor.');
+      }
+      return json.data;
+    }
+
+    state.ready = (async () => {
+      if (!cfg.enabled) {
+        state.initError = 'Firebase nao configurado para esta aplicacao.';
+        window.MGPush._notifyState();
+        return null;
+      }
+
+      if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+        state.initError = 'Este navegador nao suporta notificacoes push.';
+        window.MGPush._notifyState();
+        return null;
+      }
+
+      const [{ initializeApp }, messagingModule] = await Promise.all([
+        import('https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js'),
+        import('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging.js')
+      ]);
+
+      if (typeof messagingModule.isSupported === 'function') {
+        const supported = await messagingModule.isSupported().catch(() => false);
+        if (!supported) {
+          state.initError = 'Push nao suportado neste navegador.';
+          window.MGPush._notifyState();
+          return null;
+        }
+      }
+
+      const app = initializeApp({
+        apiKey: cfg.api_key,
+        authDomain: cfg.auth_domain || undefined,
+        projectId: cfg.project_id,
+        storageBucket: cfg.storage_bucket || undefined,
+        messagingSenderId: cfg.messaging_sender_id,
+        appId: cfg.app_id,
+        measurementId: cfg.measurement_id || undefined
+      });
+
+      const registration = await navigator.serviceWorker.register(cfg.service_worker_path, {
+        scope: cfg.service_worker_scope || '/'
+      });
+
+      state.sdk = messagingModule;
+      state.registration = registration;
+      state.messaging = messagingModule.getMessaging(app);
+      state.initialized = true;
+      state.initError = '';
+
+      messagingModule.onMessage(state.messaging, (payload) => {
+        const title = payload?.notification?.title || payload?.data?.title || 'Notificacao';
+        const body = payload?.notification?.body || payload?.data?.body || 'Voce recebeu uma nova notificacao.';
+        if (typeof window.showToast === 'function') {
+          window.showToast(body, 'info', title);
+        }
+        window.dispatchEvent(new CustomEvent('mg:notif-received', { detail: payload }));
+      });
+
+      window.MGPush._notifyState();
+      return state;
+    })().catch((error) => {
+      state.initError = (error && error.message) ? error.message : 'Falha ao inicializar o Firebase.';
+      console.error('Firebase init error:', error);
+      window.MGPush._notifyState();
+      return null;
+    });
+
+    window.MGPush.ensure = async function () {
+      const resolved = await state.ready;
+      if (!resolved || !state.initialized || !state.messaging || !state.registration || !state.sdk) {
+        throw new Error(state.initError || 'Firebase ainda nao foi inicializado.');
+      }
+      return resolved;
+    };
+
+    window.MGPush.syncToken = async function (requestPermission = false) {
+      await window.MGPush.ensure();
+
+      let permission = Notification.permission;
+      if (requestPermission || permission === 'default') {
+        permission = await Notification.requestPermission();
+      }
+
+      if (permission !== 'granted') {
+        throw new Error('Permissao de notificacoes nao concedida.');
+      }
+
+      const token = await state.sdk.getToken(state.messaging, {
+        vapidKey: cfg.vapid_key,
+        serviceWorkerRegistration: state.registration
+      });
+
+      if (!token) {
+        throw new Error('Nao foi possivel gerar o token do dispositivo.');
+      }
+
+      await postJson(cfg.api_endpoint + '?action=register_token', {
+        token,
+        platform: 'web',
+        user_agent: navigator.userAgent,
+        endpoint: window.location.href
+      });
+
+      state.token = token;
+      window.MGPush._notifyState();
+      return token;
+    };
+
+    window.MGPush.requestPermission = async function () {
+      return window.MGPush.syncToken(true);
+    };
+
+    window.MGPush.sendTest = async function () {
+      await window.MGPush.ensure();
+      if (!state.token) {
+        await window.MGPush.syncToken(Notification.permission !== 'granted');
+      }
+      return postJson(cfg.api_endpoint + '?action=test', {});
+    };
+
+    if (cfg.enabled && Notification.permission === 'granted') {
+      try {
+        await window.MGPush.syncToken(false);
+      } catch (error) {
+        console.warn('Firebase token sync warning:', error);
+      }
+    }
+  })();
 </script>
 
 <!-- Toast Container (Global) -->
@@ -175,6 +338,32 @@
 <!-- Script para controle do painel de notificações -->
 <script>
   (() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('debug_db_path') !== '1') return;
+
+    window.addEventListener('load', async () => {
+      try {
+        const resp = await fetch('api/debug_db.php', {
+          headers: { Accept: 'application/json' }
+        });
+        const json = await resp.json();
+
+        if (!resp.ok || !json.success) {
+          throw new Error(json.error || 'Nao foi possivel identificar o caminho do db_connect.php.');
+        }
+
+        const path = (json.data && json.data.config_path) ? json.data.config_path : '(vazio)';
+        window.showToast(path, 'warning', 'db_connect.php');
+        alert('db_connect.php: ' + path);
+      } catch (e) {
+        window.showToast(e.message || 'Falha ao validar db_connect.php.', 'error', 'db_connect.php');
+      }
+    });
+  })();
+</script>
+
+<script>
+  (() => {
     const API = 'api/notif.php';
 
     function getUser() {
@@ -187,8 +376,55 @@
     const badge = document.getElementById('mgNotifBadge');
     const panel = document.getElementById('mgNotifPanel');
     const list = document.getElementById('mgNotifList');
+    const pushEnableBtn = document.getElementById('mgPushEnable');
+    const pushTestBtn = document.getElementById('mgPushTest');
+
+    function pushEnabled() {
+      return !!(window.MG_FIREBASE && window.MG_FIREBASE.enabled);
+    }
+
+    function syncPushButtons() {
+      if (!pushEnableBtn || !pushTestBtn) return;
+
+      if (!pushEnabled()) {
+        pushEnableBtn.style.display = 'none';
+        pushTestBtn.style.display = 'none';
+        return;
+      }
+
+      pushEnableBtn.style.display = 'inline-flex';
+      pushTestBtn.style.display = 'inline-flex';
+    }
+
+    syncPushButtons();
 
     document.getElementById('mgNotifClose').addEventListener('click', () => panel.classList.remove('open'));
+    if (pushEnableBtn) {
+      pushEnableBtn.addEventListener('click', async () => {
+        try {
+          if (!window.MGPush || typeof window.MGPush.requestPermission !== 'function') {
+            throw new Error('Firebase ainda nao foi inicializado.');
+          }
+          await window.MGPush.requestPermission();
+          window.showToast('Permissao de push ativada para este navegador.', 'success', 'Push');
+        } catch (e) {
+          window.showToast(e.message || 'Nao foi possivel ativar o push.', 'error', 'Push');
+        }
+      });
+    }
+    if (pushTestBtn) {
+      pushTestBtn.addEventListener('click', async () => {
+        try {
+          if (!window.MGPush || typeof window.MGPush.sendTest !== 'function') {
+            throw new Error('Firebase ainda nao foi inicializado.');
+          }
+          await window.MGPush.sendTest();
+          window.showToast('Push de teste enviado. Confira este navegador.', 'success', 'Push');
+        } catch (e) {
+          window.showToast(e.message || 'Falha ao enviar push de teste.', 'error', 'Push');
+        }
+      });
+    }
     fab.addEventListener('click', async () => {
       panel.classList.toggle('open');
       if (panel.classList.contains('open')) await loadNotifs();
@@ -347,6 +583,12 @@
 
     // Auto-refresh inteligente (a cada 30s)
     let lastUnreadCount = 0;
+
+    window.addEventListener('mg:notif-received', async () => {
+      try {
+        await loadNotifs();
+      } catch (e) { /* silencioso */ }
+    });
 
     setInterval(async () => {
       try {

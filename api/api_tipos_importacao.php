@@ -1,46 +1,19 @@
 <?php
 // api/api_tipos_importacao.php
 header('Content-Type: application/json');
+require_once __DIR__ . '/../bootstrap/db.php';
 
 try {
     // ==================================================================
     // 1) CONEXÃO (caminho robusto)
     // ==================================================================
-    $pathConexaoCandidates = [];
-
-    if (!empty($_SERVER['DOCUMENT_ROOT'])) {
-        $pathConexaoCandidates[] = rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . '/db_config/db_connect.php';
-    }
-
-    $pathConexaoCandidates[] = dirname(__DIR__) . '/config/db.php';
-    $pathConexaoCandidates[] = dirname(__DIR__) . '/config/db_connect.php';
-    $pathConexaoCandidates[] = dirname(__DIR__) . '/db_config/db_connect.php';
-
-    $pathConexao = null;
-    foreach ($pathConexaoCandidates as $cand) {
-        if (file_exists($cand)) { $pathConexao = $cand; break; }
-    }
-    if ($pathConexao === null) {
-        throw new Exception("Arquivo de conexão não encontrado. Tentei: " . implode(" | ", $pathConexaoCandidates));
-    }
-
-    require_once($pathConexao);
-
-    if (!isset($conn) || !$conn) throw new Exception("Falha na conexão.");
-
-    if ($conn instanceof PDO) {
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    }
-
-    // Oracle session
-    $conn->exec("ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'");
-    $conn->exec("ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS'");
+    $conn = mg_get_global_pdo();
+    $schema = mg_db_schema_name();
 
     // ==================================================================
     // 2) DESCOBRE COLUNAS DA megag_tabs_importacao
     // ==================================================================
-    $owner = 'CONSINCO';
+    $owner = $schema;
     $tab   = 'MEGAG_TABS_IMPORTACAO'; // <-- padrão pedido pelo gestor
 
     $stmtCols = $conn->prepare("

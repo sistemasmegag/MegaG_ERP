@@ -1,5 +1,21 @@
 <?php
 $paginaAtual = 'imp_bi_metas';
+$mgUploadMaxRaw = (string)(ini_get('upload_max_filesize') ?: '0');
+$mgPostMaxRaw = (string)(ini_get('post_max_size') ?: '0');
+$mgToBytes = static function (string $value): int {
+    $value = trim($value);
+    if ($value === '') return 0;
+    $unit = strtolower(substr($value, -1));
+    $number = (float)$value;
+    switch ($unit) {
+        case 'g': return (int)($number * 1024 * 1024 * 1024);
+        case 'm': return (int)($number * 1024 * 1024);
+        case 'k': return (int)($number * 1024);
+        default: return (int)$number;
+    }
+};
+$mgUploadLimit = min($mgToBytes($mgUploadMaxRaw), $mgToBytes($mgPostMaxRaw));
+$mgUploadLimitMb = $mgUploadLimit > 0 ? round($mgUploadLimit / (1024 * 1024), 2) : 0;
 ?>
 
 <style>
@@ -123,7 +139,7 @@ html[data-theme="dark"] .saas-console .card-body{ background: #070c16; }
           <button class="mobile-toggle me-3" onclick="toggleMenu()">
             <i class="bi bi-list"></i>
           </button>
-          <h4 class="m-0 fw-bold text-dark">Importador Mega G</h4>
+          <h4 class="m-0 fw-bold text-dark">Importador MegaG</h4>
         </div>
 
         <div class="saas-head mb-4">
@@ -173,6 +189,11 @@ html[data-theme="dark"] .saas-console .card-body{ background: #070c16; }
             <small class="text-muted">
               Colunas esperadas: CODMETA | CODVENDEDOR | CODPERIODO | META | CODREGIAO | SEGMENTO | TIPORETIRA | CATEGORIA | SEQPRODUTO | DTAATUALIZACAO.
             </small>
+            <?php if ($mgUploadLimitMb > 0): ?>
+            <div class="mt-2 text-muted small">
+              Limite atual de upload do servidor: <?= htmlspecialchars((string)$mgUploadLimitMb, ENT_QUOTES, 'UTF-8') ?> MB.
+            </div>
+            <?php endif; ?>
           </div>
         </div>
 
@@ -194,6 +215,7 @@ html[data-theme="dark"] .saas-console .card-body{ background: #070c16; }
     const term = document.getElementById('consoleLog');
     const btn = document.getElementById('btnGo');
     const fileInput = document.getElementById('arquivoInput');
+    const uploadLimitBytes = <?= json_encode($mgUploadLimit) ?>;
 
     // Função para escrever na tela preta
     function log(msg, tipo) {
@@ -287,4 +309,24 @@ html[data-theme="dark"] .saas-console .card-body{ background: #070c16; }
             btn.innerHTML = originalText;
         }
     }
+</script>
+
+<script>
+  (() => {
+    const originalIniciar = window.iniciar;
+    if (typeof originalIniciar !== 'function') return;
+
+    window.iniciar = async function () {
+      if (fileInput && fileInput.files && fileInput.files.length && uploadLimitBytes > 0) {
+        const file = fileInput.files[0];
+        if (file.size > uploadLimitBytes) {
+          term.innerHTML = '';
+          log(`Arquivo acima do limite do servidor (${(uploadLimitBytes / (1024 * 1024)).toFixed(2)} MB).`, 'erro');
+          return;
+        }
+      }
+
+      return originalIniciar();
+    };
+  })();
 </script>

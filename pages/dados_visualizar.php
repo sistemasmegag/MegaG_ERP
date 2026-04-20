@@ -584,7 +584,14 @@ if ($__usuarioLogado === '')
 
     const formatNumber = (num) => {
         if (num === null || num === undefined) return '-';
-        return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(num);
+        const n = Number(num);
+        if (Number.isNaN(n)) return '-';
+
+        const isInteger = Number.isInteger(n);
+        return new Intl.NumberFormat('pt-BR', {
+            minimumFractionDigits: isInteger ? 0 : 2,
+            maximumFractionDigits: isInteger ? 0 : 2
+        }).format(n);
     };
 
     const formatDate = (dateString) => {
@@ -744,7 +751,6 @@ if ($__usuarioLogado === '')
 
         const n = normalizeNumber(val);
         if (n !== null) {
-            if (Number.isInteger(n)) return escapeHtml(String(n));
             return escapeHtml(formatNumber(n));
         }
 

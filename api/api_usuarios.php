@@ -2,6 +2,7 @@
 // api_usuarios.php - Gestão via Tabelas MEGAG_VW
 session_start();
 header('Content-Type: application/json');
+require_once __DIR__ . '/../bootstrap/db.php';
 
 // 1. Proteção ADMIN
 if (!isset($_SESSION['logado']) || $_SESSION['nivel'] !== 'ADMIN') {
@@ -12,9 +13,21 @@ if (!isset($_SESSION['logado']) || $_SESSION['nivel'] !== 'ADMIN') {
 
 // 2. Conexão
 try {
-    $pathConexao = __DIR__ . '/db_config/db_connect.php';
-    if (!file_exists($pathConexao)) $pathConexao = dirname(__DIR__) . '/db_config/db_connect.php';
-    if (!file_exists($pathConexao)) throw new Exception("Config db_connect.php não encontrada.");
+    $pathConexaoCandidates = [
+        mg_db_config_path(),
+        __DIR__ . '/../db_config/db_connect.php',
+        __DIR__ . '/../../db_config/db_connect.php',
+        __DIR__ . '/config/db_connect.php'
+    ];
+    $pathConexao = null;
+    foreach ($pathConexaoCandidates as $cand) {
+        if (file_exists($cand)) {
+            $pathConexao = $cand;
+            break;
+        }
+    }
+
+    if (!$pathConexao) throw new Exception("Arquivo de conexão não encontrado!");
     
     require_once($pathConexao);
     if (!isset($conn) || !$conn) throw new Exception("Falha na conexão.");
@@ -26,7 +39,7 @@ try {
 }
 
 $metodo = $_SERVER['REQUEST_METHOD'];
-$owner  = "CONSINCO";
+$owner  = mg_db_schema_name();
 
 // NOMES DOS GRUPOS QUE VAMOS USAR (Certifique-se que eles podem ser inseridos)
 $grupoAdmin = 'WEB_ADMIN';

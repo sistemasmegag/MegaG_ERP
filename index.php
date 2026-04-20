@@ -81,6 +81,14 @@ if (!$temPermissao) {
         $pageFile = $pagesDir . "/{$page}.php";
     }
 }
+
+// Se for modo embed (para modais), não carrega o layout completo (sidebar, footer, etc)
+if (isset($_GET['embed'])) {
+    if (file_exists($pageFile)) {
+        include $pageFile;
+    }
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
