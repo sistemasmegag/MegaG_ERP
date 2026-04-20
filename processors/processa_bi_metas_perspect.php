@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/../bootstrap/db.php';
 
 header('Content-Type: text/event-stream; charset=utf-8');
 header('Cache-Control: no-cache');
@@ -15,7 +16,7 @@ function close_sse(){
 }
 
 require_once __DIR__.'/vendor/autoload.php';
-require_once __DIR__.'/db_config/db_connect.php';
+require_once mg_db_config_path();
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -27,7 +28,7 @@ try{
   $path=__DIR__.'/uploads/'.$arquivo;
   if(!file_exists($path)) throw new Exception('Arquivo não encontrado');
 
-  $owner='CONSINCO';
+  $owner = mg_db_schema_name();
 
   // ============================================================
   // TABELA BASE (sem owner) - usada para executar a função
