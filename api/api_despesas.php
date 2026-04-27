@@ -394,50 +394,126 @@ function is_update_approval_error_message(string $msg): bool
 
 function process_approval_action(PDO $conn, int $codDespesa, int $seqUsuario, string $status, string $pago, string $observacao): string
 {
-    $pkgSfx = '';
-    $pkgIco = '';
-    $pkgTipoRet = '';
-    $pkgMsg = '';
+    $before = desp_get_approval_state($conn, $codDespesa, $seqUsuario);
 
-    $sql = "BEGIN
-              " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_UPD_MEGAG_DESP_APROVACAO(
-                  p_coddespesa => :ID,
-                  p_sequsuario => :USU,
-                  p_status     => :STATUS,
-                  p_pago       => :PAGO,
-                  p_observacao => :OBS,
-                  s_sfx        => :S_SFX,
-                  s_ico        => :S_ICO,
-                  s_tiporet    => :S_TIPORET,
-                  s_msg        => :S_MSG
-              );
-            END;";
+    if (!$before) {
+        throw new Exception('Despesa nao encontrada.');
+    }
 
-    $st = $conn->prepare(mg_with_schema($sql));
+    $statusAtual = strtoupper(trim((string)($before['STATUS'] ?? '')));
+    if (in_array($statusAtual, ['APROVADO', 'REJEITADO'], true)) {
+        throw new Exception('Despesa ja finalizada com status: ' . $statusAtual);
+    }
+
+    if ((int)($before['USUARIOSOLICITANTE'] ?? 0) === $seqUsuario) {
+        throw new Exception('Solicitante nao pode aprovar a propria despesa.');
+    }
+
+    try {
+        $status = strtoupper($status) === 'REJEITADO' ? 'REJEITADO' : 'APROVADO';
+
+        $sqlUpdate = mg_with_schema("
+            UPDATE CONSINCO.MEGAG_DESP_APROVACAO A
+               SET A.STATUS = :STATUS,
+                   A.DTAACAO = SYSDATE,
+                   A.OBSERVACAO = :OBS
+             WHERE A.CODDESPESA = :ID
+               AND A.USUARIOAPROVADOR = :USU
+               AND A.STATUS = 'LANCADO'
+               AND A.NIVEL_APROVACAO = (
+                    SELECT MIN(P.NIVEL_APROVACAO)
+                      FROM CONSINCO.MEGAG_DESP_APROVACAO P
+                     WHERE P.CODDESPESA = A.CODDESPESA
+                       AND P.CENTROCUSTO = A.CENTROCUSTO
+                       AND P.STATUS = 'LANCADO'
+               )
+        ");
+        $st = $conn->prepare($sqlUpdate);
+        $st->bindValue(':STATUS', $status);
+        $st->bindValue(':OBS', $observacao !== '' ? $observacao : null);
+        $st->bindValue(':ID', $codDespesa, PDO::PARAM_INT);
+        $st->bindValue(':USU', $seqUsuario, PDO::PARAM_INT);
+        $st->execute();
+
+        if ($st->rowCount() <= 0) {
+            throw new Exception('Sem permissao ou fora da ordem de aprovacao.');
+        }
+
+        if ($status === 'REJEITADO') {
+            $stDesp = $conn->prepare(mg_with_schema("
+                UPDATE CONSINCO.MEGAG_DESP
+                   SET STATUS = 'REJEITADO',
+                       DTAALTERACAO = SYSDATE
+                 WHERE CODDESPESA = :ID
+            "));
+            $stDesp->execute([':ID' => $codDespesa]);
+            $conn->exec('COMMIT');
+            return 'Despesa rejeitada com sucesso.';
+        }
+
+        $stRestante = $conn->prepare(mg_with_schema("
+            SELECT COUNT(1)
+              FROM CONSINCO.MEGAG_DESP_APROVACAO
+             WHERE CODDESPESA = :ID
+               AND STATUS = 'LANCADO'
+        "));
+        $stRestante->execute([':ID' => $codDespesa]);
+        $restante = (int)($stRestante->fetchColumn() ?: 0);
+
+        if ($restante === 0) {
+            $stDesp = $conn->prepare(mg_with_schema("
+                UPDATE CONSINCO.MEGAG_DESP
+                   SET STATUS = 'APROVADO',
+                       PAGO = :PAGO,
+                       DTAALTERACAO = SYSDATE
+                 WHERE CODDESPESA = :ID
+            "));
+            $stDesp->execute([
+                ':PAGO' => strtoupper($pago) === 'S' ? 'S' : 'N',
+                ':ID' => $codDespesa,
+            ]);
+            $conn->exec('COMMIT');
+            return 'Despesa aprovada com sucesso.';
+        }
+
+        $stDesp = $conn->prepare(mg_with_schema("
+            UPDATE CONSINCO.MEGAG_DESP
+               SET STATUS = 'APROVACAO',
+                   DTAALTERACAO = SYSDATE
+             WHERE CODDESPESA = :ID
+        "));
+        $stDesp->execute([':ID' => $codDespesa]);
+        $conn->exec('COMMIT');
+        return 'Aprovacao registrada. Aguardando proximos niveis.';
+    } catch (Throwable $e) {
+        try {
+            $conn->exec('ROLLBACK');
+        } catch (Throwable $rollbackError) {
+        }
+        throw new Exception("Erro ao processar aprovacao no banco: " . $e->getMessage());
+    }
+}
+
+function desp_get_approval_state(PDO $conn, int $codDespesa, int $seqUsuario): ?array
+{
+    $sql = mg_with_schema("
+        SELECT D.CODDESPESA,
+               D.USUARIOSOLICITANTE,
+               D.STATUS,
+               (SELECT COUNT(*)
+                  FROM CONSINCO.MEGAG_DESP_APROVACAO A
+                 WHERE A.CODDESPESA = D.CODDESPESA
+                   AND A.USUARIOAPROVADOR = :USU) AS QTD_APROVACOES_USUARIO
+          FROM CONSINCO.MEGAG_DESP D
+         WHERE D.CODDESPESA = :ID
+    ");
+    $st = $conn->prepare($sql);
     $st->bindValue(':ID', $codDespesa, PDO::PARAM_INT);
     $st->bindValue(':USU', $seqUsuario, PDO::PARAM_INT);
-    $st->bindValue(':STATUS', strtoupper($status));
-    $st->bindValue(':PAGO', strtoupper($pago) === 'S' ? 'S' : 'N');
-    $st->bindValue(':OBS', $observacao !== '' ? $observacao : null);
+    $st->execute();
 
-    desp_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
-    
-    try {
-        $st->execute();
-    } catch (Throwable $e) {
-        throw new Exception("Erro ao processar aprovação no banco: " . $e->getMessage());
-    }
-
-    if ($pkgTipoRet === 'E') {
-        throw new Exception($pkgMsg ?: 'Erro desconhecido ao processar aprovação.');
-    }
-
-    // O status de retorno 'A' (Aviso/Warning) pode vir do banco se houver algo fora do fluxo
-    if ($pkgTipoRet === 'A') {
-        throw new Exception($pkgMsg);
-    }
-
-    return $pkgMsg ?: 'Ação processada com sucesso.';
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    return $row ?: null;
 }
 
 try {

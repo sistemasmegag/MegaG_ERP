@@ -455,168 +455,173 @@ if (count($mobileShortcuts) > 4) {
 }
 ?>
 
-
-
-<div class="modern-sidebar flex-shrink-0" id="sidebarMenu">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a href="index.php?page=home" class="brand mb-0 d-flex align-items-center">
-            <div class="brand-icon me-2 d-flex align-items-center justify-content-center"
-                style="width: 58px; height: 58px;">
-                <img src="assets/images/logo.png"
-                    alt="MegaG"
-                    style="width: 98px; height: 98px; object-fit: contain;">
-            </div>
-            <span class="brand-text">MEGAG - ERP</span>
+<aside class="modern-sidebar" id="sidebarMenu">
+    <div class="sidebar-header">
+        <a href="index.php?page=home" class="brand-logo">
+            <img src="assets/images/logo.png" alt="MegaG">
+            <span>MEGAG <span class="blue-text">ERP</span></span>
         </a>
-
-        <div class="d-flex align-items-center gap-2">
-            <!-- botão recolher/expandir (desktop) -->
-            <button type="button" class="sidebar-toggle-btn d-none d-md-inline-flex" id="btnSidebarToggle" title="Recolher/Expandir">
-                <?php echo renderSvgIcon('layout'); ?>
-            </button>
-
-            <!-- botão fechar (mobile) -->
-            <button class="btn-close btn-close-white d-md-none" onclick="toggleMenu()"></button>
-        </div>
     </div>
 
-    <div class="position-relative sidebar-search mb-4">
-        <?php echo renderSvgIcon('search'); ?>
-        <input type="text" class="form-control py-2" placeholder="Buscar..." id="sidebarSearchInput" autocomplete="off">
-    </div>
+    <div class="sidebar-menu">
+        <nav class="nav-group">
+            <a href="index.php?page=home" class="nav-item <?php echo ($paginaAtual == 'home') ? 'active' : ''; ?>">
+                <i class="bi bi-grid-fill"></i>
+                <span>Dashboard</span>
+            </a>
 
-    <div style="overflow-y: auto; flex-grow: 1;" class="mb-3">
-
-        <!-- ===== Menu Principal (fixo) ===== -->
-        <div class="menu-header">Menu Principal</div>
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item" data-menu-item="1" data-menu-text="dashboard" data-menu-group="principal">
-                <a href="index.php?page=home" class="nav-link <?php echo ($paginaAtual == 'home') ? 'active' : ''; ?>">
-                    <span>
-                        <?php echo renderSvgIcon('dashboard', 'me-2'); ?>
-                        <span class="nav-text">Dashboard</span>
-                    </span>
-                </a>
-            </li>
-        </ul>
-
-        <!-- ===== Menus dinâmicos (da VIEW via sessão) ===== -->
-        <?php foreach ($grupos as $codModulo => $itens): ?>
-            <?php
-            $tituloModulo = $labelsModulo[$codModulo] ?? $codModulo;
-
-            // ID seguro (evita quebrar HTML/JS com espaços e caracteres especiais)
-            $safeId = preg_replace('/[^a-zA-Z0-9_-]/', '_', (string)$codModulo);
-            $collapseId = 'menu_modulo_' . $safeId;
-
-            // Detecta se algum item está ativo para abrir a "pastinha" automaticamente
-            $hasActive = false;
-            foreach ($itens as $appTmp) {
-                $tmpLink = normalizeLinkMenu((string)($appTmp['LINKMENU'] ?? ''));
-                if ($paginaAtual === $tmpLink) {
-                    $hasActive = true;
-                    break;
+            <!-- Menus dinâmicos em Abinhas (Accordion) -->
+            <?php foreach ($grupos as $codModulo => $itens): ?>
+                <?php
+                $tituloModulo = $labelsModulo[$codModulo] ?? $codModulo;
+                $safeId = 'collapse_' . preg_replace('/[^a-zA-Z0-9]/', '', $codModulo);
+                
+                // Verifica se algum item deste grupo está ativo para já começar aberto
+                $hasActive = false;
+                foreach ($itens as $appTmp) {
+                    if ($paginaAtual === normalizeLinkMenu($appTmp['LINKMENU'] ?? '')) {
+                        $hasActive = true;
+                        break;
+                    }
                 }
-            }
-
-            $moduleText = strtolower((string)$tituloModulo);
-            ?>
-
-            <!-- Cabeçalho do módulo (clicável / pastinha) -->
-            <div class="menu-header mt-3"
-                role="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#<?php echo $collapseId; ?>"
-                aria-expanded="<?php echo $hasActive ? 'true' : 'false'; ?>"
-                style="cursor:pointer; user-select:none;">
-                <?php echo renderMenuIcon($codModulo); ?>
-                <?php echo htmlspecialchars($tituloModulo, ENT_QUOTES, 'UTF-8'); ?>
-            </div>
-
-            <!-- Conteúdo colapsável do módulo -->
-            <div class="collapse <?php echo $hasActive ? 'show' : ''; ?>"
-                id="<?php echo $collapseId; ?>"
-                data-menu-collapse="1"
-                data-menu-module="<?php echo htmlspecialchars($moduleText, ENT_QUOTES, 'UTF-8'); ?>">
-
-                <ul class="nav nav-pills flex-column mt-1">
-                    <?php foreach ($itens as $app): ?>
-                        <?php
-                        $codApp   = (string)($app['CODAPLICACAO'] ?? '');
-                        $nomeApp  = (string)($app['APLICACAO'] ?? $codApp);
-
-                        // pega o link cru da view
-                        $linkMenuRaw = (string)($app['LINKMENU'] ?? '');
-                        $icoItemRaw  = (string)($app['ICO'] ?? '');
-
-                        // normaliza para bater com suas pages (imp_*)
-                        $linkMenu = normalizeLinkMenu($linkMenuRaw);
-
-                        // LINKMENU deve ser o slug da page (sem .php)
-                        $href = 'index.php?page=' . urlencode($linkMenu);
-
-                        // Permissão simples: existe na sessão?
-                        $temAcesso = temPermissao($codApp);
-
-                        // Active
-                        $isActive = ($paginaAtual === $linkMenu);
-
-                        // Ícone por item (prioridade: codApp > linkMenu > modulo)
-                        $icoHtml = renderMenuIcon($codModulo, $codApp, $linkMenu, $icoItemRaw);
-
-                        $classes = 'nav-link';
-                        if ($isActive) $classes .= ' active';
-                        if (!$temAcesso) $classes .= ' js-no-permission';
-
-                        // texto para busca (mantém simples; o JS remove acento)
-                        $searchText = strtolower($nomeApp . ' ' . $tituloModulo . ' ' . $codModulo);
-                        ?>
-
-                        <li class="nav-item"
-                            data-menu-item="1"
-                            data-menu-text="<?php echo htmlspecialchars($searchText, ENT_QUOTES, 'UTF-8'); ?>"
-                            data-menu-group="<?php echo htmlspecialchars(strtolower((string)$codModulo), ENT_QUOTES, 'UTF-8'); ?>">
-                            <a
-                                href="<?php echo $temAcesso ? $href : '#'; ?>"
-                                class="<?php echo $classes; ?>"
-                                <?php if (!$temAcesso): ?>
-                                aria-disabled="true"
-                                data-app="<?php echo htmlspecialchars($nomeApp, ENT_QUOTES, 'UTF-8'); ?>"
-                                <?php endif; ?>>
-                                <span>
-                                    <?php echo $icoHtml; ?>
-                                    <span class="nav-text"><?php echo htmlspecialchars($nomeApp, ENT_QUOTES, 'UTF-8'); ?></span>
-                                </span>
-                            </a>
-                        </li>
-
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-
-        <?php endforeach; ?>
-
+                ?>
+                <div class="menu-section">
+                    <div class="section-header <?php echo $hasActive ? '' : 'collapsed'; ?>" 
+                         data-bs-toggle="collapse" 
+                         data-bs-target="#<?php echo $safeId; ?>" 
+                         aria-expanded="<?php echo $hasActive ? 'true' : 'false'; ?>">
+                        <span><?php echo htmlspecialchars($tituloModulo); ?></span>
+                        <i class="bi bi-chevron-down chevron-icon"></i>
+                    </div>
+                    
+                    <div class="collapse <?php echo $hasActive ? 'show' : ''; ?>" id="<?php echo $safeId; ?>">
+                        <div class="section-content">
+                            <?php foreach ($itens as $app): ?>
+                                <?php
+                                $codApp   = (string)($app['CODAPLICACAO'] ?? '');
+                                $nomeApp  = (string)($app['APLICACAO'] ?? $codApp);
+                                $linkMenu = normalizeLinkMenu((string)($app['LINKMENU'] ?? ''));
+                                $href     = 'index.php?page=' . urlencode($linkMenu);
+                                $isActive = ($paginaAtual === $linkMenu);
+                                ?>
+                                <a href="<?php echo $href; ?>" class="nav-subitem <?php echo $isActive ? 'active' : ''; ?>">
+                                    <span class="dot"></span>
+                                    <span><?php echo htmlspecialchars($nomeApp); ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </nav>
     </div>
 
-    <div class="user-profile">
+    <div class="sidebar-footer">
         <?php
-        $user = $_SESSION['usuario'] ?? 'Admin';
+        $user = $_SESSION['usuario'] ?? 'Usuário';
         $iniciais = strtoupper(substr($user, 0, 2));
         ?>
-        <div class="user-avatar">
-            <?php echo htmlspecialchars($iniciais, ENT_QUOTES, 'UTF-8'); ?>
+        <div class="dark-mode-toggle" onclick="window.__applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')">
+            <div class="toggle-content">
+                <i class="bi bi-moon-stars"></i>
+                <span>Modo Escuro</span>
+            </div>
         </div>
-        <div class="user-info">
-            <h6><?php echo htmlspecialchars($user, ENT_QUOTES, 'UTF-8'); ?></h6>
-            <small class="text-muted"><?php echo htmlspecialchars(strtolower($user), ENT_QUOTES, 'UTF-8'); ?>@megag.com</small>
-        </div>
-        <a href="logout.php" class="logout-btn ms-3" title="Sair">
-            <?php echo renderSvgIcon('logout'); ?>
-        </a>
-    </div>
 
-</div>
+        <div class="user-footer-wrapper">
+            <div class="user-block">
+                <div class="user-avatar-modern">
+                    <?php echo htmlspecialchars($iniciais); ?>
+                </div>
+                <div class="user-meta">
+                    <span class="user-name"><?php echo htmlspecialchars($user); ?></span>
+                    <span class="user-role">Administrador</span>
+                </div>
+            </div>
+            
+            <a href="logout.php" class="logout-btn" title="Sair do Sistema">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</aside>
+
+<style>
+    .modern-sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid rgba(226, 232, 240, 0.8); border-radius: 0 28px 28px 0; display: flex; flex-direction: column; height: 100vh; position: sticky; top: 0; z-index: 1000; overflow: hidden; }
+    .sidebar-header { padding: 2rem 1.5rem; }
+    .brand-logo { display: flex; align-items: center; gap: 14px; text-decoration: none; font-weight: 900; font-size: 1.35rem; color: #1e293b; }
+    .brand-logo > span { display: flex; flex-direction: column; align-items: center; line-height: 1.12; }
+    .brand-logo img { width: 92px; height: 92px; object-fit: contain; }
+    .blue-text { color: var(--brand-primary); }
+    
+    .sidebar-menu { flex: 1; padding: 0 1rem; overflow-y: auto; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--sidebar-text); text-decoration: none; font-weight: 600; transition: 0.2s; margin-bottom: 4px; }
+    .nav-item:hover, .nav-item.active { background: var(--brand-primary-soft); color: var(--brand-primary); }
+    .nav-item.active { background: var(--brand-primary-glow); border-left: 3px solid var(--brand-primary); }
+
+    .menu-section { margin-top: 0.5rem; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; color: #94a3b8; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; transition: 0.2s; border-radius: 12px; }
+    .section-header:hover { background: #f8fafc; color: #64748b; }
+    .section-header .chevron-icon { transition: transform 0.3s ease; font-size: 0.8rem; }
+    .section-header.collapsed .chevron-icon { transform: rotate(-90deg); }
+
+    .section-content { display: flex; flex-direction: column; gap: 2px; padding-left: 12px; margin-top: 4px; }
+    .nav-subitem { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; color: var(--sidebar-text); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: 0.2s; }
+    .nav-subitem .dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; transition: 0.2s; }
+    .nav-subitem:hover { color: var(--brand-primary); background: #f8fafc; }
+    .nav-subitem:hover .dot { background: var(--brand-primary); transform: scale(1.2); }
+    .nav-subitem.active { color: var(--brand-primary); font-weight: 700; background: var(--brand-primary-soft); }
+    .nav-subitem.active .dot { background: var(--brand-primary); box-shadow: 0 0 8px var(--brand-primary); }
+
+    .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(226, 232, 240, 0.8); }
+    .dark-mode-toggle { margin-bottom: 1rem; cursor: pointer; }
+    .toggle-content { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; color: var(--sidebar-text); font-weight: 600; }
+    .toggle-content:hover { background: #f1f5f9; }
+    
+    .user-footer-wrapper { display: flex; align-items: center; justify-content: space-between; }
+    .user-block { display: flex; align-items: center; gap: 12px; }
+    .user-avatar-modern { width: 40px; height: 40px; background: #4f46e5; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+    .user-meta { display: flex; flex-direction: column; line-height: 1.2; }
+    .user-name { font-size: 0.9rem; font-weight: 700; color: #1e293b; }
+    .user-role { font-size: 0.75rem; color: #94a3b8; }
+    
+    .logout-btn { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #94a3b8; transition: 0.2s; text-decoration: none; }
+    .logout-btn:hover { background: #fef2f2; color: #ef4444; transform: scale(1.05); }
+
+    @media (max-width: 768px) {
+        .modern-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: min(290px, calc(100vw - 36px));
+            min-width: 0;
+            max-width: calc(100vw - 36px);
+            height: 100dvh;
+            border-radius: 0 24px 24px 0;
+            z-index: 1050;
+            transform: translateX(-105%);
+            transition: transform .2s ease;
+            box-shadow: 16px 0 42px rgba(15, 23, 42, .22);
+        }
+
+        .modern-sidebar.show {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            padding: 1.25rem 1.25rem 1rem;
+        }
+
+        .sidebar-menu {
+            padding: 0 .85rem;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.25rem;
+        }
+    }
+</style>
 
 <nav class="mobile-bottom-nav d-md-none" aria-label="Navegação rápida">
     <?php foreach ($mobileShortcuts as $shortcut): ?>

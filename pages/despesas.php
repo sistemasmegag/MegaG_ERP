@@ -2458,7 +2458,7 @@ $paginaAtual = 'despesas';
       }
 
       loadHistory(d.CODDESPESA);
-      loadAnexosDespesa(d.CODDESPESA, d.NOMEARQUIVO || '');
+      loadAnexosDespesa(d.CODDESPESA, d.NOMEARQUIPO || '');
       // Carrega rateio se houver múltiplos CCs
       loadRateio(d.CODDESPESA, parseFloat(d.VLRRATDESPESA || 0));
       new bootstrap.Modal('#modalDetalhesDespesa').show();

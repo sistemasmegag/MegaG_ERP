@@ -97,17 +97,23 @@ if (isset($_GET['embed'])) {
 </head>
 <body>
 
-<?php include __DIR__ . '/includes/sidebar.php'; ?>
+<div class="app-container">
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
-<main class="main-content">
-    <?php
-    if (file_exists($pageFile)) {
-        include $pageFile;
-    } else {
-        echo '<p>Página não encontrada.</p>';
-    }
-    ?>
-</main>
+    <div class="main-content-wrapper">
+        <?php include __DIR__ . '/includes/topbar.php'; ?>
+        
+        <main class="page-container">
+            <?php
+            if (file_exists($pageFile)) {
+                include $pageFile;
+            } else {
+                echo '<p>Página não encontrada.</p>';
+            }
+            ?>
+        </main>
+    </div>
+</div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
 
