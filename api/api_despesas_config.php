@@ -878,6 +878,39 @@ try {
         jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
     }
 
+    if ($action === 'clone_aprovador') {
+        $seqOrigem = (int)($req['sequsuario_origem'] ?? 0);
+        $seqDestino = (int)($req['sequsuario_destino'] ?? 0);
+
+        if ($seqOrigem <= 0 || $seqDestino <= 0) {
+            jexit(false, [], 'Informe o aprovador origem e o usuário destino.');
+        }
+
+        if ($seqOrigem === $seqDestino) {
+            jexit(false, [], 'Usuário origem e destino devem ser diferentes.');
+        }
+
+        $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_CLONA_APROVADOR(
+                    p_sequsuario_origem  => :SEQ_ORIGEM,
+                    p_sequsuario_destino => :SEQ_DESTINO,
+                    p_sequusuarioalt     => :USU_ALT,
+                    s_sfx                => :S_SFX,
+                    s_ico                => :S_ICO,
+                    s_tiporet            => :S_TIPORET,
+                    s_msg                => :S_MSG
+                ); END;";
+        $st = $conn->prepare(cfg_sql($sql));
+        $st->bindValue(':SEQ_ORIGEM', $seqOrigem, PDO::PARAM_INT);
+        $st->bindValue(':SEQ_DESTINO', $seqDestino, PDO::PARAM_INT);
+        $st->bindValue(':USU_ALT', $userIdInt, PDO::PARAM_INT);
+        cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        $st->execute();
+        $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
+        if (cfg_pkg_failed($pkgResult)) jexit(false, [], $pkgResult['s_msg']);
+
+        jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
+    }
+
     if ($action === 'del_aprovador_vinculo') {
         $codgrupoRaw = $req['codgrupo'] ?? null;
         $codgrupo = ($codgrupoRaw === '' || $codgrupoRaw === null) ? null : (int)$codgrupoRaw;

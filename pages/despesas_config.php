@@ -539,6 +539,37 @@ $paginaAtual = 'despesas_config';
     </div>
 </div>
 
+<div class="modal fade" id="modalCloneAprovador" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:24px; border:1px solid var(--saas-border); overflow:hidden;">
+            <div class="modal-header border-bottom-0 pb-0 mt-3 mx-2">
+                <div>
+                    <h5 class="modal-title fw-bold m-0">Clonar aprovador</h5>
+                    <div class="text-muted small mt-1" id="cloneAprovadorSubtitle">Selecione o usuário que receberá os mesmos vínculos.</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="wizard-panel mb-3">
+                    <div class="small text-muted mb-1">Origem</div>
+                    <div class="fw-bold" id="cloneAprovadorOrigemNome">-</div>
+                    <div class="small text-muted" id="cloneAprovadorOrigemSeq">-</div>
+                </div>
+                <div>
+                    <label class="saas-label">Usuário destino</label>
+                    <select class="saas-select" id="cloneAprovadorDestino"></select>
+                </div>
+            </div>
+
+            <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
+                <button type="button" class="btn btn-light rounded-pill px-4 fw-bold text-muted" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-primary-custom rounded-pill px-4" id="btnConfirmCloneAprovador" onclick="confirmarCloneAprovador()">Clonar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal fade" id="modalGrupoPessoas" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content" style="border-radius:24px; border:1px solid var(--saas-border); overflow:hidden;">
@@ -603,10 +634,45 @@ $paginaAtual = 'despesas_config';
         grupoNome: '',
         centroCusto: ''
     };
+    let cloneAprovadorState = {
+        sequsuarioOrigem: '',
+        nomeOrigem: ''
+    };
     let grupoPessoasState = {
         codgrupo: '',
         nomegrupo: ''
     };
+
+    function toastConfig(message, type = 'success') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        const tone = type === 'success'
+            ? 'border-success text-success'
+            : type === 'warning'
+                ? 'border-warning text-warning'
+                : 'border-danger text-danger';
+
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast align-items-center bg-white ${tone}`;
+        toastEl.setAttribute('role', 'alert');
+        toastEl.setAttribute('aria-live', 'assertive');
+        toastEl.setAttribute('aria-atomic', 'true');
+        toastEl.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body fw-bold">${message}</div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>`;
+
+        container.appendChild(toastEl);
+        const toast = new bootstrap.Toast(toastEl, { delay: 4500 });
+        toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+        toast.show();
+    }
 
     function resetWizardState() {
         wizardStep = 1;
@@ -746,10 +812,77 @@ $paginaAtual = 'despesas_config';
                         <div class="fw-bold">${nome}</div>
                         <div class="small text-muted">Seq. usuário: ${seq}</div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-light border text-danger rounded-pill px-3" onclick="removerAprovadorCentroCusto('${seq}', '${String(nome).replace(/'/g, "\\'")}')">Remover</button>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-light border rounded-pill px-3" onclick="abrirCloneAprovador('${seq}', '${String(nome).replace(/'/g, "\\'")}')">Clonar</button>
+                        <button type="button" class="btn btn-sm btn-light border text-danger rounded-pill px-3" onclick="removerAprovadorCentroCusto('${seq}', '${String(nome).replace(/'/g, "\\'")}')">Remover</button>
+                    </div>
                 </div>
             `;
         }).join('');
+    }
+
+    async function abrirCloneAprovador(sequsuario, nome) {
+        cloneAprovadorState = {
+            sequsuarioOrigem: String(sequsuario || ''),
+            nomeOrigem: nome || '-'
+        };
+
+        document.getElementById('cloneAprovadorOrigemNome').textContent = cloneAprovadorState.nomeOrigem;
+        document.getElementById('cloneAprovadorOrigemSeq').textContent = `Seq. usuario: ${cloneAprovadorState.sequsuarioOrigem}`;
+        document.getElementById('cloneAprovadorSubtitle').textContent = `Copiar todos os vinculos de ${cloneAprovadorState.nomeOrigem} para outro usuario.`;
+
+        const destino = document.getElementById('cloneAprovadorDestino');
+        if (destino?.tomselect) destino.tomselect.destroy();
+        destino.innerHTML = '<option value="">Carregando usuarios...</option>';
+
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCloneAprovador')).show();
+        await carregarDomDinamico(null, null, 'cloneAprovadorDestino');
+    }
+
+    async function confirmarCloneAprovador() {
+        const destinoEl = document.getElementById('cloneAprovadorDestino');
+        const destinoRaw = destinoEl?.tomselect ? destinoEl.tomselect.getValue() : destinoEl?.value;
+        const seqDestino = String(destinoRaw || '').split('|')[0];
+
+        if (!cloneAprovadorState.sequsuarioOrigem || !seqDestino) {
+            toastConfig('Selecione o usuario destino.', 'warning');
+            return;
+        }
+
+        if (String(cloneAprovadorState.sequsuarioOrigem) === String(seqDestino)) {
+            toastConfig('Usuario origem e destino devem ser diferentes.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btnConfirmCloneAprovador');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Clonando...';
+
+        try {
+            const res = await fetch('api/api_despesas_config.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'clone_aprovador',
+                    sequsuario_origem: cloneAprovadorState.sequsuarioOrigem,
+                    sequsuario_destino: seqDestino
+                })
+            });
+            const json = await res.json();
+            if (!json.sucesso) {
+                toastConfig(json.erro || 'Erro ao clonar aprovador.', 'danger');
+                return;
+            }
+
+            toastConfig(json.dados?.mensagem || 'Aprovador clonado com sucesso.', 'success');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCloneAprovador')).hide();
+            await carregarListaEdicaoCentroCusto();
+            await carregarTabelas();
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
     }
 
     async function adicionarAprovadorCentroCusto() {

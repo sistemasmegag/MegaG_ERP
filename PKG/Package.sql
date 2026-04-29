@@ -47,6 +47,16 @@ PROCEDURE PRC_DEL_MEGAG_DESP_APROVADORES(
     s_msg     OUT VARCHAR2
 );
 
+PROCEDURE PRC_INS_MEGAG_DESP_CLONA_APROVADOR(
+    p_sequsuario_origem  IN  CONSINCO.MEGAG_DESP_APROVADORES.SEQUSUARIO%TYPE,
+    p_sequsuario_destino IN  CONSINCO.MEGAG_DESP_APROVADORES.SEQUSUARIO%TYPE,
+    p_sequusuarioalt     IN  CONSINCO.MEGAG_DESP_APROVADORES.SEQUSUARIOALTERACAO%TYPE,
+    s_sfx                OUT VARCHAR2,
+    s_ico                OUT VARCHAR2,
+    s_tiporet            OUT VARCHAR2,
+    s_msg                OUT VARCHAR2
+);
+
 /* ==================================================
    FILE: DespesaCRUD.sql
 ================================================== */

@@ -1,6 +1,7 @@
 <?php
 $files = [
     'AprovadoresCRUD.sql', 
+    'ClonaUsuarioCRUD.sql',
     'DespesaCRUD.sql', 
     'TipoDespesaCRUD.sql', 
     'CentroCustoDespesaCRUD.sql',

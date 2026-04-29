@@ -93,7 +93,6 @@ function to_oracle_date_str($value): ?string {
 
     $txt = trim((string)$value);
     if ($txt === '') return null;
-
     $txt = str_replace('T', ' ', $txt);
 
     $fmts = [
@@ -155,7 +154,7 @@ function to_oracle_datetime_str($value): ?string {
     return null;
 }
 
-function to_number($value): ?float {
+function to_number($value, bool $singleSeparatorThousands = false): ?float {
     if ($value === null || $value === '') return null;
 
     if (is_int($value) || is_float($value)) {
@@ -164,9 +163,11 @@ function to_number($value): ?float {
 
     $txt = trim((string)$value);
     if ($txt === '') return null;
+    $txt = preg_replace('/[^\d,.\-]/', '', $txt);
+    if ($txt === '' || $txt === '-' || $txt === '.' || $txt === ',') return null;
 
     // Se já veio em formato numérico simples, respeita como está.
-    if (is_numeric($txt)) {
+    if (strpos($txt, ',') === false && strpos($txt, '.') === false && is_numeric($txt)) {
         return (float)$txt;
     }
 
@@ -175,18 +176,37 @@ function to_number($value): ?float {
 
     // pt-BR: "1.234,56" -> "1234.56"
     if ($hasComma && $hasDot) {
-        $txt = str_replace('.', '', $txt);
-        $txt = str_replace(',', '.', $txt);
+        $lastComma = strrpos($txt, ',');
+        $lastDot = strrpos($txt, '.');
+
+        if ($lastComma > $lastDot) {
+            $txt = str_replace('.', '', $txt);
+            $txt = str_replace(',', '.', $txt);
+        } else {
+            $txt = str_replace(',', '', $txt);
+        }
         return is_numeric($txt) ? (float)$txt : null;
     }
 
     // decimal com vírgula: "269,53" -> "269.53"
     if ($hasComma) {
-        $txt = str_replace(',', '.', $txt);
+        $parts = explode(',', $txt);
+        if ($singleSeparatorThousands && count($parts) === 2 && strlen($parts[1]) === 3 && strlen(ltrim($parts[0], '-')) <= 3 && (float)$parts[0] != 0.0) {
+            $txt = str_replace(',', '', $txt);
+        } else {
+            $txt = str_replace(',', '.', $txt);
+        }
         return is_numeric($txt) ? (float)$txt : null;
     }
 
     // decimal com ponto: "269.53" -> 269.53
+    if ($hasDot) {
+        $parts = explode('.', $txt);
+        if ($singleSeparatorThousands && count($parts) === 2 && strlen($parts[1]) === 3 && strlen(ltrim($parts[0], '-')) <= 3 && (float)$parts[0] != 0.0) {
+            $txt = str_replace('.', '', $txt);
+        }
+    }
+
     return is_numeric($txt) ? (float)$txt : null;
 }
 
@@ -289,6 +309,7 @@ $configs = [
             [
                 'db' => 'PESO_META',
                 'type' => 'number',
+                'read' => 'formatted_if_scaled',
                 'required' => true,
                 'aliases' => ['PESO_META','META','PESOMETA']
             ],
@@ -944,7 +965,14 @@ try {
     sse_send("Abrindo planilha: {$arquivo}", 'sistema');
 
     $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($filePath);
-    $reader->setReadDataOnly(true);
+    $needsFormattedValues = false;
+    foreach ($cfg['columns'] as $colCfg) {
+        if (in_array(($colCfg['read'] ?? null), ['formatted', 'formatted_if_scaled'], true)) {
+            $needsFormattedValues = true;
+            break;
+        }
+    }
+    $reader->setReadDataOnly(!$needsFormattedValues);
     $spreadsheet = $reader->load($filePath);
     $headerRowNum = (int)($cfg['header_row'] ?? 1);
     $sheet = $spreadsheet->getActiveSheet();
@@ -1031,6 +1059,7 @@ try {
     $insertVals = [];
     $bindTypes  = []; // controla conversão
     $bindFromExcel = []; // dbCol => excelIndex
+    $bindReadModes = []; // dbCol => raw|formatted
     $bindIsRawDate = []; // date/datetime
 
     foreach ($cfg['columns'] as $colCfg) {
@@ -1053,6 +1082,7 @@ try {
 
         $bindTypes[$dbCol] = $type;
         $bindFromExcel[$dbCol] = $excelIdx; // pode ser null
+        $bindReadModes[$dbCol] = (string)($colCfg['read'] ?? 'raw');
     }
 
     // padrões staging automáticos (se existirem na tabela)
@@ -1167,6 +1197,24 @@ try {
             $fixedKey = "fixed_" . $dbCol;
             if (isset($_GET[$fixedKey])) {
                 $raw = $_GET[$fixedKey];
+            } elseif ($excelIdx !== null && ($bindReadModes[$dbCol] ?? 'raw') === 'formatted') {
+                $excelCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($excelIdx + 1);
+                $raw = $sheet->getCell($excelCol . $r)->getFormattedValue();
+            } elseif ($excelIdx !== null && ($bindReadModes[$dbCol] ?? 'raw') === 'formatted_if_scaled') {
+                $excelCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($excelIdx + 1);
+                $cell = $sheet->getCell($excelCol . $r);
+                $rawCell = $cell->getValue();
+                $formattedCell = $cell->getFormattedValue();
+                $rawNumber = to_number($rawCell);
+                $formattedNumber = to_number($formattedCell, true);
+
+                $raw = $rawCell;
+                if ($rawNumber !== null && $formattedNumber !== null && abs($formattedNumber) > 0) {
+                    $ratio = abs($rawNumber / $formattedNumber);
+                    if (abs($ratio - 1000) < 0.01 || abs($ratio - 1000000) < 0.01) {
+                        $raw = $formattedNumber;
+                    }
+                }
             } else {
                 $raw = ($excelIdx === null) ? null : ($rowArr[$excelIdx] ?? null);
             }
