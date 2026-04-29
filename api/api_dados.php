@@ -123,6 +123,7 @@ try {
     }
 
     // Pelo seu print: CODTABELA, DESCRICAO, NOMEARQUIVO, SQLEXECUTE, CODUSUARIO
+    // Comentario
     $V_COL_TIPO  = $pick($colsView, ['CODTABELA','TIPO','TABELA','TAB']);
     $V_COL_LABEL = $pick($colsView, ['DESCRICAO','DESCR','NOME','LABEL','TITULO']);
     $V_COL_USER  = $pick($colsView, ['CODUSUARIO','USUINCLUSAO','USUARIO','LOGIN','USU','SEQPESSOA']);
