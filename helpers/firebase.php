@@ -192,6 +192,22 @@ function mg_firebase_sequence(string $name): string
     return strtoupper(trim($name));
 }
 
+function mg_firebase_is_missing_db_object_error(Throwable $error): bool
+{
+    $message = strtoupper($error->getMessage());
+    return strpos($message, 'ORA-00942') !== false
+        || strpos($message, 'ORA-02289') !== false;
+}
+
+function mg_firebase_storage_error_message(): string
+{
+    return 'Estrutura de push nao encontrada no banco. Execute em producao a criacao de '
+        . mg_firebase_table('MEGAG_PUSH_TOKENS')
+        . ' e '
+        . mg_firebase_sequence('SEQ_MEGAG_PUSH_TOKENS')
+        . ', ou conceda permissao direta para o usuario da aplicacao.';
+}
+
 function mg_firebase_base64url_encode(string $value): string
 {
     return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
@@ -325,50 +341,58 @@ function mg_firebase_save_token(PDO $conn, string $usuario, string $token, array
         return ['success' => false, 'error' => 'Usuario e token sao obrigatorios.'];
     }
 
-    $sqlExistingUser = "SELECT COUNT(*)
-                          FROM " . mg_firebase_table('MEGAG_PUSH_TOKENS') . "
-                         WHERE UPPER(USUARIO) = UPPER(:USUARIO)
-                           AND ATIVO = 'S'";
-    $stmtExistingUser = $conn->prepare($sqlExistingUser);
-    $stmtExistingUser->bindValue(':USUARIO', $usuario, PDO::PARAM_STR);
-    $stmtExistingUser->execute();
-    $activeTokensBefore = (int)$stmtExistingUser->fetchColumn();
+    try {
+        $sqlExistingUser = "SELECT COUNT(*)
+                              FROM " . mg_firebase_table('MEGAG_PUSH_TOKENS') . "
+                             WHERE UPPER(USUARIO) = UPPER(:USUARIO)
+                               AND ATIVO = 'S'";
+        $stmtExistingUser = $conn->prepare($sqlExistingUser);
+        $stmtExistingUser->bindValue(':USUARIO', $usuario, PDO::PARAM_STR);
+        $stmtExistingUser->execute();
+        $activeTokensBefore = (int)$stmtExistingUser->fetchColumn();
 
-    $sqlExistingToken = "SELECT COUNT(*)
-                           FROM " . mg_firebase_table('MEGAG_PUSH_TOKENS') . "
-                          WHERE TOKEN = :TOKEN";
-    $stmtExistingToken = $conn->prepare($sqlExistingToken);
-    $stmtExistingToken->bindValue(':TOKEN', $token, PDO::PARAM_STR);
-    $stmtExistingToken->execute();
-    $tokenAlreadyKnown = (int)$stmtExistingToken->fetchColumn() > 0;
+        $sqlExistingToken = "SELECT COUNT(*)
+                               FROM " . mg_firebase_table('MEGAG_PUSH_TOKENS') . "
+                              WHERE TOKEN = :TOKEN";
+        $stmtExistingToken = $conn->prepare($sqlExistingToken);
+        $stmtExistingToken->bindValue(':TOKEN', $token, PDO::PARAM_STR);
+        $stmtExistingToken->execute();
+        $tokenAlreadyKnown = (int)$stmtExistingToken->fetchColumn() > 0;
 
-    $sql = "MERGE INTO " . mg_firebase_table('MEGAG_PUSH_TOKENS') . " T
-            USING (SELECT :TOKEN_SRC AS TOKEN FROM DUAL) SRC
-               ON (T.TOKEN = SRC.TOKEN)
-            WHEN MATCHED THEN UPDATE SET
-                T.USUARIO = :USUARIO_UPD,
-                T.DEVICE_PLATFORM = :PLATFORM_UPD,
-                T.USER_AGENT = :USER_AGENT_UPD,
-                T.ULTIMO_ACESSO_EM = SYSDATE,
-                T.ENDPOINT_ORIGEM = :ENDPOINT_UPD,
-                T.ATIVO = 'S'
-            WHEN NOT MATCHED THEN INSERT
-                (ID, USUARIO, TOKEN, DEVICE_PLATFORM, USER_AGENT, ENDPOINT_ORIGEM, ATIVO, CRIADO_EM, ULTIMO_ACESSO_EM)
-            VALUES
-                (" . mg_firebase_sequence('SEQ_MEGAG_PUSH_TOKENS') . ".NEXTVAL, :USUARIO_INS, :TOKEN_INS, :PLATFORM_INS, :USER_AGENT_INS, :ENDPOINT_INS, 'S', SYSDATE, SYSDATE)";
+        $sql = "MERGE INTO " . mg_firebase_table('MEGAG_PUSH_TOKENS') . " T
+                USING (SELECT :TOKEN_SRC AS TOKEN FROM DUAL) SRC
+                   ON (T.TOKEN = SRC.TOKEN)
+                WHEN MATCHED THEN UPDATE SET
+                    T.USUARIO = :USUARIO_UPD,
+                    T.DEVICE_PLATFORM = :PLATFORM_UPD,
+                    T.USER_AGENT = :USER_AGENT_UPD,
+                    T.ULTIMO_ACESSO_EM = SYSDATE,
+                    T.ENDPOINT_ORIGEM = :ENDPOINT_UPD,
+                    T.ATIVO = 'S'
+                WHEN NOT MATCHED THEN INSERT
+                    (ID, USUARIO, TOKEN, DEVICE_PLATFORM, USER_AGENT, ENDPOINT_ORIGEM, ATIVO, CRIADO_EM, ULTIMO_ACESSO_EM)
+                VALUES
+                    (" . mg_firebase_sequence('SEQ_MEGAG_PUSH_TOKENS') . ".NEXTVAL, :USUARIO_INS, :TOKEN_INS, :PLATFORM_INS, :USER_AGENT_INS, :ENDPOINT_INS, 'S', SYSDATE, SYSDATE)";
 
-    $stmt = $conn->prepare($sql);
-    $stmt->bindValue(':TOKEN_SRC', $token, PDO::PARAM_STR);
-    $stmt->bindValue(':USUARIO_UPD', $usuario, PDO::PARAM_STR);
-    $stmt->bindValue(':PLATFORM_UPD', trim((string)($meta['platform'] ?? 'web')), PDO::PARAM_STR);
-    $stmt->bindValue(':USER_AGENT_UPD', substr((string)($meta['user_agent'] ?? ''), 0, 1000), PDO::PARAM_STR);
-    $stmt->bindValue(':ENDPOINT_UPD', substr((string)($meta['endpoint'] ?? ''), 0, 500), PDO::PARAM_STR);
-    $stmt->bindValue(':USUARIO_INS', $usuario, PDO::PARAM_STR);
-    $stmt->bindValue(':TOKEN_INS', $token, PDO::PARAM_STR);
-    $stmt->bindValue(':PLATFORM_INS', trim((string)($meta['platform'] ?? 'web')), PDO::PARAM_STR);
-    $stmt->bindValue(':USER_AGENT_INS', substr((string)($meta['user_agent'] ?? ''), 0, 1000), PDO::PARAM_STR);
-    $stmt->bindValue(':ENDPOINT_INS', substr((string)($meta['endpoint'] ?? ''), 0, 500), PDO::PARAM_STR);
-    $stmt->execute();
+        $stmt = $conn->prepare($sql);
+        $stmt->bindValue(':TOKEN_SRC', $token, PDO::PARAM_STR);
+        $stmt->bindValue(':USUARIO_UPD', $usuario, PDO::PARAM_STR);
+        $stmt->bindValue(':PLATFORM_UPD', trim((string)($meta['platform'] ?? 'web')), PDO::PARAM_STR);
+        $stmt->bindValue(':USER_AGENT_UPD', substr((string)($meta['user_agent'] ?? ''), 0, 1000), PDO::PARAM_STR);
+        $stmt->bindValue(':ENDPOINT_UPD', substr((string)($meta['endpoint'] ?? ''), 0, 500), PDO::PARAM_STR);
+        $stmt->bindValue(':USUARIO_INS', $usuario, PDO::PARAM_STR);
+        $stmt->bindValue(':TOKEN_INS', $token, PDO::PARAM_STR);
+        $stmt->bindValue(':PLATFORM_INS', trim((string)($meta['platform'] ?? 'web')), PDO::PARAM_STR);
+        $stmt->bindValue(':USER_AGENT_INS', substr((string)($meta['user_agent'] ?? ''), 0, 1000), PDO::PARAM_STR);
+        $stmt->bindValue(':ENDPOINT_INS', substr((string)($meta['endpoint'] ?? ''), 0, 500), PDO::PARAM_STR);
+        $stmt->execute();
+    } catch (Throwable $error) {
+        if (mg_firebase_is_missing_db_object_error($error)) {
+            return ['success' => false, 'error' => mg_firebase_storage_error_message()];
+        }
+
+        throw $error;
+    }
 
     return [
         'success' => true,

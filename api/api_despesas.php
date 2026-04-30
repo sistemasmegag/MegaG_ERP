@@ -233,10 +233,11 @@ function create_notification(PDO $conn, string $usuario, string $tipo, string $t
         return;
     }
 
+    $seq = mg_sequence('SEQ_MEGAG_TASK_NOTIFICACOES');
     $sql = "INSERT INTO MEGAG_TASK_NOTIFICACOES
                 (ID, USUARIO, TIPO, TITULO, MENSAGEM, TASK_ID, LIDA, CRIADO_EM)
             VALUES
-                (SEQ_MEGAG_TASK_NOTIFICACOES.NEXTVAL, :USUARIO, :TIPO, :TITULO, :MENSAGEM, :TASK_ID, 'N', SYSDATE)";
+                ({$seq}.NEXTVAL, :USUARIO, :TIPO, :TITULO, :MENSAGEM, :TASK_ID, 'N', SYSDATE)";
     $st = $conn->prepare($sql);
     $st->bindValue(':USUARIO', $usuario, PDO::PARAM_STR);
     $st->bindValue(':TIPO', $tipo, PDO::PARAM_STR);
@@ -1041,13 +1042,17 @@ try {
         $conn->exec('COMMIT');
 
         $solicitanteLogin = resolve_loginid_by_sequsuario($conn, $usr_solicitante);
-        notify_pending_approvers_for_despesa(
-            $conn,
-            (int)$out_id,
-            $solicitanteLogin !== '' ? $solicitanteLogin : (string)$user,
-            $forn,
-            (float)$vlr
-        );
+        try {
+            notify_pending_approvers_for_despesa(
+                $conn,
+                (int)$out_id,
+                $solicitanteLogin !== '' ? $solicitanteLogin : (string)$user,
+                $forn,
+                (float)$vlr
+            );
+        } catch (Throwable $notificationError) {
+            error_log('Falha ao criar notificacao de despesa ' . (int)$out_id . ': ' . $notificationError->getMessage());
+        }
 
         jexit(true, ['dados' => ['id' => $out_id, 'mensagem' => 'Despesa cadastrada com sucesso!']]);
     }

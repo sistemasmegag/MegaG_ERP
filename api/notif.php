@@ -149,10 +149,11 @@ function notif_create(PDO $conn): void
         mg_json_error('Campos "usuario" e "mensagem" são obrigatórios.');
     }
 
+    $seq = mg_sequence('SEQ_MEGAG_TASK_NOTIFICACOES');
     $sql = "INSERT INTO MEGAG_TASK_NOTIFICACOES
                 (ID, USUARIO, TIPO, TITULO, MENSAGEM, TASK_ID, LIDA, CRIADO_EM)
             VALUES
-                (SEQ_MEGAG_TASK_NOTIFICACOES.NEXTVAL, :USUARIO, :TIPO, :TITULO, :MENSAGEM, :TASK_ID, 'N', SYSDATE)";
+                ({$seq}.NEXTVAL, :USUARIO, :TIPO, :TITULO, :MENSAGEM, :TASK_ID, 'N', SYSDATE)";
 
     $stmt = $conn->prepare($sql);
     $stmt->bindValue(':USUARIO', $usuario, PDO::PARAM_STR);
