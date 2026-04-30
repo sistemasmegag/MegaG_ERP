@@ -1996,16 +1996,30 @@ $paginaAtual = 'despesas';
       let centrosCusto   = [];
       let valoresRateio  = [];
       let temMultiplos   = ccRows.length > 1;
+      let centrosVistos  = new Set();
+      let centroDuplicado = '';
 
       ccRows.forEach(row => {
         let sel = row.querySelector('select');
         let valInput = row.querySelector('.cc-valor-input');
         let ccVal = sel && sel.tomselect ? sel.tomselect.getValue() : (sel ? sel.value : '');
         if (ccVal && ccVal.trim() !== '') {
+          let ccCodigo = ccVal.trim().split('|')[0].trim();
+          if (centrosVistos.has(ccCodigo)) {
+            centroDuplicado = ccCodigo;
+            return;
+          }
+          centrosVistos.add(ccCodigo);
           centrosCusto.push(ccVal.trim());
           valoresRateio.push(valInput ? (parseFloat(valInput.value) || 0) : 0);
         }
       });
+
+      if (centroDuplicado) {
+        Swal.fire({ icon: 'warning', title: 'Centro de Custo duplicado', text: `O centro de custo ${centroDuplicado} foi selecionado mais de uma vez no rateio.` });
+        btn.innerHTML = originalHtml; btn.disabled = false;
+        return;
+      }
 
       if (centrosCusto.length === 0) {
         Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Selecione pelo menos um Centro de Custo.' });

@@ -129,6 +129,9 @@ function validate_politica_centros_despesa(PDO $conn, array $centrosCustoRaw, in
         if ($cc <= 0) {
             throw new Exception('Centro de custo invalido no rateio.');
         }
+        if (isset($centros[$cc])) {
+            throw new Exception('Centro de custo ' . $cc . ' foi informado mais de uma vez no rateio.');
+        }
         $centros[$cc] = $cc;
     }
 
@@ -804,7 +807,7 @@ try {
             jexit(false, [], 'Centro de custo invalido.');
         }
         $cod_politica = resolve_politica_despesa($conn, $centro_custo);
-        validate_politica_centros_despesa($conn, $centros_custo_raw, $cod_politica);
+        $centros_custo_raw = validate_politica_centros_despesa($conn, $centros_custo_raw, $cod_politica);
 
         // USUARIO logado: para testes, enviamos 1 se não for numero
         $usr_solicitante = $sessionSeqUsuario;

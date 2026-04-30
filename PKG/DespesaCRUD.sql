@@ -24,13 +24,22 @@ CREATE OR REPLACE PROCEDURE PRC_INS_MEGAG_DESP(
     v_desc_tipo       VARCHAR2(200);
     v_count_aprovador NUMBER;
 BEGIN
+    IF p_CODPOLITICA IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20004, 'Politica de aprovacao nao informada.');
+    END IF;
+
     -- Busca descrição da categoria
     SELECT DESCRICAO INTO v_desc_tipo FROM CONSINCO.MEGAG_DESP_TIPO WHERE CODTIPODESPESA = p_CODTIPODESPESA;
 
     -- Validação: Verifica se existe pelo menos 1 aprovador configurado para o CC principal
     SELECT COUNT(*) INTO v_count_aprovador
     FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p
-    WHERE TO_CHAR(p.CENTROCUSTO) = TO_CHAR(p_CENTROCUSTO);
+    JOIN CONSINCO.MEGAG_DESP_APROVADORES a
+      ON a.CODGRUPO = p.CODGRUPO
+     AND a.CENTROCUSTO = p.CENTROCUSTO
+     AND a.SEQUSUARIO = p.SEQUSUARIO
+    WHERE p.CODPOLITICA = p_CODPOLITICA
+      AND TO_CHAR(p.CENTROCUSTO) = TO_CHAR(p_CENTROCUSTO);
 
     IF v_count_aprovador = 0 THEN
         RAISE_APPLICATION_ERROR(-20003, 'Centro de Custo ' || p_CENTROCUSTO || ' não possui aprovadores configurados.');

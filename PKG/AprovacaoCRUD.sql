@@ -14,7 +14,13 @@ PROCEDURE PRC_INS_MEGAG_DESP_APROVACAO(
     s_msg        OUT VARCHAR2
 ) IS
     v_existe NUMBER;
+    v_codpolitica CONSINCO.MEGAG_DESP.CODPOLITICA%TYPE;
 BEGIN
+    SELECT CODPOLITICA
+      INTO v_codpolitica
+      FROM CONSINCO.MEGAG_DESP
+     WHERE CODDESPESA = p_coddespesa;
+
     -- Loop em TODOS os centros de custo envolvidos (Rateio + Principal)
     FOR r_cc IN (
         SELECT DISTINCT TRIM(TO_CHAR(CENTROCUSTO)) as CENTROCUSTO 
@@ -31,6 +37,7 @@ BEGIN
             SELECT SEQUSUARIO, NIVEL_APROVACAO
             FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO
             WHERE TRIM(TO_CHAR(CENTROCUSTO)) = TRIM(TO_CHAR(r_cc.CENTROCUSTO))
+              AND CODPOLITICA = v_codpolitica
             ORDER BY NIVEL_APROVACAO
         ) LOOP
             -- Idempotência: Evita duplicar registros se a proc for chamada de novo
@@ -52,8 +59,6 @@ BEGIN
             END IF;
         END LOOP;
     END LOOP;
-
-    COMMIT;
 
     s_sfx     := 'success';
     s_ico     := 'success';
