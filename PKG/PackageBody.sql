@@ -762,25 +762,62 @@ PROCEDURE PRC_INS_MEGAG_DESP_APROVACAO(
     s_tiporet    OUT VARCHAR2,
     s_msg        OUT VARCHAR2
 ) IS
-    v_centrocusto MEGAG_DESP.CENTROCUSTO%TYPE;
+    v_codpolitica MEGAG_DESP.CODPOLITICA%TYPE;
+    v_qtd_aprovadores NUMBER;
 BEGIN
-    SELECT CENTROCUSTO INTO v_centrocusto
-    FROM MEGAG_DESP WHERE CODDESPESA = p_coddespesa;
+    SELECT CODPOLITICA
+      INTO v_codpolitica
+      FROM MEGAG_DESP
+     WHERE CODDESPESA = p_coddespesa;
 
-    FOR r_aprov IN (
-        SELECT sequsuario, nivel_aprovacao
-        FROM MEGAG_DESP_POLIT_CENTRO_CUSTO
-        WHERE CENTROCUSTO = v_centrocusto
-          AND CODPOLITICA = (SELECT CODPOLITICA FROM MEGAG_DESP WHERE CODDESPESA = p_coddespesa)
-        ORDER BY NIVEL_APROVACAO
+    FOR v_cc IN (
+        SELECT CENTROCUSTO
+          FROM MEGAG_DESP_RATEIO
+         WHERE CODDESPESA = p_coddespesa
+        UNION
+        SELECT d.CENTROCUSTO
+          FROM MEGAG_DESP d
+         WHERE d.CODDESPESA = p_coddespesa
+           AND NOT EXISTS (
+               SELECT 1
+                 FROM MEGAG_DESP_RATEIO r
+                WHERE r.CODDESPESA = d.CODDESPESA
+           )
     ) LOOP
-        INSERT INTO MEGAG_DESP_APROVACAO(
-            CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
-            STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
-        ) VALUES (
-            p_coddespesa, v_centrocusto, r_aprov.sequsuario,
-            'LANCADO', SYSDATE, NULL, r_aprov.nivel_aprovacao
-        );
+        SELECT COUNT(*)
+          INTO v_qtd_aprovadores
+          FROM MEGAG_DESP_POLIT_CENTRO_CUSTO
+         WHERE CENTROCUSTO = v_cc.CENTROCUSTO
+           AND CODPOLITICA = v_codpolitica;
+
+        IF v_qtd_aprovadores = 0 THEN
+            RAISE_APPLICATION_ERROR(-20014,
+                'Nao ha aprovadores configurados para o centro de custo ' || v_cc.CENTROCUSTO || '.');
+        END IF;
+
+        FOR r_aprov IN (
+            SELECT sequsuario, nivel_aprovacao
+              FROM MEGAG_DESP_POLIT_CENTRO_CUSTO
+             WHERE CENTROCUSTO = v_cc.CENTROCUSTO
+               AND CODPOLITICA = v_codpolitica
+             ORDER BY NIVEL_APROVACAO
+        ) LOOP
+            INSERT INTO MEGAG_DESP_APROVACAO(
+                CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
+                STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
+            )
+            SELECT p_coddespesa, v_cc.CENTROCUSTO, r_aprov.sequsuario,
+                   'LANCADO', SYSDATE, NULL, r_aprov.nivel_aprovacao
+              FROM DUAL
+             WHERE NOT EXISTS (
+                   SELECT 1
+                     FROM MEGAG_DESP_APROVACAO apr
+                    WHERE apr.CODDESPESA       = p_coddespesa
+                      AND apr.CENTROCUSTO      = v_cc.CENTROCUSTO
+                      AND apr.USUARIOAPROVADOR = r_aprov.sequsuario
+                      AND apr.NIVEL_APROVACAO  = r_aprov.nivel_aprovacao
+             );
+        END LOOP;
     END LOOP;
 
     s_sfx     := 'success';
@@ -1043,6 +1080,53 @@ EXCEPTION
         s_tiporet := 'E';
         s_msg     := 'ATUALIZAR APROVACAO - Erro: ' || SQLERRM;
 END PRC_UPD_MEGAG_DESP_APROVACAO;
+
+PROCEDURE PRC_REGERAR_MEGAG_DESP_APROVACAO(
+    p_coddespesa IN MEGAG_DESP.CODDESPESA%TYPE,
+    s_sfx        OUT VARCHAR2,
+    s_ico        OUT VARCHAR2,
+    s_tiporet    OUT VARCHAR2,
+    s_msg        OUT VARCHAR2
+) AS
+    v_status MEGAG_DESP.STATUS%TYPE;
+BEGIN
+    SELECT STATUS
+      INTO v_status
+      FROM MEGAG_DESP
+     WHERE CODDESPESA = p_coddespesa;
+
+    IF v_status <> 'LANCADO' THEN
+        s_sfx     := 'warning';
+        s_ico     := 'warning';
+        s_tiporet := 'A';
+        s_msg     := 'Aprovacoes nao regeneradas: despesa ja esta em processo de aprovacao.';
+        RETURN;
+    END IF;
+
+    DELETE FROM MEGAG_DESP_APROVACAO
+     WHERE CODDESPESA = p_coddespesa;
+
+    PRC_INS_MEGAG_DESP_APROVACAO(
+        p_coddespesa => p_coddespesa,
+        s_sfx        => s_sfx,
+        s_ico        => s_ico,
+        s_tiporet    => s_tiporet,
+        s_msg        => s_msg
+    );
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        s_sfx     := 'warning';
+        s_ico     := 'warning';
+        s_tiporet := 'A';
+        s_msg     := 'REGERAR APROVACAO - Despesa nao encontrada.';
+    WHEN OTHERS THEN
+        ROLLBACK;
+        s_sfx     := 'error';
+        s_ico     := 'danger';
+        s_tiporet := 'E';
+        s_msg     := 'REGERAR APROVACAO - Erro: ' || SQLERRM;
+END PRC_REGERAR_MEGAG_DESP_APROVACAO;
 
 /* ==================================================
    FILE: ArquivoCRUD.sql
@@ -1491,6 +1575,18 @@ BEGIN
     )
     RETURNING CODRATEIO INTO p_codrateio;
 
+    PRC_REGERAR_MEGAG_DESP_APROVACAO(
+        p_coddespesa => p_coddespesa,
+        s_sfx        => s_sfx,
+        s_ico        => s_ico,
+        s_tiporet    => s_tiporet,
+        s_msg        => s_msg
+    );
+
+    IF s_tiporet <> 'S' THEN
+        RAISE_APPLICATION_ERROR(-20011, s_msg);
+    END IF;
+
     s_sfx     := 'success';
     s_ico     := 'success';
     s_tiporet := 'S';
@@ -1541,7 +1637,13 @@ PROCEDURE PRC_UPD_MEGAG_DESP_RATEIO(
     s_tiporet     OUT VARCHAR2,
     s_msg         OUT VARCHAR2
 ) AS
+    v_coddespesa MEGAG_DESP_RATEIO.CODDESPESA%TYPE;
 BEGIN
+    SELECT CODDESPESA
+      INTO v_coddespesa
+      FROM MEGAG_DESP_RATEIO
+     WHERE CODRATEIO = p_codrateio;
+
     UPDATE MEGAG_DESP_RATEIO
        SET VALORRATEIO = p_valorrateio
      WHERE CODRATEIO = p_codrateio;
@@ -1552,7 +1654,18 @@ BEGIN
         s_tiporet := 'A';
         s_msg     := 'Rateio não encontrado.';
     ELSE
-        COMMIT;
+        PRC_REGERAR_MEGAG_DESP_APROVACAO(
+            p_coddespesa => v_coddespesa,
+            s_sfx        => s_sfx,
+            s_ico        => s_ico,
+            s_tiporet    => s_tiporet,
+            s_msg        => s_msg
+        );
+
+        IF s_tiporet <> 'S' THEN
+            RAISE_APPLICATION_ERROR(-20012, s_msg);
+        END IF;
+
         s_sfx     := 'success';
         s_ico     := 'success';
         s_tiporet := 'S';
@@ -1575,7 +1688,13 @@ PROCEDURE PRC_DEL_MEGAG_DESP_RATEIO(
     s_tiporet   OUT VARCHAR2,
     s_msg       OUT VARCHAR2
 ) AS
+    v_coddespesa MEGAG_DESP_RATEIO.CODDESPESA%TYPE;
 BEGIN
+    SELECT CODDESPESA
+      INTO v_coddespesa
+      FROM MEGAG_DESP_RATEIO
+     WHERE CODRATEIO = p_codrateio;
+
     DELETE FROM MEGAG_DESP_RATEIO WHERE CODRATEIO = p_codrateio;
 
     IF SQL%ROWCOUNT = 0 THEN
@@ -1584,6 +1703,18 @@ BEGIN
         s_tiporet := 'A';
         s_msg     := 'Rateio não encontrado.';
     ELSE
+        PRC_REGERAR_MEGAG_DESP_APROVACAO(
+            p_coddespesa => v_coddespesa,
+            s_sfx        => s_sfx,
+            s_ico        => s_ico,
+            s_tiporet    => s_tiporet,
+            s_msg        => s_msg
+        );
+
+        IF s_tiporet <> 'S' THEN
+            RAISE_APPLICATION_ERROR(-20013, s_msg);
+        END IF;
+
         s_sfx     := 'success';
         s_ico     := 'success';
         s_tiporet := 'S';

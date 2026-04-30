@@ -222,6 +222,14 @@ PROCEDURE PRC_UPD_MEGAG_DESP_APROVACAO(
     s_msg         OUT VARCHAR2
 );
 
+PROCEDURE PRC_REGERAR_MEGAG_DESP_APROVACAO(
+    p_coddespesa IN CONSINCO.MEGAG_DESP.CODDESPESA%TYPE,
+    s_sfx        OUT VARCHAR2,
+    s_ico        OUT VARCHAR2,
+    s_tiporet    OUT VARCHAR2,
+    s_msg        OUT VARCHAR2
+);
+
 /* ==================================================
    FILE: ArquivoCRUD.sql
 ================================================== */

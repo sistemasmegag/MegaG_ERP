@@ -121,6 +121,44 @@ function resolve_politica_despesa(PDO $conn, int $centroCusto): int
     return (int) $rows[0];
 }
 
+function validate_politica_centros_despesa(PDO $conn, array $centrosCustoRaw, int $codPolitica): array
+{
+    $centros = [];
+    foreach ($centrosCustoRaw as $ccRaw) {
+        $cc = desp_extract_centro_custo($ccRaw);
+        if ($cc <= 0) {
+            throw new Exception('Centro de custo invalido no rateio.');
+        }
+        $centros[$cc] = $cc;
+    }
+
+    $sql = mg_with_schema("
+        SELECT COUNT(1)
+          FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO P
+          JOIN CONSINCO.MEGAG_DESP_APROVADORES A
+            ON A.CODGRUPO = P.CODGRUPO
+           AND A.CENTROCUSTO = P.CENTROCUSTO
+           AND A.SEQUSUARIO = P.SEQUSUARIO
+         WHERE P.CODPOLITICA = :CODPOL
+           AND P.CENTROCUSTO = :CC
+    ");
+    $st = $conn->prepare($sql);
+
+    foreach ($centros as $cc) {
+        $politicaCc = resolve_politica_despesa($conn, $cc);
+        if ($politicaCc !== $codPolitica) {
+            throw new Exception('Todos os centros de custo do rateio devem usar a mesma politica de aprovacao.');
+        }
+
+        $st->execute([':CODPOL' => $codPolitica, ':CC' => $cc]);
+        if ((int)($st->fetchColumn() ?: 0) === 0) {
+            throw new Exception('Nao ha aprovadores configurados para o centro de custo ' . $cc . ' nesta politica.');
+        }
+    }
+
+    return array_values($centros);
+}
+
 function resolve_session_sequsuario(PDO $conn, $sessionUser): int
 {
     if (is_numeric($sessionUser)) {
@@ -766,6 +804,7 @@ try {
             jexit(false, [], 'Centro de custo invalido.');
         }
         $cod_politica = resolve_politica_despesa($conn, $centro_custo);
+        validate_politica_centros_despesa($conn, $centros_custo_raw, $cod_politica);
 
         // USUARIO logado: para testes, enviamos 1 se não for numero
         $usr_solicitante = $sessionSeqUsuario;
@@ -975,20 +1014,28 @@ try {
             }
         }
 
-        $conn->exec('COMMIT');
-
         if ($out_id > 0) {
             try {
-                $sqlAproRecomp = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_APROVACAO(:ID, :S_SFX, :S_ICO, :S_TIPORET, :S_MSG); END;";
+                $sqlAproRecomp = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_REGERAR_MEGAG_DESP_APROVACAO(:ID, :S_SFX, :S_ICO, :S_TIPORET, :S_MSG); END;";
                 $stApr = $conn->prepare(mg_with_schema($sqlAproRecomp));
                 $stApr->bindValue(':ID', $out_id);
                 $p_sfx = ''; $p_ico = ''; $p_tiporet = ''; $p_msg = '';
                 desp_bind_pkg_status($stApr, $p_sfx, $p_ico, $p_tiporet, $p_msg);
                 $stApr->execute();
+                $pkgAprResult = desp_pkg_response($p_sfx, $p_ico, $p_tiporet, $p_msg);
+                if (desp_pkg_failed($pkgAprResult)) {
+                    jexit(false, [], $pkgAprResult['s_msg'] !== '' ? $pkgAprResult['s_msg'] : 'Falha ao gerar aprovacoes da despesa.');
+                }
             } catch (Exception $e) {
-                // Erro silencioso no recalculo para nao travar a criacao
+                try {
+                    $conn->exec('ROLLBACK');
+                } catch (Throwable $rollbackError) {
+                }
+                jexit(false, [], 'Falha ao gerar aprovacoes da despesa: ' . $e->getMessage());
             }
         }
+
+        $conn->exec('COMMIT');
 
         $solicitanteLogin = resolve_loginid_by_sequsuario($conn, $usr_solicitante);
         notify_pending_approvers_for_despesa(
