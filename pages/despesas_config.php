@@ -207,6 +207,93 @@ $paginaAtual = 'despesas_config';
         background: rgba(13, 110, 253, .02);
     }
 
+    .politicas-accordion {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 1.5rem;
+    }
+
+    .politica-accordion-item {
+        border: 1px solid var(--saas-border);
+        border-radius: 16px;
+        background: var(--saas-surface);
+        overflow: hidden;
+    }
+
+    .politica-accordion-button {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: var(--saas-text);
+        display: grid;
+        grid-template-columns: minmax(180px, 1.2fr) minmax(160px, .9fr) minmax(140px, .8fr) auto;
+        gap: 16px;
+        align-items: center;
+        padding: 16px 18px;
+        text-align: left;
+    }
+
+    .politica-accordion-button:hover {
+        background: rgba(13, 110, 253, .03);
+    }
+
+    .politica-accordion-button[aria-expanded="true"] {
+        background: rgba(13, 110, 253, .05);
+    }
+
+    .politica-summary-title {
+        font-size: 14px;
+        font-weight: 900;
+        color: var(--saas-text);
+    }
+
+    .politica-summary-muted {
+        font-size: 12px;
+        color: var(--saas-muted);
+        margin-top: 4px;
+    }
+
+    .politica-accordion-body {
+        border-top: 1px solid var(--saas-border);
+        padding: 0 18px 18px;
+    }
+
+    .politica-empty-state {
+        border: 1px dashed var(--saas-border);
+        border-radius: 16px;
+        color: var(--saas-muted);
+        font-weight: 700;
+        margin-top: 1.5rem;
+        padding: 28px;
+        text-align: center;
+    }
+
+    .config-search-wrap {
+        max-width: 420px;
+        position: relative;
+        width: 100%;
+    }
+
+    .config-search-wrap i {
+        color: var(--saas-muted);
+        left: 14px;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .config-search-input {
+        padding-left: 40px;
+    }
+
+    @media (max-width: 992px) {
+        .politica-accordion-button {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+    }
+
     .wizard-steps {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -377,18 +464,7 @@ $paginaAtual = 'despesas_config';
                 <button class="btn-primary-custom py-2 px-3" onclick="modalItem('Politica')">Nova Política</button>
             </div>
 
-            <table class="cfg-table" id="tablePoliticas">
-                <thead>
-                    <tr>
-                        <th>Grupo</th>
-                        <th>Centro de Custo</th>
-                        <th>Descrição</th>
-                        <th>Nível</th>
-                        <th style="width:80px;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div class="politicas-accordion" id="accordionPoliticas"></div>
         </div>
 
         <!-- TAB 2: APROVADORES / CENTRO DE CUSTO (MEGAG_DESP_APROVADORES) -->
@@ -642,6 +718,7 @@ $paginaAtual = 'despesas_config';
         codgrupo: '',
         nomegrupo: ''
     };
+    let aprovadoresCentroRows = [];
 
     function toastConfig(message, type = 'success') {
         let container = document.querySelector('.toast-container');
@@ -672,6 +749,219 @@ $paginaAtual = 'despesas_config';
         const toast = new bootstrap.Toast(toastEl, { delay: 4500 });
         toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
         toast.show();
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[char]));
+    }
+
+    function politicaRowKey(row) {
+        return String(row.CODPOLITICA || row.codpolitica || row.CODPOLIT_CC || row.codpolit_cc || '');
+    }
+
+    function groupPoliticas(rows = []) {
+        return Object.values((rows || []).reduce((acc, row) => {
+            const key = politicaRowKey(row);
+            if (!acc[key]) {
+                acc[key] = {
+                    codpolitica: row.CODPOLITICA || row.codpolitica || '',
+                    descricao: row.DESCRICAO || row.descricao || 'Política sem descrição',
+                    rows: []
+                };
+            }
+            acc[key].rows.push(row);
+            return acc;
+        }, {}));
+    }
+
+    function renderPoliticasAccordion(rows = []) {
+        const target = document.getElementById('accordionPoliticas');
+        if (!target) return;
+
+        const grupos = groupPoliticas(rows);
+        if (!grupos.length) {
+            target.innerHTML = '<div class="politica-empty-state">Nenhuma política cadastrada.</div>';
+            return;
+        }
+
+        target.innerHTML = grupos.map((politica, index) => {
+            const collapseId = `politicaCollapse_${politica.codpolitica || index}`;
+            const encodedPolitica = encodeURIComponent(JSON.stringify(politica)).replace(/'/g, '%27');
+            const centros = [...new Set(politica.rows.map(p => `${p.CODIGO_CC || p.CENTROCUSTO || '-'}${p.NOME_CC ? ' | ' + p.NOME_CC : ''}`))];
+            const gruposNomes = [...new Set(politica.rows.map(p => p.NOMEGRUPO || 'N/A'))];
+            const niveis = [...new Set(politica.rows.map(p => p.NIVEL_APROVACAO || 1))].sort((a, b) => Number(a) - Number(b));
+
+            return `
+                <div class="politica-accordion-item">
+                    <button class="politica-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}">
+                        <div>
+                            <div class="politica-summary-title">${escapeHtml(politica.descricao)}</div>
+                            <div class="politica-summary-muted">${politica.rows.length} aprovador(es) em ${niveis.length} nível(is)</div>
+                        </div>
+                        <div>
+                            <div class="politica-summary-title">${escapeHtml(gruposNomes.slice(0, 2).join(', '))}</div>
+                            <div class="politica-summary-muted">${gruposNomes.length} grupo(s)</div>
+                        </div>
+                        <div>
+                            <div class="politica-summary-title">${escapeHtml(centros[0] || '-')}</div>
+                            <div class="politica-summary-muted">${centros.length} centro(s) de custo</div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end gap-2">
+                            <span class="badge bg-light text-dark">Nível ${escapeHtml(niveis.join(', '))}</span>
+                            <i class="bi bi-chevron-down text-muted"></i>
+                        </div>
+                    </button>
+                    <div id="${collapseId}" class="collapse ${index === 0 ? 'show' : ''}" data-bs-parent="#accordionPoliticas">
+                        <div class="politica-accordion-body">
+                            <div class="d-flex justify-content-end gap-2 py-3">
+                                <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="abrirEdicaoPolitica('${encodedPolitica}')">Editar política</button>
+                            </div>
+                            <table class="cfg-table mt-0">
+                                <thead>
+                                    <tr>
+                                        <th>Grupo</th>
+                                        <th>Centro de Custo</th>
+                                        <th>Aprovador</th>
+                                        <th>Nível</th>
+                                        <th style="width:80px;">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${politica.rows.map(p => `
+                                        <tr>
+                                            <td class="text-muted small">${escapeHtml(p.NOMEGRUPO || 'N/A')}</td>
+                                            <td><div class="fw-bold">${escapeHtml(p.CODIGO_CC || p.CENTROCUSTO)}</div><div class="small text-muted">${escapeHtml(p.NOME_CC || '')}</div></td>
+                                            <td><div class="fw-bold">${escapeHtml(p.NOME_USUARIO || 'Usuário não identificado')}</div></td>
+                                            <td><span class="badge bg-light text-dark">Nível ${escapeHtml(p.NIVEL_APROVACAO || 1)}</span></td>
+                                            <td><button class="btn btn-sm btn-light p-1 text-danger" onclick="deletarItem('del_politica', ${Number(p.CODPOLIT_CC || 0)})"><i class="bi bi-trash"></i></button></td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    function groupAprovadoresCentro(rows = []) {
+        return Object.values((rows || []).reduce((acc, row) => {
+            const key = `${row.CODGRUPO || row.codgrupo || ''}|${row.CENTROCUSTO || row.centrocusto || ''}`;
+            if (!acc[key]) {
+                acc[key] = {
+                    codgrupo: row.CODGRUPO || row.codgrupo || '',
+                    centroCusto: row.CENTROCUSTO || row.centrocusto || '-',
+                    nomeCentro: row.NOME_CC || row.nome_cc || '',
+                    nomeGrupo: row.NOMEGRUPO || row.nomegrupo || '-',
+                    aprovadores: []
+                };
+            }
+            acc[key].aprovadores.push({
+                sequsuario: row.SEQUSUARIO || row.sequsuario || '',
+                nome: row.GESTOR || row.gestor || '-',
+                data: row.DATA_VINCULO || row.data_vinculo || '-'
+            });
+            return acc;
+        }, {}));
+    }
+
+    function renderAprovadoresAccordion(rows = []) {
+        const target = document.getElementById('accordionCentroCustos');
+        if (!target) return;
+
+        const busca = (document.getElementById('buscaCentroCustos')?.value || '').trim().toLowerCase();
+        const grupos = groupAprovadoresCentro(rows).filter(item => {
+            const searchable = [
+                item.centroCusto,
+                item.nomeCentro,
+                item.nomeGrupo,
+                ...item.aprovadores.map(a => a.nome)
+            ].join(' ').toLowerCase();
+            return !busca || searchable.includes(busca);
+        });
+
+        if (!grupos.length) {
+            target.innerHTML = '<div class="politica-empty-state">Nenhum aprovador encontrado.</div>';
+            return;
+        }
+
+        target.innerHTML = grupos.map((item, index) => {
+            const collapseId = `aprovCentroCollapse_${String(item.codgrupo || 'semgrupo')}_${String(item.centroCusto).replace(/\W/g, '')}_${index}`;
+            const grupoEsc = String(item.nomeGrupo).replace(/'/g, "\\'");
+            return `
+                <div class="politica-accordion-item">
+                    <button class="politica-accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}">
+                        <div>
+                            <div class="politica-summary-title">${escapeHtml(item.centroCusto)}</div>
+                            <div class="politica-summary-muted">${escapeHtml(item.nomeCentro || 'Centro sem descrição')}</div>
+                        </div>
+                        <div>
+                            <div class="politica-summary-title">${escapeHtml(item.nomeGrupo)}</div>
+                            <div class="politica-summary-muted">Grupo</div>
+                        </div>
+                        <div>
+                            <div class="politica-summary-title">${item.aprovadores.length} aprovador(es)</div>
+                            <div class="politica-summary-muted">${escapeHtml(item.aprovadores.slice(0, 2).map(a => a.nome).join(', '))}</div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-end gap-2">
+                            <span class="badge bg-light text-dark">${item.aprovadores.length} pessoa(s)</span>
+                            <i class="bi bi-chevron-down text-muted"></i>
+                        </div>
+                    </button>
+                    <div id="${collapseId}" class="collapse ${index === 0 ? 'show' : ''}" data-bs-parent="#accordionCentroCustos">
+                        <div class="politica-accordion-body">
+                            <div class="d-flex justify-content-end gap-2 py-3">
+                                <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="abrirEdicaoCentroCusto('${item.codgrupo || ''}', '${item.centroCusto}', '${grupoEsc}')">Editar</button>
+                                <button class="btn btn-sm btn-light border text-danger rounded-pill px-3" onclick="excluirCentroCustoVinculado('${item.codgrupo || ''}', '${item.centroCusto}', '${grupoEsc}')">Excluir</button>
+                            </div>
+                            <table class="cfg-table mt-0">
+                                <thead>
+                                    <tr>
+                                        <th>Aprovador</th>
+                                        <th>Data Vinculação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${item.aprovadores.map(aprov => `
+                                        <tr>
+                                            <td><div class="fw-bold">${escapeHtml(aprov.nome)}</div></td>
+                                            <td class="text-muted">${escapeHtml(aprov.data)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    function filtrarAprovadoresCentro() {
+        renderAprovadoresAccordion(aprovadoresCentroRows);
+    }
+
+    function ensureAprovadoresAccordionLayout() {
+        const tab = document.getElementById('tabCentroCustos');
+        if (!tab) return;
+
+        tab.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <h5 class="fw-bold m-0"><i class="bi bi-people-fill text-primary me-2"></i> Aprovadores</h5>
+                <button class="btn-primary-custom py-2 px-3" onclick="modalItem('Aprovador')">Vincular Aprovador</button>
+            </div>
+            <div class="d-flex justify-content-end mb-3">
+                <div class="config-search-wrap">
+                    <i class="bi bi-search"></i>
+                    <input type="search" class="saas-input config-search-input" id="buscaCentroCustos" placeholder="Buscar por aprovador, C.C, nome do C.C ou grupo..." oninput="filtrarAprovadoresCentro()">
+                </div>
+            </div>
+            <div class="politicas-accordion" id="accordionCentroCustos"></div>`;
     }
 
     function resetWizardState() {
@@ -1424,6 +1714,69 @@ $paginaAtual = 'despesas_config';
         await syncPoliticaEdit(aprovadorValue, nivelValue);
     }
 
+    async function abrirEdicaoPolitica(encodedPolitica) {
+        let politica = null;
+        try {
+            politica = JSON.parse(decodeURIComponent(encodedPolitica));
+        } catch (e) {
+            alert('Nao foi possivel carregar a politica para edicao.');
+            return;
+        }
+
+        const rows = Array.isArray(politica.rows) ? politica.rows : [politica];
+        const firstRow = rows[0] || {};
+        editingPolitica = {
+            codpolitica: politica.codpolitica || firstRow.CODPOLITICA || firstRow.codpolitica || '',
+            rows
+        };
+        modalMode = 'PoliticaEdit';
+
+        const title = document.getElementById('modalConfigTitle');
+        const body = document.getElementById('modalConfigBody');
+        title.innerHTML = 'Editar Política';
+        body.innerHTML = `
+            <div class="mb-4">
+                <label class="saas-label">Descrição da Regra (Nome da Política)</label>
+                <input type="text" class="saas-input" id="fPolDesc" placeholder="Ex: Política de Despesas TI">
+            </div>
+
+            <div class="mb-3 border-top pt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold m-0"><i class="bi bi-layers-fill text-primary me-2"></i> Níveis de Aprovação</h6>
+                    <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-2" onclick="appendPoliticaNivelRow('fPolNiveisContainer')">
+                        <i class="bi bi-plus-circle me-1"></i> Adicionar Nível
+                    </button>
+                </div>
+                <div id="fPolNiveisContainer"></div>
+                <div class="small text-muted mt-2">A edição salva a política inteira, substituindo os vínculos pelos níveis informados abaixo.</div>
+            </div>`;
+
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalConfig')).show();
+        document.getElementById('fPolDesc').value = politica.descricao || firstRow.DESCRICAO || firstRow.descricao || '';
+
+        const groupedRows = Object.values(rows.reduce((acc, row) => {
+            const key = `${row.NIVEL_APROVACAO || row.nivel_aprovacao || 1}|${row.CODGRUPO || row.codgrupo || ''}`;
+            if (!acc[key]) {
+                acc[key] = {
+                    nivel: row.NIVEL_APROVACAO || row.nivel_aprovacao || 1,
+                    grupo: row.CODGRUPO || row.codgrupo || '',
+                    aprovadores: []
+                };
+            }
+            acc[key].aprovadores.push({
+                sequsuario: row.SEQUSUARIO || row.sequsuario || '',
+                centro_custo: row.CODIGO_CC || row.CENTROCUSTO || row.centrocusto || ''
+            });
+            return acc;
+        }, {}));
+
+        const container = document.getElementById('fPolNiveisContainer');
+        container.innerHTML = '';
+        for (const item of groupedRows) {
+            await appendPoliticaNivelRow('fPolNiveisContainer', item);
+        }
+    }
+
     async function carregarDomDinamico(idCc, idGrupo, idUsu = null) {
          try {
              let res = await fetch('api/api_despesas_config.php', {
@@ -1493,19 +1846,20 @@ $paginaAtual = 'despesas_config';
         appendPoliticaNivelRow(containerId);
     }
 
-    async function appendPoliticaNivelRow(containerId) {
+    async function appendPoliticaNivelRow(containerId, data = null) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
         const idx = container.querySelectorAll('.politica-nivel-row').length + 1;
         const rowId = 'polNivel_' + Date.now() + '_' + idx;
+        const nivelValue = data?.nivel || idx;
 
         const rowHtml = `
             <div class="card p-3 mb-3 border-dashed politica-nivel-row" id="${rowId}" style="border: 1px dashed var(--saas-border); border-radius: 16px; background: rgba(13, 110, 253, .01);">
                 <div class="row g-3">
                     <div class="col-md-2">
                         <label class="saas-label">Nível</label>
-                        <input type="number" class="saas-input pol-nivel-num" value="${idx}" min="1">
+                        <input type="number" class="saas-input pol-nivel-num" value="${nivelValue}" min="1">
                     </div>
                     <div class="col-md-4">
                         <label class="saas-label">Grupo</label>
@@ -1565,6 +1919,17 @@ $paginaAtual = 'despesas_config';
 
         if (selGrupo?.tomselect) {
             selGrupo.tomselect.on('change', syncAprovs);
+            if (data?.grupo) {
+                selGrupo.tomselect.setValue(String(data.grupo), true);
+                await syncAprovs();
+            }
+        }
+
+        if (data?.aprovadores?.length) {
+            const selectedValues = data.aprovadores
+                .map(aprov => `${aprov.sequsuario}|${aprov.centro_custo}`)
+                .filter(v => !v.startsWith('|'));
+            tsAprovs.setValue(selectedValues, true);
         }
     }
 
@@ -1718,19 +2083,7 @@ $paginaAtual = 'despesas_config';
             let r = await fetch('api/api_despesas_config.php', { method: 'POST', body: JSON.stringify({action: 'list_politicas'}) });
             let j = await r.json();
             if (j.sucesso) {
-                let tb = document.querySelector('#tablePoliticas tbody');
-                tb.innerHTML = j.dados?.map(p => `<tr>
-                    <td class="text-muted small">${p.NOMEGRUPO || 'N/A'}</td>
-                    <td><div class="fw-bold">${p.CODIGO_CC || p.CENTROCUSTO}</div><div class="small text-muted">${p.NOME_CC}</div></td>
-                    <td><div>${p.DESCRICAO}</div><div class="small text-muted">${p.NOME_USUARIO || 'Usuário não identificado'}</div></td>
-                    <td><span class="badge bg-light text-dark">Nível ${p.NIVEL_APROVACAO}</span></td>
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="abrirEdicaoPolitica('${encodeURIComponent(JSON.stringify(p))}')">Editar</button>
-                            <button class="btn btn-sm btn-light p-1 text-danger" onclick="deletarItem('del_politica', ${p.CODPOLIT_CC})"><i class="bi bi-trash"></i></button>
-                        </div>
-                    </td>
-                </tr>`).join('') || '';
+                renderPoliticasAccordion(j.dados || []);
             }
         } catch(e) {}
 
@@ -1750,41 +2103,8 @@ $paginaAtual = 'despesas_config';
                     <td><button class="btn btn-sm btn-light p-1 text-danger" onclick="deletarItem('del_aprovador', null, '${a.GESTOR}')"><i class="bi bi-x"></i></button></td>
                 </tr>`).join('') || '';
 
-                let tbc = document.querySelector('#tableCentroCustos tbody');
-                if (tbc) {
-                    const groupedCc = Object.values((ja.dados || []).reduce((acc, row) => {
-                        const key = `${row.CODGRUPO || ''}|${row.CENTROCUSTO || ''}`;
-                        if (!acc[key]) {
-                            acc[key] = {
-                                codgrupo: row.CODGRUPO || row.codgrupo || '',
-                                centroCusto: row.CENTROCUSTO || '-',
-                                nomeGrupo: row.NOMEGRUPO || '-',
-                                aprovadores: []
-                            };
-                        }
-                        acc[key].aprovadores.push(row.GESTOR || '-');
-                        return acc;
-                    }, {}));
-
-                    tbc.innerHTML = groupedCc.map(item => `<tr>
-                        <td><div class="fw-bold">${item.centroCusto}</div></td>
-                        <td><span class="badge bg-primary" style="font-size:10px;">${item.nomeGrupo}</span></td>
-                        <td>
-                            <div class="d-flex flex-column gap-1">
-                                ${item.aprovadores.map(nome => `<span class="fw-bold">${nome}</span>`).join('')}
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center justify-content-between gap-2">
-                                <span class="badge bg-light text-dark">${item.aprovadores.length} aprovador(es)</span>
-                                <div class="d-flex align-items-center gap-2">
-                                    <button class="btn btn-sm btn-light border rounded-pill px-3" onclick="abrirEdicaoCentroCusto('${item.codgrupo || ''}', '${item.centroCusto}', '${String(item.nomeGrupo).replace(/'/g, "\\'")}')">Editar</button>
-                                    <button class="btn btn-sm btn-light border text-danger rounded-pill px-3" onclick="excluirCentroCustoVinculado('${item.codgrupo || ''}', '${item.centroCusto}', '${String(item.nomeGrupo).replace(/'/g, "\\'")}')">Excluir</button>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>`).join('') || '';
-                }
+                aprovadoresCentroRows = ja.dados || [];
+                renderAprovadoresAccordion(aprovadoresCentroRows);
             }
         } catch(e) {}
     }
@@ -1853,6 +2173,8 @@ $paginaAtual = 'despesas_config';
             tabAprovadores.insertAdjacentElement('afterend', tabCentroCustos);
         }
 
+        ensureAprovadoresAccordionLayout();
+
         const tabFluxos = document.getElementById('tabFluxos');
         if (tabFluxos) {
             const fluxoAtivo = tabFluxos.classList.contains('active');
@@ -1893,26 +2215,17 @@ $paginaAtual = 'despesas_config';
             };
         } else if (modalMode === 'PoliticaEdit') {
             const desc = document.getElementById('fPolDesc').value;
-            const grupoEl = document.getElementById('fPolGrupo');
-            const ccEl = document.getElementById('fPolCc');
-            
-            const grupo = grupoEl?.tomselect ? grupoEl.tomselect.getValue() : grupoEl?.value;
-            const ccValue = ccEl?.tomselect ? ccEl.tomselect.getValue() : ccEl?.value;
-            const aprovadores = await collectPoliticaAprovadores('fPolAprovadores');
+            const niveis = collectPoliticaNiveis();
 
-            if (!desc || !grupo || !ccValue || !aprovadores.length) {
+            if (!desc || !niveis.length || !editingPolitica?.codpolitica) {
                 return alert('Preencha todos os campos obrigatórios.');
             }
 
             payload = {
-                action: 'edit_politica',
-                id: editingPolitica.CODPOLIT_CC,
-                codpolitica: editingPolitica.CODPOLITICA,
-                codgrupo: grupo,
-                centro_custo: ccValue,
+                action: 'update_politica_lote',
+                codpolitica: editingPolitica.codpolitica,
                 descricao: desc,
-                sequsuario: aprovadores[0].sequsuario,
-                nivel: aprovadores[0].nivel
+                niveis: niveis
             };
         } else if (modalMode === 'Aprovador') {
             const ccEl = document.getElementById('fCcAprov');

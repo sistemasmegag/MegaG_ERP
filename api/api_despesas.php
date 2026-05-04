@@ -23,7 +23,7 @@ function jexit($ok, $data = [], $erro = null)
         'sucesso' => (bool) $ok,
         'dados' => $ok ? ($data['dados'] ?? null) : null,
         'erro' => $ok ? null : ($erro ?? 'Erro desconhecido'),
-    ], JSON_UNESCAPED_UNICODE);
+    ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
     exit;
 }
 
@@ -51,7 +51,7 @@ register_shutdown_function(static function (): void {
         'sucesso' => false,
         'dados' => null,
         'erro' => (string)($error['message'] ?? 'Erro fatal inesperado.'),
-    ], JSON_UNESCAPED_UNICODE);
+    ], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
 });
 
 function body_json()
@@ -121,7 +121,7 @@ function resolve_politica_despesa(PDO $conn, int $centroCusto): int
     return (int) $rows[0];
 }
 
-function validate_politica_centros_despesa(PDO $conn, array $centrosCustoRaw, int $codPolitica): array
+function validate_politica_centros_despesa(PDO $conn, array $centrosCustoRaw, int $codPolitica, bool $validarPoliticaUnica = true): array
 {
     $centros = [];
     foreach ($centrosCustoRaw as $ccRaw) {
@@ -135,27 +135,40 @@ function validate_politica_centros_despesa(PDO $conn, array $centrosCustoRaw, in
         $centros[$cc] = $cc;
     }
 
-    $sql = mg_with_schema("
+    $sqlPoliticaCc = mg_with_schema("
+        SELECT COUNT(1)
+          FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO
+         WHERE CENTROCUSTO = :CC
+    ");
+    $stPoliticaCc = $conn->prepare($sqlPoliticaCc);
+
+    $sqlAprovadores = mg_with_schema("
         SELECT COUNT(1)
           FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO P
           JOIN CONSINCO.MEGAG_DESP_APROVADORES A
             ON A.CODGRUPO = P.CODGRUPO
            AND A.CENTROCUSTO = P.CENTROCUSTO
-           AND A.SEQUSUARIO = P.SEQUSUARIO
          WHERE P.CODPOLITICA = :CODPOL
            AND P.CENTROCUSTO = :CC
     ");
-    $st = $conn->prepare($sql);
+    $stAprovadores = $conn->prepare($sqlAprovadores);
 
     foreach ($centros as $cc) {
-        $politicaCc = resolve_politica_despesa($conn, $cc);
-        if ($politicaCc !== $codPolitica) {
-            throw new Exception('Todos os centros de custo do rateio devem usar a mesma politica de aprovacao.');
+        $stPoliticaCc->execute([':CC' => $cc]);
+        if ((int)($stPoliticaCc->fetchColumn() ?: 0) === 0) {
+            throw new Exception('Nao ha politica para o centro de custo ' . $cc . ' informado.');
         }
 
-        $st->execute([':CODPOL' => $codPolitica, ':CC' => $cc]);
-        if ((int)($st->fetchColumn() ?: 0) === 0) {
-            throw new Exception('Nao ha aprovadores configurados para o centro de custo ' . $cc . ' nesta politica.');
+        if ($validarPoliticaUnica) {
+            $politicaCc = resolve_politica_despesa($conn, $cc);
+            if ($politicaCc !== $codPolitica) {
+                throw new Exception('Todos os centros de custo do rateio devem usar a mesma politica de aprovacao.');
+            }
+        }
+
+        $stAprovadores->execute([':CODPOL' => $codPolitica, ':CC' => $cc]);
+        if ((int)($stAprovadores->fetchColumn() ?: 0) === 0) {
+            throw new Exception('Nao ha aprovadores para a politica selecionada e centro de custo ' . $cc . '.');
         }
     }
 
@@ -452,81 +465,39 @@ function process_approval_action(PDO $conn, int $codDespesa, int $seqUsuario, st
     }
 
     try {
-        $status = strtoupper($status) === 'REJEITADO' ? 'REJEITADO' : 'APROVADO';
+        $statusUpper = strtoupper($status);
+        $statusPkg = in_array($statusUpper, ['REJEITADO', 'REPROVADO'], true) ? 'REJEITADO' : 'APROVADO';
 
-        $sqlUpdate = mg_with_schema("
-            UPDATE CONSINCO.MEGAG_DESP_APROVACAO A
-               SET A.STATUS = :STATUS,
-                   A.DTAACAO = SYSDATE,
-                   A.OBSERVACAO = :OBS
-             WHERE A.CODDESPESA = :ID
-               AND A.USUARIOAPROVADOR = :USU
-               AND A.STATUS = 'LANCADO'
-               AND A.NIVEL_APROVACAO = (
-                    SELECT MIN(P.NIVEL_APROVACAO)
-                      FROM CONSINCO.MEGAG_DESP_APROVACAO P
-                     WHERE P.CODDESPESA = A.CODDESPESA
-                       AND P.CENTROCUSTO = A.CENTROCUSTO
-                       AND P.STATUS = 'LANCADO'
-               )
-        ");
-        $st = $conn->prepare($sqlUpdate);
-        $st->bindValue(':STATUS', $status);
-        $st->bindValue(':OBS', $observacao !== '' ? $observacao : null);
+        $sqlPkg = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_UPD_MEGAG_DESP_APROVACAO(
+                    p_coddespesa => :ID,
+                    p_sequsuario => :USU,
+                    p_status => :STATUS,
+                    p_pago => :PAGO,
+                    p_observacao => :OBS,
+                    s_sfx => :S_SFX,
+                    s_ico => :S_ICO,
+                    s_tiporet => :S_TIPORET,
+                    s_msg => :S_MSG
+                ); END;";
+        $st = $conn->prepare(mg_with_schema($sqlPkg));
         $st->bindValue(':ID', $codDespesa, PDO::PARAM_INT);
         $st->bindValue(':USU', $seqUsuario, PDO::PARAM_INT);
+        $st->bindValue(':STATUS', $statusPkg);
+        $st->bindValue(':PAGO', strtoupper($pago) === 'S' ? 'S' : 'N');
+        $st->bindValue(':OBS', $observacao !== '' ? $observacao : null);
+        $pkgSfx = '';
+        $pkgIco = '';
+        $pkgTipoRet = '';
+        $pkgMsg = '';
+        desp_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
+        $pkgResult = desp_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
 
-        if ($st->rowCount() <= 0) {
-            throw new Exception('Sem permissao ou fora da ordem de aprovacao.');
+        if (desp_pkg_failed($pkgResult) || is_update_approval_error_message($pkgResult['s_msg'] ?? '')) {
+            throw new Exception($pkgResult['s_msg'] !== '' ? $pkgResult['s_msg'] : 'Sem permissao ou fora da ordem de aprovacao.');
         }
 
-        if ($status === 'REJEITADO') {
-            $stDesp = $conn->prepare(mg_with_schema("
-                UPDATE CONSINCO.MEGAG_DESP
-                   SET STATUS = 'REJEITADO',
-                       DTAALTERACAO = SYSDATE
-                 WHERE CODDESPESA = :ID
-            "));
-            $stDesp->execute([':ID' => $codDespesa]);
-            $conn->exec('COMMIT');
-            return 'Despesa rejeitada com sucesso.';
-        }
-
-        $stRestante = $conn->prepare(mg_with_schema("
-            SELECT COUNT(1)
-              FROM CONSINCO.MEGAG_DESP_APROVACAO
-             WHERE CODDESPESA = :ID
-               AND STATUS = 'LANCADO'
-        "));
-        $stRestante->execute([':ID' => $codDespesa]);
-        $restante = (int)($stRestante->fetchColumn() ?: 0);
-
-        if ($restante === 0) {
-            $stDesp = $conn->prepare(mg_with_schema("
-                UPDATE CONSINCO.MEGAG_DESP
-                   SET STATUS = 'APROVADO',
-                       PAGO = :PAGO,
-                       DTAALTERACAO = SYSDATE
-                 WHERE CODDESPESA = :ID
-            "));
-            $stDesp->execute([
-                ':PAGO' => strtoupper($pago) === 'S' ? 'S' : 'N',
-                ':ID' => $codDespesa,
-            ]);
-            $conn->exec('COMMIT');
-            return 'Despesa aprovada com sucesso.';
-        }
-
-        $stDesp = $conn->prepare(mg_with_schema("
-            UPDATE CONSINCO.MEGAG_DESP
-               SET STATUS = 'APROVACAO',
-                   DTAALTERACAO = SYSDATE
-             WHERE CODDESPESA = :ID
-        "));
-        $stDesp->execute([':ID' => $codDespesa]);
-        $conn->exec('COMMIT');
-        return 'Aprovacao registrada. Aguardando proximos niveis.';
+        return $pkgResult['s_msg'] !== '' ? $pkgResult['s_msg'] : 'Aprovacao processada com sucesso.';
     } catch (Throwable $e) {
         try {
             $conn->exec('ROLLBACK');
@@ -625,6 +596,42 @@ try {
         $stForn->execute();
 
         jexit(true, ['dados' => $stForn->fetchAll(PDO::FETCH_ASSOC)]);
+    }
+
+    if ($action === 'search_politicas') {
+        $q = trim((string)($req['q'] ?? ''));
+        if (mb_strlen($q) < 3) {
+            jexit(true, ['dados' => []]);
+        }
+
+        $sql = "
+            SELECT *
+              FROM (
+                    SELECT P.CODPOLITICA,
+                           MAX(NVL(POL.DESCRICAO, P.DESCRICAO)) AS DESCRICAO,
+                           MIN(P.CENTROCUSTO) AS CENTROCUSTO_EXEMPLO,
+                           MIN(C.DESCRICAO) AS NOME_CC_EXEMPLO,
+                           COUNT(DISTINCT P.CENTROCUSTO) AS QTD_CCS
+                      FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO P
+                      LEFT JOIN CONSINCO.MEGAG_DESP_POLITICA POL ON POL.CODPOLITICA = P.CODPOLITICA
+                      LEFT JOIN CONSINCO.ABA_CENTRORESULTADO C ON C.CENTRORESULTADO = P.CENTROCUSTO
+                      LEFT JOIN CONSINCO.MEGAG_DESP_GRUPO G ON G.CODGRUPO = P.CODGRUPO
+                     WHERE UPPER(NVL(POL.DESCRICAO, P.DESCRICAO)) LIKE UPPER(:Q)
+                        OR TO_CHAR(P.CODPOLITICA) LIKE :Q
+                        OR TO_CHAR(P.CENTROCUSTO) LIKE :Q
+                        OR UPPER(NVL(C.DESCRICAO, '')) LIKE UPPER(:Q)
+                        OR UPPER(NVL(G.NOMEGRUPO, '')) LIKE UPPER(:Q)
+                     GROUP BY P.CODPOLITICA
+                     ORDER BY MAX(NVL(POL.DESCRICAO, P.DESCRICAO))
+              )
+             WHERE ROWNUM <= 30
+        ";
+        $stPol = $conn->prepare(mg_with_schema($sql));
+        $like = '%' . $q . '%';
+        $stPol->bindValue(':Q', $like);
+        $stPol->execute();
+
+        jexit(true, ['dados' => $stPol->fetchAll(PDO::FETCH_ASSOC)]);
     }
 
     if ($action === 'create_fornecedor') {
@@ -807,8 +814,9 @@ try {
         if ($centro_custo <= 0) {
             jexit(false, [], 'Centro de custo invalido.');
         }
-        $cod_politica = resolve_politica_despesa($conn, $centro_custo);
-        $centros_custo_raw = validate_politica_centros_despesa($conn, $centros_custo_raw, $cod_politica);
+        $cod_politica_req = (int)($req['codpolitica'] ?? $req['politica'] ?? 0);
+        $cod_politica = $cod_politica_req > 0 ? $cod_politica_req : resolve_politica_despesa($conn, $centro_custo);
+        $centros_custo_raw = validate_politica_centros_despesa($conn, $centros_custo_raw, $cod_politica, $cod_politica_req <= 0);
 
         // USUARIO logado: para testes, enviamos 1 se não for numero
         $usr_solicitante = $sessionSeqUsuario;
@@ -1018,27 +1026,6 @@ try {
             }
         }
 
-        if ($out_id > 0) {
-            try {
-                $sqlAproRecomp = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_REGERAR_MEGAG_DESP_APROVACAO(:ID, :S_SFX, :S_ICO, :S_TIPORET, :S_MSG); END;";
-                $stApr = $conn->prepare(mg_with_schema($sqlAproRecomp));
-                $stApr->bindValue(':ID', $out_id);
-                $p_sfx = ''; $p_ico = ''; $p_tiporet = ''; $p_msg = '';
-                desp_bind_pkg_status($stApr, $p_sfx, $p_ico, $p_tiporet, $p_msg);
-                $stApr->execute();
-                $pkgAprResult = desp_pkg_response($p_sfx, $p_ico, $p_tiporet, $p_msg);
-                if (desp_pkg_failed($pkgAprResult)) {
-                    jexit(false, [], $pkgAprResult['s_msg'] !== '' ? $pkgAprResult['s_msg'] : 'Falha ao gerar aprovacoes da despesa.');
-                }
-            } catch (Exception $e) {
-                try {
-                    $conn->exec('ROLLBACK');
-                } catch (Throwable $rollbackError) {
-                }
-                jexit(false, [], 'Falha ao gerar aprovacoes da despesa: ' . $e->getMessage());
-            }
-        }
-
         $conn->exec('COMMIT');
 
         $solicitanteLogin = resolve_loginid_by_sequsuario($conn, $usr_solicitante);
@@ -1153,7 +1140,98 @@ try {
         $usr_aprovador = $sessionSeqUsuario;
 
         // Query direta adaptada da lógica da procedure para evitar erros de cursor no driver pdo_oci
-        $sql = "SELECT desp.*,
+        $sql = "WITH actionable AS (
+                    SELECT l.CODDESPESA,
+                           l.CENTROCUSTO,
+                           l.NIVEL_APROVACAO
+                      FROM CONSINCO.MEGAG_DESP_APROVACAO l
+                      JOIN CONSINCO.MEGAG_DESP d ON d.CODDESPESA = l.CODDESPESA
+                      JOIN CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p
+                        ON p.CODPOLITICA = d.CODPOLITICA
+                       AND p.CENTROCUSTO = l.CENTROCUSTO
+                       AND p.SEQUSUARIO = l.USUARIOAPROVADOR
+                       AND p.NIVEL_APROVACAO = l.NIVEL_APROVACAO
+                     WHERE l.USUARIOAPROVADOR = :U
+                       AND l.STATUS = 'LANCADO'
+                       AND NOT EXISTS (
+                           SELECT 1
+                             FROM CONSINCO.MEGAG_DESP_APROVACAO a
+                            WHERE a.CODDESPESA = l.CODDESPESA
+                              AND a.CENTROCUSTO = l.CENTROCUSTO
+                              AND a.NIVEL_APROVACAO = l.NIVEL_APROVACAO
+                              AND a.STATUS = 'APROVADO'
+                              AND EXISTS (
+                                  SELECT 1
+                                    FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p2
+                                   WHERE p2.CODPOLITICA = d.CODPOLITICA
+                                     AND p2.CENTROCUSTO = l.CENTROCUSTO
+                                     AND p2.CODGRUPO = p.CODGRUPO
+                                     AND p2.SEQUSUARIO = a.USUARIOAPROVADOR
+                              )
+                       )
+                       AND NOT EXISTS (
+                           SELECT 1
+                             FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO prev
+                            WHERE prev.CODPOLITICA = d.CODPOLITICA
+                              AND prev.CENTROCUSTO = l.CENTROCUSTO
+                              AND prev.NIVEL_APROVACAO < l.NIVEL_APROVACAO
+                              AND NOT EXISTS (
+                                  SELECT 1
+                                    FROM CONSINCO.MEGAG_DESP_APROVACAO a_prev
+                                   WHERE a_prev.CODDESPESA = l.CODDESPESA
+                                     AND a_prev.CENTROCUSTO = prev.CENTROCUSTO
+                                     AND a_prev.NIVEL_APROVACAO = prev.NIVEL_APROVACAO
+                                     AND a_prev.STATUS = 'APROVADO'
+                                     AND EXISTS (
+                                         SELECT 1
+                                           FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p_prev
+                                          WHERE p_prev.CODPOLITICA = prev.CODPOLITICA
+                                            AND p_prev.CENTROCUSTO = prev.CENTROCUSTO
+                                            AND p_prev.CODGRUPO = prev.CODGRUPO
+                                            AND p_prev.SEQUSUARIO = a_prev.USUARIOAPROVADOR
+                                     )
+                              )
+                       )
+                  ),
+                  hist AS (
+                    SELECT x.CODDESPESA,
+                           MIN(x.CENTROCUSTO_APROVACAO) AS CENTROCUSTO_APROVACAO,
+                           MIN(x.NIVEL_PENDENTE) AS NIVEL_PENDENTE,
+                           MAX(x.TEM_PENDENTE) AS TEM_PENDENTE,
+                           MAX(x.APROVOU_HOJE) AS APROVOU_HOJE,
+                           MAX(x.REPROVOU_HOJE) AS REPROVOU_HOJE,
+                           CASE
+                               WHEN MAX(x.TEM_REJEITADO) = 1 THEN 'REJEITADO'
+                               WHEN MAX(x.TEM_PENDENTE) = 1 THEN 'LANCADO'
+                               WHEN MAX(x.TEM_APROVADO) = 1 THEN 'APROVADO'
+                               ELSE 'LANCADO'
+                           END AS STATUS_APROVADOR
+                      FROM (
+                            SELECT CODDESPESA,
+                                   CENTROCUSTO AS CENTROCUSTO_APROVACAO,
+                                   NIVEL_APROVACAO AS NIVEL_PENDENTE,
+                                   1 AS TEM_PENDENTE,
+                                   0 AS APROVOU_HOJE,
+                                   0 AS REPROVOU_HOJE,
+                                   0 AS TEM_APROVADO,
+                                   0 AS TEM_REJEITADO
+                              FROM actionable
+                            UNION ALL
+                            SELECT CODDESPESA,
+                                   NULL AS CENTROCUSTO_APROVACAO,
+                                   NULL AS NIVEL_PENDENTE,
+                                   0 AS TEM_PENDENTE,
+                                   CASE WHEN STATUS = 'APROVADO' AND TRUNC(DTAACAO) = TRUNC(SYSDATE) THEN 1 ELSE 0 END AS APROVOU_HOJE,
+                                   CASE WHEN STATUS IN ('REJEITADO', 'REPROVADO') AND TRUNC(DTAACAO) = TRUNC(SYSDATE) THEN 1 ELSE 0 END AS REPROVOU_HOJE,
+                                   CASE WHEN STATUS = 'APROVADO' THEN 1 ELSE 0 END AS TEM_APROVADO,
+                                   CASE WHEN STATUS IN ('REJEITADO', 'REPROVADO') THEN 1 ELSE 0 END AS TEM_REJEITADO
+                              FROM CONSINCO.MEGAG_DESP_APROVACAO
+                             WHERE USUARIOAPROVADOR = :U
+                               AND STATUS IN ('APROVADO', 'REJEITADO', 'REPROVADO')
+                           ) x
+                     GROUP BY x.CODDESPESA
+                  )
+                SELECT desp.*,
                        hist.CENTROCUSTO_APROVACAO,
                        hist.NIVEL_PENDENTE,
                        hist.STATUS_APROVADOR,
@@ -1164,23 +1242,7 @@ try {
                        TO_CHAR(desp.DTADESPESA, 'YYYY-MM-DD') as DTADESPESA_FORMAT,
                        (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_APROVACAO A WHERE A.CODDESPESA = desp.CODDESPESA) as QTD_APROVACOES
                   FROM CONSINCO.MEGAG_DESP desp
-                  JOIN (
-                        SELECT apr.CODDESPESA,
-                               MIN(CASE WHEN apr.STATUS = 'LANCADO' THEN apr.CENTROCUSTO END) AS CENTROCUSTO_APROVACAO,
-                               MIN(CASE WHEN apr.STATUS = 'LANCADO' THEN apr.NIVEL_APROVACAO END) AS NIVEL_PENDENTE,
-                               MAX(CASE WHEN apr.STATUS = 'LANCADO' THEN 1 ELSE 0 END) AS TEM_PENDENTE,
-                               MAX(CASE WHEN apr.STATUS = 'APROVADO' AND TRUNC(apr.DTAACAO) = TRUNC(SYSDATE) THEN 1 ELSE 0 END) AS APROVOU_HOJE,
-                               MAX(CASE WHEN apr.STATUS = 'REJEITADO' AND TRUNC(apr.DTAACAO) = TRUNC(SYSDATE) THEN 1 ELSE 0 END) AS REPROVOU_HOJE,
-                               CASE
-                                   WHEN MAX(CASE WHEN apr.STATUS = 'REJEITADO' THEN 1 ELSE 0 END) = 1 THEN 'REJEITADO'
-                                   WHEN MAX(CASE WHEN apr.STATUS = 'LANCADO' THEN 1 ELSE 0 END) = 1 THEN 'LANCADO'
-                                   WHEN MAX(CASE WHEN apr.STATUS = 'APROVADO' THEN 1 ELSE 0 END) = 1 THEN 'APROVADO'
-                                   ELSE MAX(apr.STATUS)
-                               END AS STATUS_APROVADOR
-                          FROM CONSINCO.MEGAG_DESP_APROVACAO apr
-                         WHERE apr.USUARIOAPROVADOR = :U
-                         GROUP BY apr.CODDESPESA
-                  ) hist
+                  JOIN hist
                     ON hist.CODDESPESA = desp.CODDESPESA
                  WHERE desp.USUARIOSOLICITANTE <> :U
                  ORDER BY hist.TEM_PENDENTE DESC,
@@ -1285,15 +1347,30 @@ try {
 
         if (!$id_desp) jexit(false, [], 'ID da despesa não fornecido.');
 
-        $sql = "SELECT H.*, 
-                       H.CODDESPESA,
+        $sql = "SELECT H.CODDESPESA,
+                       H.CENTROCUSTO,
+                       H.USUARIOAPROVADOR,
                        H.NIVEL_APROVACAO,
-                       TO_CHAR(H.DTAACAO, 'DD/MM/YYYY HH24:MI') as DTAACAO_FORMAT,
+                       CASE
+                           WHEN MAX(CASE WHEN H.STATUS IN ('REJEITADO', 'REPROVADO') THEN 1 ELSE 0 END) = 1 THEN 'REJEITADO'
+                           WHEN MAX(CASE WHEN H.STATUS = 'APROVADO' THEN 1 ELSE 0 END) = 1 THEN 'APROVADO'
+                           ELSE 'LANCADO'
+                       END AS STATUS,
+                       MAX(CASE WHEN H.STATUS IN ('APROVADO', 'REJEITADO', 'REPROVADO') THEN H.DTAACAO END) AS DTAACAO,
+                       TO_CHAR(MAX(CASE WHEN H.STATUS IN ('APROVADO', 'REJEITADO', 'REPROVADO') THEN H.DTAACAO END), 'DD/MM/YYYY HH24:MI') as DTAACAO_FORMAT,
+                       MAX(CASE WHEN H.STATUS IN ('APROVADO', 'REJEITADO', 'REPROVADO') THEN H.OBSERVACAO END) AS OBSERVACAO,
                        U.NOME as NOME_APROVADOR
                   FROM CONSINCO.MEGAG_DESP_APROVACAO H
                   LEFT JOIN CONSINCO.GE_USUARIO U ON H.USUARIOAPROVADOR = U.SEQUSUARIO
                  WHERE H.CODDESPESA = :ID
-                 ORDER BY H.DTAACAO ASC";
+                 GROUP BY H.CODDESPESA,
+                          H.CENTROCUSTO,
+                          H.USUARIOAPROVADOR,
+                          H.NIVEL_APROVACAO,
+                          U.NOME
+                 ORDER BY H.NIVEL_APROVACAO ASC,
+                          H.CENTROCUSTO ASC,
+                          H.USUARIOAPROVADOR ASC";
         
         $st = $conn->prepare(mg_with_schema($sql));
         $st->execute([':ID' => $id_desp]);

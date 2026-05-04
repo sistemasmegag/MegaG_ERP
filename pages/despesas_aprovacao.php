@@ -693,6 +693,15 @@ $paginaAtual = 'despesas_aprovacao';
     return dt.toLocaleDateString('pt-BR');
   }
 
+  async function parseApiResponse(res) {
+    const rawText = await res.text();
+    try {
+      return JSON.parse(rawText);
+    } catch (e) {
+      throw new Error(rawText || `Resposta invalida da API. HTTP ${res.status}`);
+    }
+  }
+
   function renderAprovAttachment(file) {
     const visualizador = document.getElementById('visualizadorAnexoAprov');
     if (!visualizador) return;
@@ -828,6 +837,52 @@ $paginaAtual = 'despesas_aprovacao';
     }
   }
 
+  function renderApprovalHistoryGrouped(dados) {
+    const rows = [...(dados || [])].sort((a, b) =>
+      (Number(a.NIVEL_APROVACAO || 0) - Number(b.NIVEL_APROVACAO || 0)) ||
+      (Number(a.CENTROCUSTO || 0) - Number(b.CENTROCUSTO || 0)) ||
+      (Number(a.USUARIOAPROVADOR || 0) - Number(b.USUARIOAPROVADOR || 0))
+    );
+    const grupos = rows.reduce((acc, h) => {
+      const nivel = Number(h.NIVEL_APROVACAO || 0) || 0;
+      if (!acc[nivel]) acc[nivel] = [];
+      acc[nivel].push(h);
+      return acc;
+    }, {});
+
+    return Object.keys(grupos).sort((a, b) => Number(a) - Number(b)).map(nivel => `
+      <div class="mb-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-light text-dark border">Nivel ${nivel}</span>
+          <span class="text-muted small fw-bold">${grupos[nivel].length} aprovador(es)</span>
+        </div>
+        ${grupos[nivel].map((h) => {
+          const nome = h.NOME_APROVADOR || 'Aprovador';
+          const status = String(h.STATUS || 'LANCADO').toUpperCase();
+          const chip = status === 'APROVADO' ? 'chip-green' : (status === 'REJEITADO' || status === 'REPROVADO' ? 'chip-red' : 'chip-primary');
+          return `
+            <div class="timeline-node ${status === 'APROVADO' ? 'active' : ''} d-flex align-items-start mb-3">
+              <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">${nivel}</span>
+              <div class="timeline-card focused flex-grow-1 p-3 border rounded-3 bg-white">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                   <span class="chip ${chip}" style="font-size:10px;">${status}</span>
+                   <span class="text-muted" style="font-size:10px;">${h.DTAACAO_FORMAT || h.DTAACAO || '--'}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-small bg-primary text-white d-flex align-items-center justify-content-center" style="width:30px;height:30px;border-radius:50%;font-size:10px;">${getInitials(nome)}</div>
+                  <div class="flex-grow-1">
+                    <div class="fw-bold" style="font-size:13px;">${nome}</div>
+                    <div class="text-muted" style="font-size:11px;">Nivel ${h.NIVEL_APROVACAO}</div>
+                  </div>
+                </div>
+                ${h.OBSERVACAO ? `<div class="mt-2 p-2 bg-light rounded small text-muted border-start border-primary border-4">${h.OBSERVACAO}</div>` : ''}
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    `).join('');
+  }
+
   async function loadHistory(id) {
     const container = document.getElementById('timelineAprov');
     if(!container) return;
@@ -839,6 +894,8 @@ $paginaAtual = 'despesas_aprovacao';
         let json = await res.json();
         
         if (json.sucesso && json.dados.length > 0) {
+            container.innerHTML = renderApprovalHistoryGrouped(json.dados);
+            return;
             container.innerHTML = json.dados.map((h, i) => `
                 <div class="timeline-node ${h.STATUS === 'APROVADO' ? 'active' : ''} d-flex align-items-start mb-3">
                   <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">${i+1}</span>
@@ -903,7 +960,7 @@ $paginaAtual = 'despesas_aprovacao';
           observacao: obs
         })
       });
-      let json = await res.json();
+      let json = await parseApiResponse(res);
       if (json.sucesso) {
         Swal.fire('Sucesso', json.dados.mensagem, 'success');
         const modalEl = document.getElementById('modalDetalhesAprovacao');
@@ -914,7 +971,8 @@ $paginaAtual = 'despesas_aprovacao';
         Swal.fire('Erro', json.erro, 'error');
       }
     } catch (e) {
-      Swal.fire('Erro', 'Falha na conexão com o servidor.', 'error');
+      console.error(e);
+      Swal.fire('Erro', e.message || 'Falha na conexao com o servidor.', 'error');
     }
   }
 

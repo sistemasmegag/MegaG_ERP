@@ -1230,6 +1230,11 @@ $paginaAtual = 'despesas';
             </div>
 
             <div class="saas-input-group mt-4">
+              <label class="saas-label">Política * <small class="fw-normal text-muted ms-1">(MEGAG_DESP_POLITICA)</small></label>
+              <select class="saas-select" id="fPolitica" placeholder="Digite ao menos 3 letras para buscar..."></select>
+            </div>
+
+            <div class="saas-input-group mt-4">
               <label class="saas-label">Data de Vencimento</label>
               <input type="date" class="saas-input" id="fVencimento">
             </div>
@@ -1684,10 +1689,13 @@ $paginaAtual = 'despesas';
       if (json.sucesso) {
         let catSelect = document.getElementById('fCategoria');
         let fornSelect = document.getElementById('fEstabelecimento');
+        let politicaSelect = document.getElementById('fPolitica');
         if (catSelect.tomselect) catSelect.tomselect.destroy();
         if (fornSelect.tomselect) fornSelect.tomselect.destroy();
+        if (politicaSelect?.tomselect) politicaSelect.tomselect.destroy();
         catSelect.innerHTML = '<option value="">Selecione...</option>';
         fornSelect.innerHTML = '<option value="">Digite ao menos 2 letras para buscar...</option>';
+        if (politicaSelect) politicaSelect.innerHTML = '<option value="">Digite ao menos 3 letras para buscar...</option>';
         json.dados.tipos.forEach(t => {
           catSelect.innerHTML += `<option value="${t.CODTIPODESPESA}">${t.DESCRICAO}</option>`;
         });
@@ -1758,6 +1766,72 @@ $paginaAtual = 'despesas';
         });
 
         // Reinicializa CCs extras que já existam no container (ex: após fechar/abrir modal)
+        if (politicaSelect) {
+          new TomSelect('#fPolitica', {
+            create: false,
+            valueField: 'value',
+            labelField: 'text',
+            searchField: ['text', 'value'],
+            maxOptions: 30,
+            preload: false,
+            loadThrottle: 300,
+            placeholder: 'Digite ao menos 3 letras para buscar...',
+            shouldLoad: function(query) {
+              return query.length >= 3;
+            },
+            render: {
+              no_results: function(data, escape) {
+                if (!data.input || data.input.length < 3) {
+                  return `<div class="no-results">Digite ao menos 3 letras para buscar.</div>`;
+                }
+                return `<div class="no-results">Nenhuma política encontrada para "${escape(data.input)}".</div>`;
+              },
+              loading: function() {
+                return `<div class="px-3 py-2 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>Buscando políticas...</div>`;
+              },
+              option: function(item, escape) {
+                return `
+                  <div>
+                    <div class="fw-bold">${escape(item.text)}</div>
+                    <div class="small text-muted">${escape(item.meta || '')}</div>
+                  </div>`;
+              }
+            },
+            load: async function(query, callback) {
+              try {
+                let res = await fetch('api/api_despesas.php', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ action: 'search_politicas', q: query })
+                });
+                let json = await res.json();
+                if (!json.sucesso) {
+                  callback();
+                  return;
+                }
+
+                let itens = (json.dados || []).map(p => {
+                  let codigo = p.CODPOLITICA || '';
+                  let descricao = (p.DESCRICAO || '').trim();
+                  let cc = p.CENTROCUSTO_EXEMPLO || '';
+                  let nomeCc = (p.NOME_CC_EXEMPLO || '').trim();
+                  let qtdCcs = Number(p.QTD_CCS || 0);
+                  return {
+                    value: String(codigo),
+                    text: `${codigo} | ${descricao || 'Política sem descrição'}`,
+                    meta: `${cc}${nomeCc ? ' | ' + nomeCc : ''}${qtdCcs > 1 ? ' +' + (qtdCcs - 1) + ' C.C' : ''}`
+                  };
+                }).filter(p => p.value);
+
+                callback(itens);
+              } catch (e) {
+                console.error('Erro ao buscar políticas:', e);
+                callback();
+              }
+            }
+          });
+        }
+
         if (_fornecedorCriadoRecente) {
           preencherFornecedorRecemCriado(_fornecedorCriadoRecente);
         }
@@ -2058,12 +2132,25 @@ $paginaAtual = 'despesas';
         return;
       }
 
+      let politicaSelect = document.getElementById('fPolitica');
+      let politica = politicaSelect && politicaSelect.tomselect
+        ? politicaSelect.tomselect.getValue()
+        : (politicaSelect ? politicaSelect.value : '');
+
+      if (!politica || !String(politica).trim()) {
+        Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Selecione a política da despesa.' });
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+        return;
+      }
+
       let formData = new FormData();
       formData.append('action', 'create');
       formData.append('valor', document.getElementById('fValor').value);
       formData.append('estabelecimento', fornecedor);
       formData.append('data_despesa', document.getElementById('fData').value);
       formData.append('categoria', document.getElementById('fCategoria').value);
+      formData.append('codpolitica', politica);
       formData.append('centros_custo',  JSON.stringify(centrosCusto));
       formData.append('valores_rateio', JSON.stringify(valoresRateio));
       formData.append('centro_custo', centrosCusto[0]);
@@ -2104,6 +2191,9 @@ $paginaAtual = 'despesas';
           document.getElementById('formReembolso').reset();
           if (document.getElementById('fEstabelecimento').tomselect) {
             document.getElementById('fEstabelecimento').tomselect.clear();
+          }
+          if (document.getElementById('fPolitica')?.tomselect) {
+            document.getElementById('fPolitica').tomselect.clear();
           }
           document.getElementById('fArquivo').value = '';
           document.getElementById('fileDisplayName').innerHTML = '';
@@ -2248,6 +2338,53 @@ $paginaAtual = 'despesas';
     }
   }
 
+  function renderApprovalHistoryGrouped(dados, usePrimaryForPending = false) {
+    const rows = [...(dados || [])].sort((a, b) =>
+      (Number(a.NIVEL_APROVACAO || 0) - Number(b.NIVEL_APROVACAO || 0)) ||
+      (Number(a.CENTROCUSTO || 0) - Number(b.CENTROCUSTO || 0)) ||
+      (Number(a.USUARIOAPROVADOR || 0) - Number(b.USUARIOAPROVADOR || 0))
+    );
+    const grupos = rows.reduce((acc, h) => {
+      const nivel = Number(h.NIVEL_APROVACAO || 0) || 0;
+      if (!acc[nivel]) acc[nivel] = [];
+      acc[nivel].push(h);
+      return acc;
+    }, {});
+
+    return Object.keys(grupos).sort((a, b) => Number(a) - Number(b)).map(nivel => `
+      <div class="mb-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <span class="badge bg-light text-dark border">Nivel ${nivel}</span>
+          <span class="text-muted small fw-bold">${grupos[nivel].length} aprovador(es)</span>
+        </div>
+        ${grupos[nivel].map((h) => {
+          const nome = h.NOME_APROVADOR || 'Aprovador';
+          const status = String(h.STATUS || 'LANCADO').toUpperCase();
+          const chip = status === 'APROVADO' ? 'chip-green' : (status === 'REJEITADO' || status === 'REPROVADO' ? 'chip-red' : (usePrimaryForPending ? 'chip-primary' : 'chip-red'));
+          const iniciais = nome.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+          return `
+            <div class="timeline-node ${status === 'APROVADO' ? 'active' : ''} d-flex align-items-start mb-3">
+              <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">${nivel}</span>
+              <div class="timeline-card focused flex-grow-1 p-3 border rounded-3 bg-white">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                   <span class="chip ${chip}" style="font-size:10px;">${status}</span>
+                   <span class="text-muted" style="font-size:10px;">${h.DTAACAO_FORMAT || h.DTAACAO || '--'}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar-small bg-primary text-white d-flex align-items-center justify-content-center" style="width:30px;height:30px;border-radius:50%;font-size:10px;">${iniciais || '--'}</div>
+                  <div class="flex-grow-1">
+                    <div class="fw-bold text-dark" style="font-size:13px;">${nome}</div>
+                    <div class="text-muted" style="font-size:11px;">Nivel ${h.NIVEL_APROVACAO}</div>
+                  </div>
+                </div>
+                ${h.OBSERVACAO ? `<div class="mt-2 p-2 bg-light rounded small text-muted border-start border-primary border-4">${h.OBSERVACAO}</div>` : ''}
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    `).join('');
+  }
+
   async function loadHistory(id) {
     const container = document.getElementById('timelineDesp');
     if(!container) return;
@@ -2259,6 +2396,8 @@ $paginaAtual = 'despesas';
         let json = await res.json();
         
         if (json.sucesso && json.dados.length > 0) {
+            container.innerHTML = renderApprovalHistoryGrouped(json.dados, false);
+            return;
             container.innerHTML = json.dados.map((h, i) => `
                 <div class="timeline-node ${h.STATUS === 'APROVADO' ? 'active' : ''} d-flex align-items-start mb-3">
                   <span class="text-muted fw-bold me-3" style="font-size:12px; margin-top:10px;">${i+1}</span>

@@ -649,6 +649,93 @@ try {
         jexit(true, ['dados' => ['mensagem' => $pkgResult['s_msg']]]);
     }
 
+    if ($action === 'update_politica_lote') {
+        $codpolitica = (int)($req['codpolitica'] ?? 0);
+        $desc = trim($req['descricao'] ?? '');
+        $niveis = is_array($req['niveis'] ?? null) ? $req['niveis'] : [];
+
+        if ($codpolitica <= 0 || $desc === '' || empty($niveis)) {
+            jexit(false, [], 'Informe a politica, descricao e niveis de aprovacao.');
+        }
+
+        try {
+            $conn->beginTransaction();
+
+            $stPolitica = $conn->prepare(cfg_sql("
+                UPDATE CONSINCO.MEGAG_DESP_POLITICA
+                   SET DESCRICAO = :DESC
+                 WHERE CODPOLITICA = :CODPOLITICA
+            "));
+            $stPolitica->bindValue(':DESC', $desc, PDO::PARAM_STR);
+            $stPolitica->bindValue(':CODPOLITICA', $codpolitica, PDO::PARAM_INT);
+            $stPolitica->execute();
+
+            $stVinculos = $conn->prepare(cfg_sql("
+                UPDATE CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO
+                   SET DESCRICAO = :DESC
+                 WHERE CODPOLITICA = :CODPOLITICA
+            "));
+            $stVinculos->bindValue(':DESC', $desc, PDO::PARAM_STR);
+            $stVinculos->bindValue(':CODPOLITICA', $codpolitica, PDO::PARAM_INT);
+            $stVinculos->execute();
+
+            $stDel = $conn->prepare(cfg_sql("
+                DELETE FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO
+                 WHERE CODPOLITICA = :CODPOLITICA
+            "));
+            $stDel->bindValue(':CODPOLITICA', $codpolitica, PDO::PARAM_INT);
+            $stDel->execute();
+
+            $totalInseridos = 0;
+            foreach ($niveis as $idxNivel => $nivelObj) {
+                $grupoId = (int)($nivelObj['grupo'] ?? 0);
+                $nivelNum = (int)($nivelObj['nivel'] ?? ($idxNivel + 1));
+                $aprovs = is_array($nivelObj['aprovadores'] ?? null) ? $nivelObj['aprovadores'] : [];
+
+                if ($grupoId <= 0 || empty($aprovs)) {
+                    continue;
+                }
+
+                foreach ($aprovs as $aprovItem) {
+                    $seq_usuario = (int)($aprovItem['sequsuario'] ?? 0);
+                    $centro_custo_val = trim((string)($aprovItem['centro_custo'] ?? ''));
+                    $nivel_aprov = (int)($aprovItem['nivel'] ?? $nivelNum);
+
+                    if ($seq_usuario <= 0 || $centro_custo_val === '') {
+                        continue;
+                    }
+
+                    if (!existe_vinculo_aprovador($conn, (string)$grupoId, $seq_usuario, $centro_custo_val)) {
+                        $nomeUsuario = nome_usuario_por_seq($conn, $seq_usuario);
+                        throw new Exception("O aprovador " . ($nomeUsuario ?: "SEQ $seq_usuario") . " nao esta vinculado ao grupo selecionado neste centro de custo.");
+                    }
+
+                    $centroInfo = buscar_centro_resultado($conn, $centro_custo_val);
+                    $centro_custo = (int)($centroInfo['CENTRORESULTADO'] ?? 0);
+                    if ($centro_custo <= 0) {
+                        throw new Exception('Centro de custo invalido para a politica.');
+                    }
+
+                    normalizar_vinculo_aprovador($conn, $grupoId, $seq_usuario, $centro_custo);
+                    inserir_vinculo_politica($conn, $codpolitica, $grupoId, $seq_usuario, $centro_custo, max(1, $nivel_aprov), $desc);
+                    $totalInseridos++;
+                }
+            }
+
+            if ($totalInseridos <= 0) {
+                throw new Exception('Informe ao menos um aprovador valido para a politica.');
+            }
+
+            $conn->commit();
+            jexit(true, ['dados' => ['mensagem' => 'Politica atualizada com sucesso.']]);
+        } catch (Exception $e) {
+            if ($conn->inTransaction()) {
+                $conn->rollBack();
+            }
+            jexit(false, [], $e->getMessage());
+        }
+    }
+
     if ($action === 'update_politica') {
         $codpolitCc = (int)($req['codpolit_cc'] ?? 0);
         $grupo = (int)($req['codgrupo'] ?? 0);
@@ -803,7 +890,7 @@ try {
     // APROVADORES X C.C. (MEGAG_DESP_APROVADORES)
     // ============================================
     if ($action === 'list_aprovadores') {
-        $sql = "SELECT A.SEQUSUARIO, A.CODGRUPO, A.CENTROCUSTO, C.CENTRORESULTADO AS CODIGO_CC, A.NOME AS GESTOR,
+        $sql = "SELECT A.SEQUSUARIO, A.CODGRUPO, A.CENTROCUSTO, C.CENTRORESULTADO AS CODIGO_CC, C.DESCRICAO AS NOME_CC, A.NOME AS GESTOR,
                        G.NOMEGRUPO, TO_CHAR(A.DTAINCLUSAO, 'DD/MM/YYYY') AS DATA_VINCULO
                   FROM CONSINCO.MEGAG_DESP_APROVADORES A
                   LEFT JOIN CONSINCO.MEGAG_DESP_GRUPO G ON A.CODGRUPO = G.CODGRUPO
