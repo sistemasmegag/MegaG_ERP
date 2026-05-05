@@ -707,7 +707,7 @@ $configs = [
         'table' => 'MEGAG_IMP_BI_METAS',
         'start_row' => 2,
         'header_row' => 1,
-        'upsert_keys' => ['CODMETA', 'SEQPRODUTO', 'COMPRADOR', 'CODPERIODO', 'CODEMP', 'CODSETOR'],
+        'upsert_keys' => ['CODMETA', 'SEQPRODUTO', 'COMPRADOR', 'CODPERIODO', 'CODEMPRESA', 'CODSETOR'],
 
         // usuário logado
         'session_user_column' => null,
@@ -744,7 +744,7 @@ $configs = [
                 'aliases' => ['SEQPRODUTO','SEQ_PRODUTO','PRODUTO','CODPRODUTO','COD_PRODUTO']
             ],
             [
-                'db' => 'CODEMP',
+                'db' => 'CODEMPRESA',
                 'type' => 'number',
                 'required' => true,
                 'aliases' => ['CODEMP','CODEMPRESA','EMPRESA','COD_EMPRESA']
