@@ -700,8 +700,7 @@ $configs = [
     // 4.9) BI Metas
     // Tabela: CONSINCO.MEGAG_IMP_BI_METAS
     // Colunas esperadas pela tela imp_bi_metas:
-    // CODMETA, CODVENDEDOR, CODPERIODO, META, CODREGIAO, SEGMENTO,
-    // TIPORETIRA, CATEGORIA, SEQPRODUTO, DTAATUALIZACAO
+    // CODMETA, SEQPRODUTO, COMPRADOR, CODPERIODO, META, CODEMPRESA, CODSETOR
     // ==================================================================
     'bi_metas' => [
         'owner' => 'CONSINCO',

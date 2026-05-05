@@ -250,13 +250,25 @@ BEGIN
                 CONTINUE;
             END IF;
 
-            INSERT INTO CONSINCO.MEGAG_DESP_APROVACAO(
-                CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
-                STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
-            ) VALUES (
-                p_coddespesa, v_cc.CENTROCUSTO, p_sequsuario,
-                p_status, SYSDATE, p_observacao, v_nivel_atual
-            );
+            UPDATE CONSINCO.MEGAG_DESP_APROVACAO
+               SET STATUS           = p_status,
+                   DTAACAO          = SYSDATE,
+                   OBSERVACAO       = p_observacao,
+                   USUARIOAPROVADOR = p_sequsuario
+             WHERE CODDESPESA      = p_coddespesa
+               AND CENTROCUSTO     = v_cc.CENTROCUSTO
+               AND NIVEL_APROVACAO = v_nivel_atual
+               AND STATUS          = 'LANCADO';
+
+            IF SQL%ROWCOUNT = 0 THEN
+                INSERT INTO CONSINCO.MEGAG_DESP_APROVACAO(
+                    CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
+                    STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
+                ) VALUES (
+                    p_coddespesa, v_cc.CENTROCUSTO, p_sequsuario,
+                    p_status, SYSDATE, p_observacao, v_nivel_atual
+                );
+            END IF;
 
             v_processou_algo := 1;
 

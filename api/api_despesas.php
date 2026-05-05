@@ -468,36 +468,39 @@ function process_approval_action(PDO $conn, int $codDespesa, int $seqUsuario, st
         $statusUpper = strtoupper($status);
         $statusPkg = in_array($statusUpper, ['REJEITADO', 'REPROVADO'], true) ? 'REJEITADO' : 'APROVADO';
 
-        $sqlPkg = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_UPD_MEGAG_DESP_APROVACAO(
-                    p_coddespesa => :ID,
-                    p_sequsuario => :USU,
-                    p_status => :STATUS,
-                    p_pago => :PAGO,
-                    p_observacao => :OBS,
-                    s_sfx => :S_SFX,
-                    s_ico => :S_ICO,
-                    s_tiporet => :S_TIPORET,
-                    s_msg => :S_MSG
-                ); END;";
+        $sqlPkg = "DECLARE
+                    v_sfx     VARCHAR2(20);
+                    v_ico     VARCHAR2(20);
+                    v_tiporet VARCHAR2(2);
+                    v_msg     VARCHAR2(4000);
+                BEGIN
+                    " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_UPD_MEGAG_DESP_APROVACAO(
+                        p_coddespesa => :ID,
+                        p_sequsuario => :USU,
+                        p_status => :STATUS,
+                        p_pago => :PAGO,
+                        p_observacao => :OBS,
+                        s_sfx => v_sfx,
+                        s_ico => v_ico,
+                        s_tiporet => v_tiporet,
+                        s_msg => v_msg
+                    );
+
+                    IF NVL(v_tiporet, 'E') <> 'S' THEN
+                        RAISE_APPLICATION_ERROR(-20001, NVL(v_msg, 'Sem permissao ou fora da ordem de aprovacao.'));
+                    END IF;
+                END;";
         $st = $conn->prepare(mg_with_schema($sqlPkg));
         $st->bindValue(':ID', $codDespesa, PDO::PARAM_INT);
         $st->bindValue(':USU', $seqUsuario, PDO::PARAM_INT);
         $st->bindValue(':STATUS', $statusPkg);
         $st->bindValue(':PAGO', strtoupper($pago) === 'S' ? 'S' : 'N');
         $st->bindValue(':OBS', $observacao !== '' ? $observacao : null);
-        $pkgSfx = '';
-        $pkgIco = '';
-        $pkgTipoRet = '';
-        $pkgMsg = '';
-        desp_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
-        $pkgResult = desp_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
 
-        if (desp_pkg_failed($pkgResult) || is_update_approval_error_message($pkgResult['s_msg'] ?? '')) {
-            throw new Exception($pkgResult['s_msg'] !== '' ? $pkgResult['s_msg'] : 'Sem permissao ou fora da ordem de aprovacao.');
-        }
-
-        return $pkgResult['s_msg'] !== '' ? $pkgResult['s_msg'] : 'Aprovacao processada com sucesso.';
+        return $statusPkg === 'REJEITADO'
+            ? 'Despesa rejeitada com sucesso.'
+            : 'Aprovacao registrada com sucesso.';
     } catch (Throwable $e) {
         try {
             $conn->exec('ROLLBACK');

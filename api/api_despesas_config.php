@@ -100,10 +100,12 @@ function ensure_politica_cadastro(PDO $conn, int $codpolitica, string $descricao
     }
 
     $sqlIns = "INSERT INTO CONSINCO.MEGAG_DESP_POLITICA (CODPOLITICA, DESCRICAO)
-               VALUES (?, ?)";
+               VALUES (:CODPOLITICA, :P_DESCRICAO)";
     try {
         $stIns = $conn->prepare(cfg_sql($sqlIns));
-        $stIns->execute([$novoCodigo, $descricao]);
+        $stIns->bindValue(':CODPOLITICA', $novoCodigo, PDO::PARAM_INT);
+        $stIns->bindValue(':P_DESCRICAO', $descricao, PDO::PARAM_STR);
+        $stIns->execute();
     } catch (Exception $e) {
         throw new Exception('Falha ao inserir MEGAG_DESP_POLITICA: ' . $e->getMessage());
     }
@@ -144,19 +146,25 @@ function inserir_vinculo_politica(
                     DESCRICAO,
                     DTAINCLUSAO
                ) VALUES (
-                    ?, ?, ?, ?, ?, ?, ?, SYSDATE
+                    :CODPOLIT_CC,
+                    :CODPOLITICA,
+                    :CODGRUPO,
+                    :SEQUSUARIO,
+                    :CENTROCUSTO,
+                    :NIVEL_APROVACAO,
+                    :P_DESCRICAO,
+                    SYSDATE
                )";
     try {
         $stIns = $conn->prepare(cfg_sql($sqlIns));
-        $stIns->execute([
-            $novoCodigo,
-            $codpolitica,
-            $codgrupo,
-            $sequsuario,
-            $centroCusto,
-            $nivel,
-            $descricao,
-        ]);
+        $stIns->bindValue(':CODPOLIT_CC', $novoCodigo, PDO::PARAM_INT);
+        $stIns->bindValue(':CODPOLITICA', $codpolitica, PDO::PARAM_INT);
+        $stIns->bindValue(':CODGRUPO', $codgrupo, PDO::PARAM_INT);
+        $stIns->bindValue(':SEQUSUARIO', $sequsuario, PDO::PARAM_INT);
+        $stIns->bindValue(':CENTROCUSTO', $centroCusto, PDO::PARAM_INT);
+        $stIns->bindValue(':NIVEL_APROVACAO', $nivel, PDO::PARAM_INT);
+        $stIns->bindValue(':P_DESCRICAO', $descricao, PDO::PARAM_STR);
+        $stIns->execute();
     } catch (Exception $e) {
         throw new Exception('Falha ao inserir MEGAG_DESP_POLIT_CENTRO_CUSTO: ' . $e->getMessage());
     }
@@ -371,12 +379,12 @@ try {
         normalizar_vinculo_aprovador($conn, $grupo, $seq_usuario, $centro_custo);
 
         $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_POLITICA(
-                    p_descricao         => :DESC,
+                    p_descricao         => :P_DESCRICAO,
                     p_codgrupo          => :GRUPO,
                     p_sequsuario        => :SEQ_USUARIO,
                     p_centrocusto       => :CC,
                     p_nivel_aprovacao   => :NIVEL,
-                    p_descricao_vinculo => :DESC_VINCULO,
+                    p_descricao_vinculo => :P_DESC_VINCULO,
                     p_codpolitica       => :OUT_CODPOL,
                     p_codpolit_cc       => :OUT_CODPOLCC,
                     s_sfx               => :S_SFX,
@@ -388,8 +396,8 @@ try {
         $st->bindValue(':GRUPO', $grupo);
         $st->bindValue(':SEQ_USUARIO', $seq_usuario);
         $st->bindValue(':CC', $centro_custo);
-        $st->bindValue(':DESC', $desc);
-        $st->bindValue(':DESC_VINCULO', $desc !== '' ? $desc : null, $desc !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
+        $st->bindValue(':P_DESCRICAO', $desc);
+        $st->bindValue(':P_DESC_VINCULO', $desc !== '' ? $desc : null, $desc !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
         $st->bindValue(':NIVEL', $nivel);
         $outCodPolitica = 0;
         $outCodPolitCc = 0;
@@ -558,12 +566,12 @@ try {
 
                     if ($codpolitica === 0) {
                         $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_POLITICA(
-                                    p_descricao         => :DESC,
+                                    p_descricao         => :P_DESCRICAO,
                                     p_codgrupo          => :GRUPO,
                                     p_sequsuario        => :SEQ_USUARIO,
                                     p_centrocusto       => :CC,
                                     p_nivel_aprovacao   => :NIVEL,
-                                    p_descricao_vinculo => :DESC_VINCULO,
+                                    p_descricao_vinculo => :P_DESC_VINCULO,
                                     p_codpolitica       => :OUT_CODPOL,
                                     p_codpolit_cc       => :OUT_CODPOLCC,
                                     s_sfx               => :S_SFX,
@@ -572,12 +580,12 @@ try {
                                     s_msg               => :S_MSG
                                 ); END;";
                         $st = $conn->prepare(cfg_sql($sql));
-                        $st->bindValue(':DESC', $desc);
+                        $st->bindValue(':P_DESCRICAO', $desc);
                         $st->bindValue(':GRUPO', $grupoId, PDO::PARAM_INT);
                         $st->bindValue(':SEQ_USUARIO', $seq_usuario, PDO::PARAM_INT);
                         $st->bindValue(':CC', $centro_custo, PDO::PARAM_INT);
                         $st->bindValue(':NIVEL', $nivel_aprov, PDO::PARAM_INT);
-                        $st->bindValue(':DESC_VINCULO', $desc);
+                        $st->bindValue(':P_DESC_VINCULO', $desc);
                         $outCodPol = 0; $outCodPolCc = 0;
                         $st->bindParam(':OUT_CODPOL', $outCodPol, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
                         $st->bindParam(':OUT_CODPOLCC', $outCodPolCc, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
@@ -594,7 +602,7 @@ try {
                                     p_sequsuario      => :SEQ_USUARIO,
                                     p_centrocusto     => :CC,
                                     p_nivel_aprovacao => :NIVEL,
-                                    p_descricao       => :DESC,
+                                    p_descricao       => :P_DESCRICAO,
                                     p_codpolit_cc     => :OUT_CODPOLCC,
                                     s_sfx             => :S_SFX,
                                     s_ico             => :S_ICO,
@@ -607,7 +615,7 @@ try {
                         $st->bindValue(':SEQ_USUARIO', $seq_usuario, PDO::PARAM_INT);
                         $st->bindValue(':CC', $centro_custo, PDO::PARAM_INT);
                         $st->bindValue(':NIVEL', $nivel_aprov, PDO::PARAM_INT);
-                        $st->bindValue(':DESC', $desc);
+                        $st->bindValue(':P_DESCRICAO', $desc);
                         $outCodPolCc = 0;
                         $st->bindParam(':OUT_CODPOLCC', $outCodPolCc, PDO::PARAM_INT | PDO::PARAM_INPUT_OUTPUT, 32);
                         cfg_bind_pkg_status($st, $pSfx, $pIco, $pTipo, $pMsg);
@@ -663,19 +671,19 @@ try {
 
             $stPolitica = $conn->prepare(cfg_sql("
                 UPDATE CONSINCO.MEGAG_DESP_POLITICA
-                   SET DESCRICAO = :DESC
+                   SET DESCRICAO = :P_DESCRICAO
                  WHERE CODPOLITICA = :CODPOLITICA
             "));
-            $stPolitica->bindValue(':DESC', $desc, PDO::PARAM_STR);
+            $stPolitica->bindValue(':P_DESCRICAO', $desc, PDO::PARAM_STR);
             $stPolitica->bindValue(':CODPOLITICA', $codpolitica, PDO::PARAM_INT);
             $stPolitica->execute();
 
             $stVinculos = $conn->prepare(cfg_sql("
                 UPDATE CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO
-                   SET DESCRICAO = :DESC
+                   SET DESCRICAO = :P_DESCRICAO
                  WHERE CODPOLITICA = :CODPOLITICA
             "));
-            $stVinculos->bindValue(':DESC', $desc, PDO::PARAM_STR);
+            $stVinculos->bindValue(':P_DESCRICAO', $desc, PDO::PARAM_STR);
             $stVinculos->bindValue(':CODPOLITICA', $codpolitica, PDO::PARAM_INT);
             $stVinculos->execute();
 
@@ -763,14 +771,14 @@ try {
                    SET CODGRUPO = :GRUPO,
                        SEQUSUARIO = :SEQ_USUARIO,
                        CENTROCUSTO = :CC,
-                       DESCRICAO = :DESC,
+                       DESCRICAO = :P_DESCRICAO,
                        NIVEL_APROVACAO = :NIVEL
                  WHERE CODPOLIT_CC = :ID";
         $st = $conn->prepare(cfg_sql($sql));
         $st->bindValue(':GRUPO', $grupo, PDO::PARAM_INT);
         $st->bindValue(':SEQ_USUARIO', $seq_usuario, PDO::PARAM_INT);
         $st->bindValue(':CC', $centro_custo, PDO::PARAM_INT);
-        $st->bindValue(':DESC', $desc, PDO::PARAM_STR);
+        $st->bindValue(':P_DESCRICAO', $desc, PDO::PARAM_STR);
         $st->bindValue(':NIVEL', $nivel, PDO::PARAM_INT);
         $st->bindValue(':ID', $codpolitCc, PDO::PARAM_INT);
         $st->execute();
@@ -797,14 +805,14 @@ try {
         if ($desc === '') jexit(false, [], 'Informe a descrição da categoria.');
 
         $sql = "BEGIN " . mg_package('PKG_MEGAG_DESP_CADASTRO') . ".PRC_INS_MEGAG_DESP_TIPO(
-                    p_DESCRICAO => :DESC,
+                    p_DESCRICAO => :P_DESCRICAO,
                     s_sfx => :S_SFX,
                     s_ico => :S_ICO,
                     s_tiporet => :S_TIPORET,
                     s_msg => :S_MSG
                 ); END;";
         $st = $conn->prepare(cfg_sql($sql));
-        $st->bindValue(':DESC', $desc);
+        $st->bindValue(':P_DESCRICAO', $desc);
         cfg_bind_pkg_status($st, $pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);
         $st->execute();
         $pkgResult = cfg_pkg_response($pkgSfx, $pkgIco, $pkgTipoRet, $pkgMsg);

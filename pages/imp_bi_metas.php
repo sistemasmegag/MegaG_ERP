@@ -148,7 +148,7 @@ html[data-theme="dark"] .saas-console .card-body{ background: #070c16; }
               <h3 class="saas-title">Importação Metas - Setor de Compras</h3>
               <p class="saas-subtitle">
                 Faça o upload da planilha com
-                <strong>CODMETA, CODVENDEDOR, CODPERIODO, META, CODREGIAO, SEGMENTO, TIPORETIRA, CATEGORIA, SEQPRODUTO, DTAATUALIZACAO</strong>.
+                <strong>CODMETA, SEQPRODUTO, COMPRADOR, CODPERIODO, META, CODEMPRESA, CODSETOR</strong>.
               </p>
             </div>
 
@@ -187,7 +187,7 @@ html[data-theme="dark"] .saas-console .card-body{ background: #070c16; }
             </div>
 
             <small class="text-muted">
-              Colunas esperadas: CODMETA | CODVENDEDOR | CODPERIODO | META | CODREGIAO | SEGMENTO | TIPORETIRA | CATEGORIA | SEQPRODUTO | DTAATUALIZACAO.
+              Colunas esperadas: CODMETA | SEQPRODUTO | COMPRADOR | CODPERIODO | META | CODEMPRESA | CODSETOR.
             </small>
             <?php if ($mgUploadLimitMb > 0): ?>
             <div class="mt-2 text-muted small">
