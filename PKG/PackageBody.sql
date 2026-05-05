@@ -651,10 +651,14 @@ PROCEDURE PRC_UPD_MEGAG_DESP_APROVACAO(
     s_tiporet     OUT VARCHAR2,
     s_msg         OUT VARCHAR2
 ) AS
+    v_solicitante    CONSINCO.MEGAG_DESP.USUARIOSOLICITANTE%TYPE;
     v_status_atual   CONSINCO.MEGAG_DESP.STATUS%TYPE;
+    v_codpolitica    CONSINCO.MEGAG_DESP.CODPOLITICA%TYPE;
     v_processou_algo NUMBER := 0;
-    v_nivel_atual    NUMBER;
-    v_codgrupo       NUMBER;
+    v_nivel_atual    CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO.NIVEL_APROVACAO%TYPE;
+    v_codgrupo       CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO.CODGRUPO%TYPE;
+    v_usuario_valido NUMBER;
+    v_count          NUMBER;
 
     CURSOR c_cc_pendentes IS
         WITH CC_DESPESA AS (
@@ -668,122 +672,172 @@ PROCEDURE PRC_UPD_MEGAG_DESP_APROVACAO(
         )
         SELECT DISTINCT cc.CENTROCUSTO FROM CC_DESPESA cc;
 BEGIN
-    SELECT STATUS INTO v_status_atual
+    SELECT USUARIOSOLICITANTE, STATUS, CODPOLITICA
+    INTO v_solicitante, v_status_atual, v_codpolitica
     FROM CONSINCO.MEGAG_DESP WHERE CODDESPESA = p_coddespesa FOR UPDATE;
 
     IF v_status_atual IN ('APROVADO','REJEITADO') THEN
         s_sfx     := 'warning';
         s_ico     := 'warning';
         s_tiporet := 'A';
-        s_msg     := 'Despesa já finalizada com status: ' || v_status_atual;
+        s_msg     := 'Despesa ja finalizada com status: ' || v_status_atual;
+        RETURN;
+    END IF;
+
+    IF v_solicitante = p_sequsuario THEN
+        s_sfx     := 'warning';
+        s_ico     := 'warning';
+        s_tiporet := 'A';
+        s_msg     := 'Solicitante nao pode aprovar a propria despesa.';
         RETURN;
     END IF;
 
     FOR v_cc IN c_cc_pendentes LOOP
-        DECLARE
-            CURSOR c_niveis IS
-                SELECT pg.NIVEL_APROVACAO, pg.CODGRUPO
-                FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO pg
-                WHERE pg.SEQUSUARIO  = p_sequsuario
-                  AND TO_CHAR(pg.CENTROCUSTO) = TO_CHAR(v_cc.CENTROCUSTO)
-                ORDER BY pg.NIVEL_APROVACAO;
-            v_aprovado NUMBER;
-        BEGIN
-            FOR r IN c_niveis LOOP
-                -- Verifica se níveis inferiores do mesmo CC estão ok
-                DECLARE
-                    v_pendente_inf NUMBER;
-                BEGIN
-                    SELECT COUNT(*) INTO v_pendente_inf
-                    FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p_inf
-                    WHERE TO_CHAR(p_inf.CENTROCUSTO) = TO_CHAR(v_cc.CENTROCUSTO)
-                      AND p_inf.NIVEL_APROVACAO < r.NIVEL_APROVACAO
-                      AND NOT EXISTS (
-                          SELECT 1 FROM CONSINCO.MEGAG_DESP_APROVACAO a_inf
-                          WHERE a_inf.CODDESPESA = p_coddespesa
-                            AND TO_CHAR(a_inf.CENTROCUSTO) = TO_CHAR(v_cc.CENTROCUSTO)
-                            AND a_inf.NIVEL_APROVACAO = p_inf.NIVEL_APROVACAO
-                            AND a_inf.STATUS = 'APROVADO'
-                      );
+        SELECT MIN(pg.NIVEL_APROVACAO)
+        INTO v_nivel_atual
+        FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO pg
+        WHERE pg.CODPOLITICA = v_codpolitica
+          AND pg.CENTROCUSTO = v_cc.CENTROCUSTO
+          AND NOT EXISTS (
+              SELECT 1 FROM CONSINCO.MEGAG_DESP_APROVACAO a
+              WHERE a.CODDESPESA      = p_coddespesa
+                AND a.CENTROCUSTO     = pg.CENTROCUSTO
+                AND a.NIVEL_APROVACAO = pg.NIVEL_APROVACAO
+                AND a.STATUS          = 'APROVADO'
+                AND EXISTS (
+                    SELECT 1 FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p2
+                    WHERE p2.CODGRUPO    = pg.CODGRUPO
+                      AND p2.SEQUSUARIO  = a.USUARIOAPROVADOR
+                      AND p2.CODPOLITICA = pg.CODPOLITICA
+                      AND p2.CENTROCUSTO = pg.CENTROCUSTO)
+          );
 
-                    IF v_pendente_inf = 0 THEN
-                        -- Verifica se o próprio usuário já aprovou este nível
-                        SELECT COUNT(*) INTO v_aprovado
-                        FROM CONSINCO.MEGAG_DESP_APROVACAO a
-                        WHERE a.CODDESPESA       = p_coddespesa
-                          AND TO_CHAR(a.CENTROCUSTO) = TO_CHAR(v_cc.CENTROCUSTO)
-                          AND a.USUARIOAPROVADOR  = p_sequsuario
-                          AND a.NIVEL_APROVACAO  = r.NIVEL_APROVACAO
-                          AND a.STATUS           = 'APROVADO';
+        IF v_nivel_atual IS NULL THEN
+            CONTINUE;
+        END IF;
 
-                        IF v_aprovado = 0 THEN
-                            -- Registra Aprovação
-                             UPDATE CONSINCO.MEGAG_DESP_APROVACAO
-                                SET STATUS = p_status, DTAACAO = SYSDATE, OBSERVACAO = p_observacao
-                              WHERE CODDESPESA = p_coddespesa
-                                AND TRIM(TO_CHAR(CENTROCUSTO)) = TRIM(TO_CHAR(v_cc.CENTROCUSTO))
-                                AND USUARIOAPROVADOR = p_sequsuario
-                                AND STATUS = 'LANCADO';
+        SELECT pg.CODGRUPO
+        INTO v_codgrupo
+        FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO pg
+        WHERE pg.CODPOLITICA     = v_codpolitica
+          AND pg.CENTROCUSTO     = v_cc.CENTROCUSTO
+          AND pg.NIVEL_APROVACAO = v_nivel_atual
+          AND ROWNUM = 1;
 
-                            IF SQL%ROWCOUNT = 0 THEN
-                                INSERT INTO CONSINCO.MEGAG_DESP_APROVACAO(
-                                    CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
-                                    STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
-                                ) VALUES (
-                                    p_coddespesa, v_cc.CENTROCUSTO, p_sequsuario,
-                                    p_status, SYSDATE, p_observacao, r.NIVEL_APROVACAO
-                                );
-                            END IF;
-                            v_processou_algo := 1;
-                            EXIT;
-                        END IF;
-                    END IF;
-                END;
-            END LOOP;
-        END;
-    END LOOP;
+        SELECT COUNT(*) INTO v_usuario_valido
+        FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p
+        WHERE p.SEQUSUARIO  = p_sequsuario
+          AND p.CENTROCUSTO = v_cc.CENTROCUSTO
+          AND p.CODGRUPO    = v_codgrupo
+          AND p.CODPOLITICA = v_codpolitica;
 
-    IF v_processou_algo = 1 THEN
-        -- Verifica se TODOS os níveis de TODOS os CCs foram aprovados
-        DECLARE
-            v_restante NUMBER;
-        BEGIN
-            SELECT COUNT(*) INTO v_restante
-            FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO pg
-            WHERE pg.CENTROCUSTO IN (
-                SELECT CENTROCUSTO FROM CONSINCO.MEGAG_DESP_RATEIO WHERE CODDESPESA = p_coddespesa
-                UNION
-                SELECT CENTROCUSTO FROM CONSINCO.MEGAG_DESP WHERE CODDESPESA = p_coddespesa
-            )
-            AND NOT EXISTS (
-                SELECT 1 FROM CONSINCO.MEGAG_DESP_APROVACAO a
-                WHERE a.CODDESPESA      = p_coddespesa
-                  AND TRIM(TO_CHAR(a.CENTROCUSTO)) = TRIM(TO_CHAR(pg.CENTROCUSTO))
-                  AND a.NIVEL_APROVACAO = pg.NIVEL_APROVACAO
-                  AND a.STATUS          = 'APROVADO'
+        IF v_usuario_valido > 0 THEN
+            SELECT COUNT(*) INTO v_count
+            FROM CONSINCO.MEGAG_DESP_APROVACAO apr
+            WHERE apr.CODDESPESA      = p_coddespesa
+              AND apr.CENTROCUSTO     = v_cc.CENTROCUSTO
+              AND apr.NIVEL_APROVACAO = v_nivel_atual
+              AND apr.STATUS          = 'APROVADO'
+              AND EXISTS (
+                  SELECT 1 FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p2
+                  WHERE p2.SEQUSUARIO  = apr.USUARIOAPROVADOR
+                    AND p2.CODGRUPO    = v_codgrupo
+                    AND p2.CODPOLITICA = v_codpolitica
+                    AND p2.CENTROCUSTO = v_cc.CENTROCUSTO
+              );
+
+            IF v_count > 0 THEN
+                CONTINUE;
+            END IF;
+
+            INSERT INTO CONSINCO.MEGAG_DESP_APROVACAO(
+                CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
+                STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
+            ) VALUES (
+                p_coddespesa, v_cc.CENTROCUSTO, p_sequsuario,
+                p_status, SYSDATE, p_observacao, v_nivel_atual
             );
 
-            IF v_restante = 0 AND p_status = 'APROVADO' THEN
-                UPDATE CONSINCO.MEGAG_DESP SET STATUS = 'APROVADO', PAGO = p_pago, DTAALTERACAO = SYSDATE WHERE CODDESPESA = p_coddespesa;
-                s_msg := 'Despesa 100% aprovada.';
-            ELSIF p_status = 'REJEITADO' THEN
-                UPDATE CONSINCO.MEGAG_DESP SET STATUS = 'REJEITADO', DTAALTERACAO = SYSDATE WHERE CODDESPESA = p_coddespesa;
-                s_msg := 'Despesa rejeitada.';
-            ELSE
-                UPDATE CONSINCO.MEGAG_DESP SET STATUS = 'APROVACAO', DTAALTERACAO = SYSDATE WHERE CODDESPESA = p_coddespesa;
-                s_msg := 'Aprovação registrada. Aguardando próximos.';
+            v_processou_algo := 1;
+
+            IF p_status = 'REJEITADO' THEN
+                UPDATE CONSINCO.MEGAG_DESP
+                   SET STATUS = 'REJEITADO', DTAALTERACAO = SYSDATE
+                 WHERE CODDESPESA = p_coddespesa;
+                COMMIT;
+                s_sfx     := 'success';
+                s_ico     := 'success';
+                s_tiporet := 'S';
+                s_msg     := 'Despesa rejeitada com sucesso.';
+                RETURN;
             END IF;
-            
-            COMMIT;
-            s_sfx := 'success'; s_ico := 'success'; s_tiporet := 'S';
-        END;
-    ELSE
-        s_sfx := 'warning'; s_ico := 'warning'; s_tiporet := 'A'; s_msg := 'Sem permissão ou fora de ordem.';
+        END IF;
+    END LOOP;
+
+    IF v_processou_algo = 0 THEN
+        s_sfx     := 'warning';
+        s_ico     := 'warning';
+        s_tiporet := 'A';
+        s_msg     := 'Sem permissao ou fora da ordem de aprovacao.';
+        RETURN;
     END IF;
+
+    DECLARE
+        v_restante NUMBER;
+    BEGIN
+        WITH CC_DESPESA AS (
+            SELECT CENTROCUSTO FROM CONSINCO.MEGAG_DESP_RATEIO WHERE CODDESPESA = p_coddespesa
+            UNION
+            SELECT CENTROCUSTO FROM CONSINCO.MEGAG_DESP
+            WHERE CODDESPESA = p_coddespesa
+              AND NOT EXISTS (SELECT 1 FROM CONSINCO.MEGAG_DESP_RATEIO r WHERE r.CODDESPESA = p_coddespesa)
+        )
+        SELECT COUNT(*) INTO v_restante
+        FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO pg
+        WHERE pg.CODPOLITICA = v_codpolitica
+          AND pg.CENTROCUSTO IN (SELECT CENTROCUSTO FROM CC_DESPESA)
+          AND NOT EXISTS (
+              SELECT 1 FROM CONSINCO.MEGAG_DESP_APROVACAO a
+              WHERE a.CODDESPESA      = p_coddespesa
+                AND a.CENTROCUSTO     = pg.CENTROCUSTO
+                AND a.NIVEL_APROVACAO = pg.NIVEL_APROVACAO
+                AND a.STATUS          = 'APROVADO'
+                AND EXISTS (
+                    SELECT 1 FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p2
+                    WHERE p2.CODGRUPO    = pg.CODGRUPO
+                      AND p2.SEQUSUARIO  = a.USUARIOAPROVADOR
+                      AND p2.CODPOLITICA = pg.CODPOLITICA
+                      AND p2.CENTROCUSTO = pg.CENTROCUSTO));
+
+        IF v_restante = 0 THEN
+            UPDATE CONSINCO.MEGAG_DESP
+               SET STATUS = 'APROVADO', PAGO = p_pago, DTAALTERACAO = SYSDATE
+             WHERE CODDESPESA = p_coddespesa;
+            s_sfx     := 'success';
+            s_ico     := 'success';
+            s_tiporet := 'S';
+            s_msg     := 'Despesa aprovada com sucesso.';
+        ELSE
+            IF v_status_atual = 'LANCADO' THEN
+                UPDATE CONSINCO.MEGAG_DESP
+                   SET STATUS = 'APROVACAO', DTAALTERACAO = SYSDATE
+                 WHERE CODDESPESA = p_coddespesa;
+            END IF;
+            s_sfx     := 'success';
+            s_ico     := 'success';
+            s_tiporet := 'S';
+            s_msg     := 'Aprovacao registrada. Aguardando proximos niveis.';
+        END IF;
+    END;
+
+    COMMIT;
 EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
-        s_sfx := 'error'; s_ico := 'danger'; s_tiporet := 'E'; s_msg := 'Erro: ' || SQLERRM;
+        s_sfx     := 'error';
+        s_ico     := 'danger';
+        s_tiporet := 'E';
+        s_msg     := 'ATUALIZAR APROVACAO - Erro: ' || SQLERRM;
 END PRC_UPD_MEGAG_DESP_APROVACAO;
 
 /* ==================================================

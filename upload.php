@@ -9,6 +9,8 @@ if (!isset($_SESSION['logado'])) {
 
 header('Content-Type: application/json; charset=utf-8');
 
+const APP_UPLOAD_MAX_BYTES = 10485760;
+
 function upload_shorthand_to_bytes(string $value): int
 {
     $value = trim($value);
@@ -83,6 +85,15 @@ if (!isset($_FILES['arquivo'])) {
 $file = $_FILES['arquivo'];
 if ((int)$file['error'] !== UPLOAD_ERR_OK) {
     echo json_encode(['sucesso' => false, 'erro' => upload_error_message((int)$file['error'])]);
+    exit;
+}
+
+$appLimitBytes = APP_UPLOAD_MAX_BYTES;
+if ((int)$file['size'] > $appLimitBytes) {
+    echo json_encode([
+        'sucesso' => false,
+        'erro' => 'O arquivo excede o limite permitido (' . upload_bytes_to_human($appLimitBytes) . ').',
+    ]);
     exit;
 }
 

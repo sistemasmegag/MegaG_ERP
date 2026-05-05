@@ -285,6 +285,7 @@ html[data-theme="dark"] .saas-console { background: #070c16; }
                                 <div class="col-md-8 text-center">
                                     <div class="mb-3"><i class="bi bi-file-earmark-excel-fill text-success fs-1"></i></div>
                                     <h6>Selecione sua planilha de Metas</h6>
+                                    <p class="text-muted small mb-0">Arquivos .xls ou .xlsx de atÃ© 10 MB.</p>
                                     <div class="input-group mt-4">
                                         <input type="file" class="form-control saas-input" id="arquivoInput" accept=".xls,.xlsx">
                                         <button class="btn btn-info text-white px-4 fw-bold d-inline-flex align-items-center" id="btn_step4" onclick="iniciarImport()">
@@ -525,9 +526,13 @@ html[data-theme="dark"] .saas-console { background: #070c16; }
 
     async function iniciarImport() {
         const fileInput = document.getElementById('arquivoInput'); if(!fileInput.files.length) return mgAlert('Selecione a planilha!', 'error');
+        const arquivo = fileInput.files[0];
+        const limiteBytes = 10 * 1024 * 1024;
+        if (arquivo.size > limiteBytes) return mgAlert('A planilha deve ter no maximo 10 MB.', 'error');
         setBtnLoading('btn_step4', true); const fd = new FormData(); fd.append('arquivo', fileInput.files[0]);
         try {
             const up = await fetch('upload.php', { method: 'POST', body: fd }); const jsonValue = await up.json();
+            if (!jsonValue.sucesso) throw new Error(jsonValue.erro || 'Falha ao enviar a planilha.');
             const evt = new EventSource(`processors/processa_universal_insert.php?tipo=camp_metarep&arquivo=${jsonValue.arquivo}&fixed_CODCAMPANHA=${globalCodCampanha}`);
             evt.onmessage = (e) => { const d = JSON.parse(e.data); log(d.msg, d.tipo); };
             evt.addEventListener('close', () => { document.getElementById('card_step4').classList.add('completed'); mgAlert('Importação concluída!', 'success'); evt.close(); setBtnLoading('btn_step4', false); });
