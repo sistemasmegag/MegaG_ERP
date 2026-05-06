@@ -763,61 +763,61 @@ PROCEDURE PRC_INS_MEGAG_DESP_APROVACAO(
     s_msg        OUT VARCHAR2
 ) IS
     v_codpolitica MEGAG_DESP.CODPOLITICA%TYPE;
-    v_qtd_aprovadores NUMBER;
 BEGIN
+    -- pega política uma vez só (melhora performance)
     SELECT CODPOLITICA
-      INTO v_codpolitica
-      FROM MEGAG_DESP
-     WHERE CODDESPESA = p_coddespesa;
+    INTO v_codpolitica
+    FROM MEGAG_DESP
+    WHERE CODDESPESA = p_coddespesa;
 
+    -- loop em TODOS os centros (rateio ou principal)
     FOR v_cc IN (
-        SELECT CENTROCUSTO
-          FROM MEGAG_DESP_RATEIO
-         WHERE CODDESPESA = p_coddespesa
-        UNION
-        SELECT d.CENTROCUSTO
-          FROM MEGAG_DESP d
-         WHERE d.CODDESPESA = p_coddespesa
-           AND NOT EXISTS (
-               SELECT 1
-                 FROM MEGAG_DESP_RATEIO r
-                WHERE r.CODDESPESA = d.CODDESPESA
-           )
-    ) LOOP
-        SELECT COUNT(*)
-          INTO v_qtd_aprovadores
-          FROM MEGAG_DESP_POLIT_CENTRO_CUSTO
-         WHERE CENTROCUSTO = v_cc.CENTROCUSTO
-           AND CODPOLITICA = v_codpolitica;
+        SELECT DISTINCT CENTROCUSTO
+        FROM (
+            SELECT CENTROCUSTO
+            FROM MEGAG_DESP_RATEIO
+            WHERE CODDESPESA = p_coddespesa
 
-        IF v_qtd_aprovadores = 0 THEN
-            RAISE_APPLICATION_ERROR(-20014,
-                'Nao ha aprovadores configurados para o centro de custo ' || v_cc.CENTROCUSTO || '.');
-        END IF;
+            UNION
+
+            SELECT d.CENTROCUSTO
+            FROM MEGAG_DESP d
+            WHERE d.CODDESPESA = p_coddespesa
+              AND NOT EXISTS (
+                  SELECT 1 
+                  FROM MEGAG_DESP_RATEIO r 
+                  WHERE r.CODDESPESA = d.CODDESPESA
+              )
+        )
+    ) LOOP
 
         FOR r_aprov IN (
-            SELECT sequsuario, nivel_aprovacao
-              FROM MEGAG_DESP_POLIT_CENTRO_CUSTO
-             WHERE CENTROCUSTO = v_cc.CENTROCUSTO
-               AND CODPOLITICA = v_codpolitica
-             ORDER BY NIVEL_APROVACAO
+            SELECT DISTINCT sequsuario, nivel_aprovacao
+            FROM MEGAG_DESP_POLIT_CENTRO_CUSTO
+            WHERE CENTROCUSTO = v_cc.CENTROCUSTO
+              AND CODPOLITICA = v_codpolitica
+            ORDER BY NIVEL_APROVACAO
         ) LOOP
+
             INSERT INTO MEGAG_DESP_APROVACAO(
                 CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
                 STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
             )
-            SELECT p_coddespesa, v_cc.CENTROCUSTO, r_aprov.sequsuario,
-                   'LANCADO', SYSDATE, NULL, r_aprov.nivel_aprovacao
-              FROM DUAL
-             WHERE NOT EXISTS (
-                   SELECT 1
-                     FROM MEGAG_DESP_APROVACAO apr
-                    WHERE apr.CODDESPESA       = p_coddespesa
-                      AND apr.CENTROCUSTO      = v_cc.CENTROCUSTO
-                      AND apr.USUARIOAPROVADOR = r_aprov.sequsuario
-                      AND apr.NIVEL_APROVACAO  = r_aprov.nivel_aprovacao
-             );
+            SELECT
+                p_coddespesa, v_cc.CENTROCUSTO, r_aprov.sequsuario,
+                'LANCADO', SYSDATE, NULL, r_aprov.nivel_aprovacao
+            FROM DUAL
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM MEGAG_DESP_APROVACAO ex
+                WHERE ex.CODDESPESA       = p_coddespesa
+                  AND ex.CENTROCUSTO      = v_cc.CENTROCUSTO
+                  AND ex.USUARIOAPROVADOR = r_aprov.sequsuario
+                  AND ex.NIVEL_APROVACAO  = r_aprov.nivel_aprovacao
+            );
+
         END LOOP;
+
     END LOOP;
 
     s_sfx     := 'success';
@@ -869,7 +869,8 @@ BEGIN
               SELECT 1 FROM MEGAG_DESP_APROVACAO apr
               WHERE apr.CODDESPESA      = cc.CODDESPESA
                 AND apr.CENTROCUSTO     = cc.CENTROCUSTO
-                AND apr.USUARIOAPROVADOR = p_sequsuario)
+                AND apr.USUARIOAPROVADOR = p_sequsuario
+				AND apr.STATUS           IN ('APROVADO', 'REJEITADO'))
           AND p.NIVEL_APROVACAO <= (
               SELECT NVL(MAX(apr_nivel.NIVEL_APROVACAO), 0) + 1
               FROM MEGAG_DESP_APROVACAO apr_nivel
@@ -1007,21 +1008,39 @@ BEGIN
             UPDATE MEGAG_DESP_APROVACAO
                SET STATUS           = p_status,
                    DTAACAO          = SYSDATE,
-                   OBSERVACAO       = p_observacao,
-                   USUARIOAPROVADOR = p_sequsuario
+                   OBSERVACAO       = p_observacao
              WHERE CODDESPESA      = p_coddespesa
                AND CENTROCUSTO     = v_cc.CENTROCUSTO
                AND NIVEL_APROVACAO = v_nivel_atual
+               AND USUARIOAPROVADOR = p_sequsuario
                AND STATUS          = 'LANCADO';
 
             IF SQL%ROWCOUNT = 0 THEN
-                INSERT INTO MEGAG_DESP_APROVACAO(
-                    CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
-                    STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
-                ) VALUES (
-                    p_coddespesa, v_cc.CENTROCUSTO, p_sequsuario,
-                    p_status, SYSDATE, p_observacao, v_nivel_atual
-                );
+                SELECT COUNT(*) INTO v_count
+                FROM MEGAG_DESP_APROVACAO apr
+                WHERE apr.CODDESPESA      = p_coddespesa
+                  AND apr.CENTROCUSTO     = v_cc.CENTROCUSTO
+                  AND apr.NIVEL_APROVACAO = v_nivel_atual
+                  AND apr.STATUS          IN ('APROVADO', 'REJEITADO')
+                  AND EXISTS (
+                      SELECT 1 FROM MEGAG_DESP_POLIT_CENTRO_CUSTO p2
+                      WHERE p2.SEQUSUARIO  = apr.USUARIOAPROVADOR
+                        AND p2.CODGRUPO    = v_codgrupo
+                        AND p2.CODPOLITICA = v_codpolitica
+                        AND p2.CENTROCUSTO = v_cc.CENTROCUSTO
+                  );
+
+                IF v_count = 0 THEN
+                    INSERT INTO MEGAG_DESP_APROVACAO(
+                        CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
+                        STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
+                    ) VALUES (
+                        p_coddespesa, v_cc.CENTROCUSTO, p_sequsuario,
+                        p_status, SYSDATE, p_observacao, v_nivel_atual
+                    );
+                ELSE
+                    CONTINUE;
+                END IF;
             END IF;
 
             v_processou_algo := 1;

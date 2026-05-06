@@ -1354,25 +1354,26 @@ try {
                        H.CENTROCUSTO,
                        H.USUARIOAPROVADOR,
                        H.NIVEL_APROVACAO,
-                       CASE
-                           WHEN MAX(CASE WHEN H.STATUS IN ('REJEITADO', 'REPROVADO') THEN 1 ELSE 0 END) = 1 THEN 'REJEITADO'
-                           WHEN MAX(CASE WHEN H.STATUS = 'APROVADO' THEN 1 ELSE 0 END) = 1 THEN 'APROVADO'
-                           ELSE 'LANCADO'
-                       END AS STATUS,
-                       MAX(CASE WHEN H.STATUS IN ('APROVADO', 'REJEITADO', 'REPROVADO') THEN H.DTAACAO END) AS DTAACAO,
-                       TO_CHAR(MAX(CASE WHEN H.STATUS IN ('APROVADO', 'REJEITADO', 'REPROVADO') THEN H.DTAACAO END), 'DD/MM/YYYY HH24:MI') as DTAACAO_FORMAT,
-                       MAX(CASE WHEN H.STATUS IN ('APROVADO', 'REJEITADO', 'REPROVADO') THEN H.OBSERVACAO END) AS OBSERVACAO,
-                       U.NOME as NOME_APROVADOR
+                       H.STATUS,
+                       H.DTAACAO,
+                       TO_CHAR(H.DTAACAO, 'DD/MM/YYYY HH24:MI') as DTAACAO_FORMAT,
+                       H.OBSERVACAO,
+                       U.NOME as NOME_APROVADOR,
+                       C.CENTRORESULTADO AS CODIGO_CC,
+                       C.DESCRICAO AS DESC_CC
                   FROM CONSINCO.MEGAG_DESP_APROVACAO H
                   LEFT JOIN CONSINCO.GE_USUARIO U ON H.USUARIOAPROVADOR = U.SEQUSUARIO
+                  LEFT JOIN CONSINCO.ABA_CENTRORESULTADO C ON C.CENTRORESULTADO = H.CENTROCUSTO
                  WHERE H.CODDESPESA = :ID
-                 GROUP BY H.CODDESPESA,
-                          H.CENTROCUSTO,
-                          H.USUARIOAPROVADOR,
-                          H.NIVEL_APROVACAO,
-                          U.NOME
                  ORDER BY H.NIVEL_APROVACAO ASC,
                           H.CENTROCUSTO ASC,
+                          CASE H.STATUS
+                              WHEN 'APROVADO' THEN 1
+                              WHEN 'REJEITADO' THEN 2
+                              WHEN 'REPROVADO' THEN 2
+                              ELSE 3
+                          END,
+                          H.DTAACAO ASC,
                           H.USUARIOAPROVADOR ASC";
         
         $st = $conn->prepare(mg_with_schema($sql));

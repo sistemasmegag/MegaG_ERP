@@ -2359,8 +2359,9 @@ $paginaAtual = 'despesas';
         </div>
         ${grupos[nivel].map((h) => {
           const nome = h.NOME_APROVADOR || 'Aprovador';
+          const centroCusto = [h.CODIGO_CC || h.CENTROCUSTO, h.DESC_CC].filter(Boolean).join(' | ');
           const status = String(h.STATUS || 'LANCADO').toUpperCase();
-          const chip = status === 'APROVADO' ? 'chip-green' : (status === 'REJEITADO' || status === 'REPROVADO' ? 'chip-red' : (usePrimaryForPending ? 'chip-primary' : 'chip-red'));
+          const chip = status === 'APROVADO' ? 'chip-green' : (status === 'REJEITADO' || status === 'REPROVADO' ? 'chip-red' : 'chip-primary');
           const iniciais = nome.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
           return `
             <div class="timeline-node ${status === 'APROVADO' ? 'active' : ''} d-flex align-items-start mb-3">
@@ -2374,7 +2375,7 @@ $paginaAtual = 'despesas';
                   <div class="avatar-small bg-primary text-white d-flex align-items-center justify-content-center" style="width:30px;height:30px;border-radius:50%;font-size:10px;">${iniciais || '--'}</div>
                   <div class="flex-grow-1">
                     <div class="fw-bold text-dark" style="font-size:13px;">${nome}</div>
-                    <div class="text-muted" style="font-size:11px;">Nivel ${h.NIVEL_APROVACAO}</div>
+                    <div class="text-muted" style="font-size:11px;">Nivel ${h.NIVEL_APROVACAO}${centroCusto ? ` &bull; ${centroCusto}` : ''}</div>
                   </div>
                 </div>
                 ${h.OBSERVACAO ? `<div class="mt-2 p-2 bg-light rounded small text-muted border-start border-primary border-4">${h.OBSERVACAO}</div>` : ''}

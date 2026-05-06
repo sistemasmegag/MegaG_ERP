@@ -858,6 +858,7 @@ $paginaAtual = 'despesas_aprovacao';
         </div>
         ${grupos[nivel].map((h) => {
           const nome = h.NOME_APROVADOR || 'Aprovador';
+          const centroCusto = [h.CODIGO_CC || h.CENTROCUSTO, h.DESC_CC].filter(Boolean).join(' | ');
           const status = String(h.STATUS || 'LANCADO').toUpperCase();
           const chip = status === 'APROVADO' ? 'chip-green' : (status === 'REJEITADO' || status === 'REPROVADO' ? 'chip-red' : 'chip-primary');
           return `
@@ -872,7 +873,7 @@ $paginaAtual = 'despesas_aprovacao';
                   <div class="avatar-small bg-primary text-white d-flex align-items-center justify-content-center" style="width:30px;height:30px;border-radius:50%;font-size:10px;">${getInitials(nome)}</div>
                   <div class="flex-grow-1">
                     <div class="fw-bold" style="font-size:13px;">${nome}</div>
-                    <div class="text-muted" style="font-size:11px;">Nivel ${h.NIVEL_APROVACAO}</div>
+                    <div class="text-muted" style="font-size:11px;">Nivel ${h.NIVEL_APROVACAO}${centroCusto ? ` &bull; ${centroCusto}` : ''}</div>
                   </div>
                 </div>
                 ${h.OBSERVACAO ? `<div class="mt-2 p-2 bg-light rounded small text-muted border-start border-primary border-4">${h.OBSERVACAO}</div>` : ''}
@@ -931,14 +932,22 @@ $paginaAtual = 'despesas_aprovacao';
       return;
     }
 
+    const modalEl = document.getElementById('modalDetalhesAprovacao');
     const { value: obs } = await Swal.fire({
+      target: modalEl || document.body,
       title: status === 'APROVADO' ? 'Aprovar Despesa' : 'Reprovar Despesa',
       input: 'textarea',
       inputLabel: 'Observação/Comentário',
       inputPlaceholder: 'Digite aqui...',
+      focusConfirm: false,
+      returnFocus: false,
       showCancelButton: true,
       confirmButtonText: 'Confirmar',
-      cancelButtonText: 'Cancelar'
+      cancelButtonText: 'Cancelar',
+      didOpen: () => {
+        const input = Swal.getInput();
+        if (input) input.focus();
+      }
     });
 
     if (obs === undefined) return; // Cancelou
@@ -963,7 +972,6 @@ $paginaAtual = 'despesas_aprovacao';
       let json = await parseApiResponse(res);
       if (json.sucesso) {
         Swal.fire('Sucesso', json.dados.mensagem, 'success');
-        const modalEl = document.getElementById('modalDetalhesAprovacao');
         const modal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.hide();
         loadApprovals();

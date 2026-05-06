@@ -13,7 +13,6 @@ PROCEDURE PRC_INS_MEGAG_DESP_APROVACAO(
     s_tiporet    OUT VARCHAR2,
     s_msg        OUT VARCHAR2
 ) IS
-    v_existe NUMBER;
     v_codpolitica CONSINCO.MEGAG_DESP.CODPOLITICA%TYPE;
 BEGIN
     SELECT CODPOLITICA
@@ -22,41 +21,44 @@ BEGIN
      WHERE CODDESPESA = p_coddespesa;
 
     -- Loop em TODOS os centros de custo envolvidos (Rateio + Principal)
-    FOR r_cc IN (
-        SELECT DISTINCT TRIM(TO_CHAR(CENTROCUSTO)) as CENTROCUSTO 
-        FROM CONSINCO.MEGAG_DESP_RATEIO 
-        WHERE CODDESPESA = p_coddespesa
-        UNION
-        SELECT DISTINCT TRIM(TO_CHAR(d.CENTROCUSTO)) as CENTROCUSTO 
-        FROM CONSINCO.MEGAG_DESP d
-        WHERE d.CODDESPESA = p_coddespesa
-          AND NOT EXISTS (SELECT 1 FROM CONSINCO.MEGAG_DESP_RATEIO r WHERE r.CODDESPESA = d.CODDESPESA)
+    FOR v_cc IN (
+        SELECT DISTINCT CENTROCUSTO
+        FROM (
+            SELECT CENTROCUSTO
+            FROM CONSINCO.MEGAG_DESP_RATEIO 
+            WHERE CODDESPESA = p_coddespesa
+            UNION
+            SELECT d.CENTROCUSTO
+            FROM CONSINCO.MEGAG_DESP d
+            WHERE d.CODDESPESA = p_coddespesa
+              AND NOT EXISTS (SELECT 1 FROM CONSINCO.MEGAG_DESP_RATEIO r WHERE r.CODDESPESA = d.CODDESPESA)
+        )
     ) LOOP
         -- Busca aprovadores configurados para CADA centro de custo
         FOR r_aprov IN (
-            SELECT SEQUSUARIO, NIVEL_APROVACAO
+            SELECT DISTINCT sequsuario, nivel_aprovacao
             FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO
-            WHERE TRIM(TO_CHAR(CENTROCUSTO)) = TRIM(TO_CHAR(r_cc.CENTROCUSTO))
+            WHERE CENTROCUSTO = v_cc.CENTROCUSTO
               AND CODPOLITICA = v_codpolitica
             ORDER BY NIVEL_APROVACAO
         ) LOOP
             -- Idempotência: Evita duplicar registros se a proc for chamada de novo
-            SELECT COUNT(*) INTO v_existe
-            FROM CONSINCO.MEGAG_DESP_APROVACAO
-            WHERE CODDESPESA       = p_coddespesa
-              AND TRIM(TO_CHAR(CENTROCUSTO)) = TRIM(TO_CHAR(r_cc.CENTROCUSTO))
-              AND USUARIOAPROVADOR = r_aprov.SEQUSUARIO
-              AND NIVEL_APROVACAO  = r_aprov.NIVEL_APROVACAO;
-
-            IF v_existe = 0 THEN
-                INSERT INTO CONSINCO.MEGAG_DESP_APROVACAO(
-                    CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
-                    STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
-                ) VALUES (
-                    p_coddespesa, r_cc.CENTROCUSTO, r_aprov.SEQUSUARIO,
-                    'LANCADO', SYSDATE, NULL, r_aprov.NIVEL_APROVACAO
-                );
-            END IF;
+            INSERT INTO CONSINCO.MEGAG_DESP_APROVACAO(
+                CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
+                STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
+            )
+            SELECT
+                p_coddespesa, v_cc.CENTROCUSTO, r_aprov.sequsuario,
+                'LANCADO', SYSDATE, NULL, r_aprov.nivel_aprovacao
+            FROM DUAL
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM CONSINCO.MEGAG_DESP_APROVACAO ex
+                WHERE ex.CODDESPESA       = p_coddespesa
+                  AND ex.CENTROCUSTO      = v_cc.CENTROCUSTO
+                  AND ex.USUARIOAPROVADOR = r_aprov.sequsuario
+                  AND ex.NIVEL_APROVACAO  = r_aprov.nivel_aprovacao
+            );
         END LOOP;
     END LOOP;
 
@@ -101,7 +103,7 @@ BEGIN
         JOIN CONSINCO.MEGAG_DESP_APROVADORES a ON a.CENTROCUSTO = cc.CENTROCUSTO
         JOIN CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p
             ON p.CODGRUPO = a.CODGRUPO AND p.CENTROCUSTO = a.CENTROCUSTO
-        WHERE desp.STATUS NOT IN ('REJEITADO', 'APROVADO')
+        WHERE desp.STATUS NOT IN ('REJEITADO')
           AND desp.USUARIOSOLICITANTE <> p_sequsuario
           AND a.SEQUSUARIO = p_sequsuario
           AND NOT EXISTS (
@@ -109,7 +111,7 @@ BEGIN
               WHERE apr.CODDESPESA      = cc.CODDESPESA
                 AND apr.CENTROCUSTO     = cc.CENTROCUSTO
                 AND apr.USUARIOAPROVADOR = p_sequsuario
-                AND apr.STATUS           = 'APROVADO')
+                AND apr.STATUS           IN ('APROVADO', 'REJEITADO'))
           AND NOT EXISTS (
               -- Valida se é a vez do usuário (não há níveis inferiores pendentes para este CC)
               SELECT 1 FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p_prev
@@ -253,21 +255,39 @@ BEGIN
             UPDATE CONSINCO.MEGAG_DESP_APROVACAO
                SET STATUS           = p_status,
                    DTAACAO          = SYSDATE,
-                   OBSERVACAO       = p_observacao,
-                   USUARIOAPROVADOR = p_sequsuario
+                   OBSERVACAO       = p_observacao
              WHERE CODDESPESA      = p_coddespesa
                AND CENTROCUSTO     = v_cc.CENTROCUSTO
                AND NIVEL_APROVACAO = v_nivel_atual
+               AND USUARIOAPROVADOR = p_sequsuario
                AND STATUS          = 'LANCADO';
 
             IF SQL%ROWCOUNT = 0 THEN
-                INSERT INTO CONSINCO.MEGAG_DESP_APROVACAO(
-                    CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
-                    STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
-                ) VALUES (
-                    p_coddespesa, v_cc.CENTROCUSTO, p_sequsuario,
-                    p_status, SYSDATE, p_observacao, v_nivel_atual
-                );
+                SELECT COUNT(*) INTO v_count
+                FROM CONSINCO.MEGAG_DESP_APROVACAO apr
+                WHERE apr.CODDESPESA      = p_coddespesa
+                  AND apr.CENTROCUSTO     = v_cc.CENTROCUSTO
+                  AND apr.NIVEL_APROVACAO = v_nivel_atual
+                  AND apr.STATUS          IN ('APROVADO', 'REJEITADO')
+                  AND EXISTS (
+                      SELECT 1 FROM CONSINCO.MEGAG_DESP_POLIT_CENTRO_CUSTO p2
+                      WHERE p2.SEQUSUARIO  = apr.USUARIOAPROVADOR
+                        AND p2.CODGRUPO    = v_codgrupo
+                        AND p2.CODPOLITICA = v_codpolitica
+                        AND p2.CENTROCUSTO = v_cc.CENTROCUSTO
+                  );
+
+                IF v_count = 0 THEN
+                    INSERT INTO CONSINCO.MEGAG_DESP_APROVACAO(
+                        CODDESPESA, CENTROCUSTO, USUARIOAPROVADOR,
+                        STATUS, DTAACAO, OBSERVACAO, NIVEL_APROVACAO
+                    ) VALUES (
+                        p_coddespesa, v_cc.CENTROCUSTO, p_sequsuario,
+                        p_status, SYSDATE, p_observacao, v_nivel_atual
+                    );
+                ELSE
+                    CONTINUE;
+                END IF;
             END IF;
 
             v_processou_algo := 1;
