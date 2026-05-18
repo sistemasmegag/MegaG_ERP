@@ -274,6 +274,7 @@ if (!function_exists('renderMenuIcon')) {
             'APP_DESP'           => 'receipt',
             'APP_INVENTARIO_TI'  => 'box-in',
             'APP_TI_INVENTARIO'  => 'box-in',
+            'APP_INV_CICLICO'    => 'box-in',
             'APP_TAREFAS'        => 'kanban',
             'APP_TASK'           => 'kanban',
             'APP_CRM'            => 'diagram',
@@ -308,6 +309,7 @@ if (!function_exists('renderMenuIcon')) {
             'imp_lanctocomissao'  => 'cash-stack',
             'dados_visualizar'    => 'table',
             'inventario_ti'       => 'box-in',
+            'inventario_ciclico'  => 'box-in',
             'ti_inventario'       => 'box-in',
             'chamados'            => 'headset',
             'usuarios'            => 'people',
@@ -490,7 +492,10 @@ if (count($mobileShortcuts) > 4) {
                          data-bs-toggle="collapse" 
                          data-bs-target="#<?php echo $safeId; ?>" 
                          aria-expanded="<?php echo $hasActive ? 'true' : 'false'; ?>">
-                        <span><?php echo htmlspecialchars($tituloModulo); ?></span>
+                        <span class="section-title">
+                            <?php echo renderMenuIconFromModulo($codModulo); ?>
+                            <span><?php echo htmlspecialchars($tituloModulo); ?></span>
+                        </span>
                         <i class="bi bi-chevron-down chevron-icon"></i>
                     </div>
                     
@@ -505,7 +510,12 @@ if (count($mobileShortcuts) > 4) {
                                 $isActive = ($paginaAtual === $linkMenu);
                                 ?>
                                 <a href="<?php echo $href; ?>" class="nav-subitem <?php echo $isActive ? 'active' : ''; ?>">
-                                    <span class="dot"></span>
+                                    <?php echo renderMenuIcon(
+                                        (string)($app['CODMODULO'] ?? $codModulo),
+                                        $codApp,
+                                        $linkMenu,
+                                        (string)($app['ICO'] ?? '')
+                                    ); ?>
                                     <span><?php echo htmlspecialchars($nomeApp); ?></span>
                                 </a>
                             <?php endforeach; ?>
@@ -560,18 +570,24 @@ if (count($mobileShortcuts) > 4) {
     .nav-item.active { background: var(--brand-primary-glow); border-left: 3px solid var(--brand-primary); }
 
     .menu-section { margin-top: 0.5rem; }
-    .section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; color: #94a3b8; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; transition: 0.2s; border-radius: 12px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; cursor: pointer; color: #94a3b8; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; transition: 0.2s; border-radius: 12px; }
+    .section-title { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+    .section-title .menu-icon-svg { width: 16px; height: 16px; color: currentColor; opacity: .85; margin-right: 0 !important; }
     .section-header:hover { background: #f8fafc; color: #64748b; }
     .section-header .chevron-icon { transition: transform 0.3s ease; font-size: 0.8rem; }
     .section-header.collapsed .chevron-icon { transform: rotate(-90deg); }
 
     .section-content { display: flex; flex-direction: column; gap: 2px; padding-left: 12px; margin-top: 4px; }
     .nav-subitem { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 10px; color: var(--sidebar-text); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: 0.2s; }
-    .nav-subitem .dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; transition: 0.2s; }
+    .nav-subitem .menu-icon-svg,
+    .nav-subitem > i { width: 18px; height: 18px; flex: 0 0 18px; margin-right: 0 !important; color: #94a3b8; transition: 0.2s; }
+    .nav-subitem > i { display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; }
     .nav-subitem:hover { color: var(--brand-primary); background: #f8fafc; }
-    .nav-subitem:hover .dot { background: var(--brand-primary); transform: scale(1.2); }
+    .nav-subitem:hover .menu-icon-svg,
+    .nav-subitem:hover > i { color: var(--brand-primary); transform: scale(1.08); }
     .nav-subitem.active { color: var(--brand-primary); font-weight: 700; background: var(--brand-primary-soft); }
-    .nav-subitem.active .dot { background: var(--brand-primary); box-shadow: 0 0 8px var(--brand-primary); }
+    .nav-subitem.active .menu-icon-svg,
+    .nav-subitem.active > i { color: var(--brand-primary); }
 
     .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(226, 232, 240, 0.8); }
     .dark-mode-toggle { margin-bottom: 1rem; cursor: pointer; }
@@ -598,6 +614,8 @@ if (count($mobileShortcuts) > 4) {
             min-width: 0;
             max-width: calc(100vw - 36px);
             height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden;
             border-radius: 0 24px 24px 0;
             z-index: 1050;
             transform: translateX(-105%);
@@ -615,6 +633,10 @@ if (count($mobileShortcuts) > 4) {
 
         .sidebar-menu {
             padding: 0 .85rem;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
 
         .sidebar-footer {

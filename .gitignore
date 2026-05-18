@@ -7,3 +7,4 @@
 # Configuracoes locais do Firebase
 /includes/firebase.local.php
 /includes/firebase-service-account.json
+/includes/openai.local.php

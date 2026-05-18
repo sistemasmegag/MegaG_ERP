@@ -17,9 +17,9 @@ $primeiroNome = explode(' ', $usuarioNome)[0];
             <input type="text" placeholder="Pesquisar...">
         </div>
         
-        <button class="icon-btn" title="Notificações">
+        <button class="icon-btn" title="Notificações" id="mgTopNotifBtn" type="button">
             <i class="bi bi-bell"></i>
-            <span class="notification-badge"></span>
+            <span class="notification-badge" id="mgTopNotifBadge" style="display:none;"></span>
         </button>
     </div>
 </header>
@@ -95,13 +95,19 @@ $primeiroNome = explode(' ', $usuarioNome)[0];
 
     .notification-badge {
         position: absolute;
-        top: 2px;
-        right: 2px;
-        width: 8px;
-        height: 8px;
+        top: -2px;
+        right: -2px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
         background: #ef4444;
-        border-radius: 50%;
+        color: #fff;
+        border-radius: 999px;
         border: 2px solid #fff;
+        font-size: 9px;
+        font-weight: 900;
+        line-height: 12px;
+        text-align: center;
     }
 
     [data-theme="dark"] .topbar {

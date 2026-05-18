@@ -793,6 +793,10 @@ try {
         $tipo = (int) ($req['categoria'] ?? 0);
         $venc = trim($req['vencimento'] ?? '');
         $obs = trim($req['comentario'] ?? '');
+        $statusDespesa = strtoupper(trim((string)($req['status'] ?? 'LANCADO')));
+        if (!in_array($statusDespesa, ['LANCADO', 'RASCUNHO'], true)) {
+            $statusDespesa = 'LANCADO';
+        }
 
         // Suporta múltiplos centros de custo enviados como JSON array em 'centros_custo'
         $centros_custo_raw = [];
@@ -886,7 +890,7 @@ try {
                       p_NOMEARQUIVO          => :NOMEARQ,
                       p_OBSERVACAO           => :OBS,
                       p_CENTROCUSTO          => :CC,
-                      p_STATUS               => 'LANCADO',
+                      p_STATUS               => :STATUS_DESPESA,
                       p_DESCRICAOCENTROCUSTO => NULL,
                       p_CODPOLITICA          => :CODPOL,
                       p_DTAVENCIMENTO        => TO_DATE(:VENC, 'YYYY-MM-DD'),
@@ -907,6 +911,7 @@ try {
         $st->bindValue(':NOMEARQ', $fileNameParam);
         $st->bindValue(':OBS', $obs);
         $st->bindValue(':CC', $centro_custo);
+        $st->bindValue(':STATUS_DESPESA', $statusDespesa);
         $st->bindValue(':CODPOL', $cod_politica);
         $st->bindValue(':VENC', $venc !== '' ? $venc : null);
         $st->bindValue(':DTADESP', $data !== '' ? $data : null);
@@ -1031,20 +1036,25 @@ try {
 
         $conn->exec('COMMIT');
 
-        $solicitanteLogin = resolve_loginid_by_sequsuario($conn, $usr_solicitante);
-        try {
-            notify_pending_approvers_for_despesa(
-                $conn,
-                (int)$out_id,
-                $solicitanteLogin !== '' ? $solicitanteLogin : (string)$user,
-                $forn,
-                (float)$vlr
-            );
-        } catch (Throwable $notificationError) {
-            error_log('Falha ao criar notificacao de despesa ' . (int)$out_id . ': ' . $notificationError->getMessage());
+        if ($statusDespesa === 'LANCADO') {
+            $solicitanteLogin = resolve_loginid_by_sequsuario($conn, $usr_solicitante);
+            try {
+                notify_pending_approvers_for_despesa(
+                    $conn,
+                    (int)$out_id,
+                    $solicitanteLogin !== '' ? $solicitanteLogin : (string)$user,
+                    $forn,
+                    (float)$vlr
+                );
+            } catch (Throwable $notificationError) {
+                error_log('Falha ao criar notificacao de despesa ' . (int)$out_id . ': ' . $notificationError->getMessage());
+            }
         }
 
-        jexit(true, ['dados' => ['id' => $out_id, 'mensagem' => 'Despesa cadastrada com sucesso!']]);
+        $mensagem = $statusDespesa === 'RASCUNHO'
+            ? 'Despesa salva como rascunho!'
+            : 'Despesa cadastrada com sucesso!';
+        jexit(true, ['dados' => ['id' => $out_id, 'status' => $statusDespesa, 'mensagem' => $mensagem]]);
     }
 
     // ============================================
@@ -1090,6 +1100,7 @@ try {
                        (SELECT DESCRICAO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.CENTRORESULTADO = D.CENTROCUSTO AND ROWNUM = 1) as DESC_CC,
                        (SELECT CENTRORESULTADO FROM CONSINCO.ABA_CENTRORESULTADO C WHERE C.CENTRORESULTADO = D.CENTROCUSTO AND ROWNUM = 1) as CODIGO_CC,
                        (SELECT DESCRICAO FROM CONSINCO.MEGAG_DESP_TIPO T WHERE T.CODTIPODESPESA = D.CODTIPODESPESA AND ROWNUM = 1) as DESC_TIPO,
+                       (SELECT DESCRICAO FROM CONSINCO.MEGAG_DESP_POLITICA P WHERE P.CODPOLITICA = D.CODPOLITICA AND ROWNUM = 1) as DESC_POLITICA,
                        (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_RATEIO R WHERE R.CODDESPESA = D.CODDESPESA) as QTD_RATEIO,
                        (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_ARQUIVO ARQ WHERE ARQ.CODDESPESA = D.CODDESPESA) as QTD_ARQUIVOS,
                        (SELECT COUNT(*) FROM CONSINCO.MEGAG_DESP_APROVACAO A WHERE A.CODDESPESA = D.CODDESPESA) as QTD_APROVACOES

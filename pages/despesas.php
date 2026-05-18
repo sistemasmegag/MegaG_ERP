@@ -294,6 +294,88 @@ $paginaAtual = 'despesas';
     background: rgba(13, 110, 253, .03);
   }
 
+  .drag-drop-area.has-files {
+    justify-content: flex-start;
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+
+  .drag-drop-area.is-dragover {
+    border-color: #0d6efd;
+    background: rgba(13, 110, 253, .05) !important;
+  }
+
+  .attachment-preview-wrap {
+    width: 100%;
+    margin-top: 1rem;
+    display: grid;
+    gap: .85rem;
+  }
+
+  .attachment-preview-card {
+    width: 100%;
+    border: 1px solid var(--saas-border);
+    border-radius: 8px;
+    background: var(--saas-surface);
+    overflow: hidden;
+    text-align: left;
+    box-shadow: var(--saas-shadow-soft);
+  }
+
+  .attachment-preview-media {
+    width: 100%;
+    height: 280px;
+    background: rgba(17, 24, 39, .04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .attachment-preview-media img,
+  .attachment-preview-media iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .attachment-preview-media img {
+    object-fit: contain;
+  }
+
+  .attachment-file-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+    color: var(--saas-muted);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .attachment-file-fallback i {
+    font-size: 34px;
+    color: #0d6efd;
+  }
+
+  .attachment-preview-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .7rem .85rem;
+    color: var(--saas-text);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .attachment-preview-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .drag-drop-icon {
     width: 60px;
     height: 60px;
@@ -792,6 +874,156 @@ $paginaAtual = 'despesas';
     margin-top: 4px;
   }
 
+  @media (max-width: 768px) {
+    #modalDetalhesDespesa .modal-dialog {
+      width: calc(100vw - 20px);
+      max-width: calc(100vw - 20px) !important;
+      height: calc(100dvh - 20px) !important;
+      margin: 10px auto;
+    }
+
+    #modalDetalhesDespesa .modal-content {
+      height: 100% !important;
+      border-radius: 18px !important;
+      overflow: hidden !important;
+    }
+
+    #modalDetalhesDespesa .modal-header {
+      padding: .95rem 1rem !important;
+      align-items: flex-start !important;
+    }
+
+    #modalDetalhesDespesa .modal-header > div {
+      width: 100%;
+      min-width: 0;
+      gap: .55rem !important;
+      align-items: flex-start !important;
+      flex-wrap: wrap;
+    }
+
+    #modalDetalhesDespesa .modal-header > div > span.fw-bold {
+      flex: 1 1 180px;
+      min-width: 0;
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    #modalDetalhesDespesa .modal-split-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 0 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      -webkit-overflow-scrolling: touch;
+      background: var(--saas-surface);
+    }
+
+    #modalDetalhesDespesa .split-right,
+    #modalDetalhesDespesa .split-left {
+      flex: 0 0 auto;
+      width: 100%;
+      min-width: 0;
+      border-left: 0 !important;
+      border-right: 0 !important;
+    }
+
+    #modalDetalhesDespesa .split-right {
+      order: 1;
+      padding: 1rem !important;
+      overflow: visible !important;
+    }
+
+    #modalDetalhesDespesa .split-left {
+      order: 2;
+      min-height: 0 !important;
+      padding: 0 !important;
+      background: rgba(17, 24, 39, .035) !important;
+      overflow: visible !important;
+    }
+
+    #modalDetalhesDespesa .split-right > div:first-child {
+      padding: 1rem !important;
+      margin-bottom: 1rem !important;
+    }
+
+    #modalDetalhesDespesa .split-right > div:first-child > .d-flex,
+    #modalDetalhesDespesa .split-right > div:first-child .mt-3 {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: .8rem;
+    }
+
+    #modalDetalhesDespesa .split-right .text-end {
+      text-align: left !important;
+    }
+
+    #modalDetalhesDespesa #detForn,
+    #modalDetalhesDespesa #detVal {
+      font-size: 1.05rem;
+      overflow-wrap: anywhere;
+    }
+
+    #modalDetalhesDespesa .detail-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: .45rem;
+      align-items: start;
+      padding: .85rem 0;
+    }
+
+    #modalDetalhesDespesa .detail-label {
+      width: auto;
+      font-size: .78rem;
+    }
+
+    #modalDetalhesDespesa .detail-value {
+      text-align: left;
+      font-size: .9rem;
+      overflow-wrap: anywhere;
+    }
+
+    #modalDetalhesDespesa .split-left > .d-flex {
+      border-radius: 0 !important;
+      padding: .9rem 1rem !important;
+      gap: .75rem;
+    }
+
+    #modalDetalhesDespesa #btnDownloadAllDocs {
+      padding: .45rem .7rem;
+      font-size: .75rem;
+      white-space: nowrap;
+    }
+
+    #modalDetalhesDespesa .det-anexos-list {
+      max-height: none;
+      padding: .85rem 1rem 0;
+    }
+
+    #modalDetalhesDespesa .pdf-viewer-fake {
+      min-height: 0;
+      height: auto;
+      padding: 1rem !important;
+      border-radius: 0;
+    }
+
+    #modalDetalhesDespesa #visualizadorAnexo {
+      width: 100% !important;
+      min-height: 360px !important;
+      height: 360px !important;
+      margin: 0;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, .12) !important;
+    }
+
+    #modalDetalhesDespesa #visualizadorAnexo iframe {
+      min-height: 360px !important;
+      height: 360px !important;
+    }
+
+    #modalDetalhesDespesa .timeline-aprovadores {
+      padding-left: 16px;
+    }
+  }
+
   .filtros-resumo {
     font-size: 12px;
     color: var(--saas-muted);
@@ -965,14 +1197,6 @@ $paginaAtual = 'despesas';
         </div>
 
         <div class="metric-card">
-          <div class="metric-title"><i class="bi bi-circle-fill text-primary" style="font-size:8px;"></i> Em prestação
-            <i class="bi bi-info-circle ms-1"></i>
-          </div>
-          <div class="metric-value" style="color:var(--saas-text);" id="metricPrestacaoValor">R$ 0,00</div>
-          <div class="metric-subtitle mt-1" id="metricPrestacaoQtd">Nenhum Reembolso</div>
-        </div>
-
-        <div class="metric-card">
           <div class="metric-title"><i class="bi bi-circle-fill text-primary" style="font-size:8px;"></i> Em aprovação
             <i class="bi bi-info-circle ms-1"></i>
           </div>
@@ -1002,7 +1226,7 @@ $paginaAtual = 'despesas';
         <div style="position: relative; width: 350px;">
           <i class="bi bi-search"
             style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--saas-muted);"></i>
-          <input type="text" class="saas-input" id="inputBuscaDespesas" placeholder="Buscar por categoria ou código da despesa"
+          <input type="text" class="saas-input" id="inputBuscaDespesas" placeholder="Buscar por fornecedor, descrição, política ou Cod. Desp."
             style="padding-left: 40px; border-radius: 99px;">
         </div>
         <button class="btn-light rounded-pill px-3" id="btnFiltrosDespesas" type="button" style="font-size: 13px;">
@@ -1124,7 +1348,7 @@ $paginaAtual = 'despesas';
             <h6 class="fw-bold mb-1 text-dark" style="font-size: 15px;">Arraste e solte aqui os seus arquivos</h6>
             <p style="font-size:12px;" class="text-muted mb-4 opacity-75">Formatos permitidos: PDF, PNG, JPEG, JPG</p>
             <input type="file" id="fArquivo" class="d-none" accept=".pdf,.png,.jpeg,.jpg" multiple>
-            <button class="btn-light rounded-pill" onclick="document.getElementById('fArquivo').click()"
+            <button type="button" class="btn-light rounded-pill" onclick="document.getElementById('fArquivo').click()"
               style="color:#0d6efd; border-color: rgba(13,110,253,.3); padding: 8px 24px; font-size: 13px;">
               Selecionar arquivos <i class="bi bi-upload ms-1"></i>
             </button>
@@ -1251,12 +1475,14 @@ $paginaAtual = 'despesas';
 
       <div class="modal-footer d-flex justify-content-between align-items-center"
         style="border-top: 1px solid var(--saas-border); padding: 1.25rem 2rem; background: var(--saas-surface);">
-        <button class="btn btn-link text-decoration-none p-0 fw-bold" style="font-size:13px; color: var(--saas-text);">
+        <button type="button" class="btn btn-link text-decoration-none p-0 fw-bold" id="btnSalvarRascunhoDespesa"
+          onclick="salvarRascunhoDespesa()" style="font-size:13px; color: var(--saas-text);">
           <span style="border-bottom: 1.5px solid var(--saas-text);">Sair e salvar alterações</span>
         </button>
         <div class="d-flex gap-3">
-          <button class="btn-light rounded-pill px-4" style="font-size:13px;">Salvar e solicitar outro</button>
-          <button class="btn-primary-custom rounded-pill px-4" id="btnSolicitarReembolso" onclick="enviarReembolso()"><span
+          <button type="button" class="btn-light rounded-pill px-4" id="btnSalvarSolicitarOutro"
+            onclick="salvarESolicitarOutro()" style="font-size:13px;">Salvar e solicitar outro</button>
+          <button type="button" class="btn-primary-custom rounded-pill px-4" id="btnSolicitarReembolso" onclick="enviarReembolso()"><span
               style="font-size:13px;">Solicitar reembolso <i class="bi bi-check2 ms-1"></i></span></button>
         </div>
       </div>
@@ -1490,6 +1716,7 @@ $paginaAtual = 'despesas';
   let _ccCounter = 0;
   let _rateioMode = 'valor';
   let _fornecedorCriadoRecente = null;
+  let _attachmentPreviewUrls = [];
 
   function getRateioMode() {
     return _rateioMode === 'percentual' ? 'percentual' : 'valor';
@@ -1850,8 +2077,95 @@ $paginaAtual = 'despesas';
   function abrirModalNova() {
     const p = new bootstrap.Modal('#modalNovaDespesa');
     p.show();
-    loadDomMock(); // Carrega dinamicamente do BD
+    return loadDomMock(); // Carrega dinamicamente do BD
   }
+
+  function normalizeDraftText(value) {
+    return String(value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  }
+
+  function setTomSelectByTextOrValue(selectId, rawValue) {
+    const el = document.getElementById(selectId);
+    const value = String(rawValue || '').trim();
+    if (!el || !value) return false;
+
+    const ts = el.tomselect;
+    const wanted = normalizeDraftText(value);
+    const wantedCode = value.split('|')[0].trim();
+    const options = Array.from(el.options || []);
+    const found = options.find((opt) => {
+      const optValue = String(opt.value || '').trim();
+      const optText = String(opt.textContent || '').trim();
+      return optValue === value
+        || optValue.split('|')[0].trim() === wantedCode
+        || normalizeDraftText(optText).includes(wanted)
+        || normalizeDraftText(optValue).includes(wanted);
+    });
+
+    if (found) {
+      if (ts) ts.setValue(found.value, true);
+      else el.value = found.value;
+      return true;
+    }
+
+    if ((selectId === 'fEstabelecimento' || selectId === 'fPolitica') && ts) {
+      ts.addOption({ value, text: value });
+      ts.setValue(value, true);
+      return true;
+    }
+
+    return false;
+  }
+
+  async function preencherRascunhoDespesa(draft) {
+    const campos = draft?.campos || draft || {};
+
+    if (campos.moeda) {
+      document.getElementById('fMoeda').value = campos.moeda === 'BRL' ? 'R$ (BRL)' : campos.moeda;
+    }
+    document.getElementById('fValor').value = campos.valor || '';
+    updateValorDisplay(campos.valor || '');
+    document.getElementById('fData').value = campos.data_despesa || '';
+    document.getElementById('fVencimento').value = campos.vencimento || '';
+    document.getElementById('fComentario').value = campos.comentario || '';
+
+    setTomSelectByTextOrValue('fCategoria', campos.categoria || '');
+    setTomSelectByTextOrValue('fPolitica', campos.politica || '');
+
+    const ccs = Array.isArray(campos.centros_custo) ? campos.centros_custo : [];
+    if (ccs[0]) {
+      setTomSelectByTextOrValue('fCentroCusto', ccs[0]);
+    }
+
+    setTomSelectByTextOrValue('fEstabelecimento', campos.estabelecimento || '');
+
+    if (window.showToast) {
+      window.showToast('Rascunho da MegaG AI carregado. Confira os campos e anexe o comprovante antes de salvar.', 'success', 'MegaG AI');
+    }
+  }
+
+  window.MGDespesaDraft = {
+    open: async function(draft) {
+      await abrirModalNova();
+      setTimeout(() => preencherRascunhoDespesa(draft), 150);
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    try {
+      const raw = sessionStorage.getItem('mg_ai_expense_draft');
+      if (!raw) return;
+      sessionStorage.removeItem('mg_ai_expense_draft');
+      const draft = JSON.parse(raw);
+      setTimeout(() => window.MGDespesaDraft.open(draft), 450);
+    } catch (e) {
+      console.warn('Falha ao carregar rascunho da MegaG AI:', e);
+    }
+  });
 
   function abrirModalNovoFornecedor() {
     const modalReembolsoEl = document.getElementById('modalNovaDespesa');
@@ -1993,28 +2307,109 @@ $paginaAtual = 'despesas';
     }
   }
 
-  function renderSelectedFiles(files) {
-    const target = document.getElementById('fileDisplayName');
-    if (!target) return;
-    if (!files || !files.length) {
-      target.innerHTML = '';
-      return;
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (char) {
+      return {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[char];
+    });
+  }
+
+  function formatFileSize(bytes) {
+    const size = Number(bytes || 0);
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  function revokeAttachmentPreviewUrls() {
+    _attachmentPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+    _attachmentPreviewUrls = [];
+  }
+
+  function buildAttachmentPreview(file) {
+    const url = URL.createObjectURL(file);
+    _attachmentPreviewUrls.push(url);
+
+    const name = escapeHtml(file.name);
+    const size = formatFileSize(file.size);
+    const type = String(file.type || '').toLowerCase();
+    const ext = String(file.name || '').split('.').pop().toLowerCase();
+    let media = '';
+
+    if (type.startsWith('image/')) {
+      media = `<img src="${url}" alt="Pre-visualizacao de ${name}">`;
+    } else if (type === 'application/pdf' || ext === 'pdf') {
+      media = `<iframe src="${url}#toolbar=0&navpanes=0" title="Pre-visualizacao de ${name}"></iframe>`;
+    } else {
+      media = `<div class="attachment-file-fallback"><i class="bi bi-file-earmark"></i><span>Pre-visualizacao indisponivel</span></div>`;
     }
 
-    const items = Array.from(files).map(file =>
-      `<div class="d-flex align-items-center justify-content-center gap-2 mt-1"><i class="bi bi-check-circle-fill"></i><span>${file.name}</span></div>`
-    ).join('');
+    return `
+      <div class="attachment-preview-card">
+        <div class="attachment-preview-media">${media}</div>
+        <div class="attachment-preview-info">
+          <span class="attachment-preview-name"><i class="bi bi-check-circle-fill text-success me-1"></i>${name}</span>
+          <span class="text-muted">${size}</span>
+        </div>
+      </div>`;
+  }
+
+  function renderSelectedFiles(files) {
+    const target = document.getElementById('fileDisplayName');
+    const dropArea = document.getElementById('dropArea');
+    if (!target) return;
+    revokeAttachmentPreviewUrls();
+
+    if (!files || !files.length) {
+      target.innerHTML = '';
+      if (dropArea) dropArea.classList.remove('has-files');
+      return;
+    }
 
     const resumo = files.length === 1
       ? '1 arquivo selecionado'
       : `${files.length} arquivos selecionados`;
 
-    target.innerHTML = `<div>${resumo}</div>${items}`;
+    const previews = Array.from(files).map(buildAttachmentPreview).join('');
+    target.innerHTML = `<div class="text-success text-center">${resumo}</div><div class="attachment-preview-wrap">${previews}</div>`;
+    if (dropArea) dropArea.classList.add('has-files');
   }
 
   document.getElementById('fArquivo').addEventListener('change', function (e) {
     renderSelectedFiles(this.files);
   });
+
+  const dropAreaEl = document.getElementById('dropArea');
+  if (dropAreaEl) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropAreaEl.addEventListener(eventName, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropAreaEl.classList.add('is-dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropAreaEl.addEventListener(eventName, function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropAreaEl.classList.remove('is-dragover');
+      });
+    });
+
+    dropAreaEl.addEventListener('drop', function (e) {
+      const files = e.dataTransfer?.files;
+      if (!files || !files.length) return;
+      const fileInput = document.getElementById('fArquivo');
+      fileInput.files = files;
+      renderSelectedFiles(fileInput.files);
+    });
+  }
 
   function updateValorDisplay(val) {
     let num = parseFloat(val) || 0;
@@ -2058,11 +2453,90 @@ $paginaAtual = 'despesas';
     }
   }
 
-  async function enviarReembolso() {
-    let btn = document.getElementById('btnSolicitarReembolso');
+  function limparFormularioReembolso() {
+    const form = document.getElementById('formReembolso');
+    if (form) form.reset();
+    if (document.getElementById('fEstabelecimento')?.tomselect) {
+      document.getElementById('fEstabelecimento').tomselect.clear();
+    }
+    if (document.getElementById('fPolitica')?.tomselect) {
+      document.getElementById('fPolitica').tomselect.clear();
+    }
+    if (document.getElementById('fCategoria')?.tomselect) {
+      document.getElementById('fCategoria').tomselect.clear();
+    }
+    if (document.getElementById('fCentroCusto')?.tomselect) {
+      document.getElementById('fCentroCusto').tomselect.clear();
+    }
+    const fileInput = document.getElementById('fArquivo');
+    if (fileInput) fileInput.value = '';
+    const fileDisplay = document.getElementById('fileDisplayName');
+    if (fileDisplay) fileDisplay.innerHTML = '';
+    revokeAttachmentPreviewUrls();
+    const dropArea = document.getElementById('dropArea');
+    if (dropArea) dropArea.classList.remove('has-files', 'is-dragover');
+    document.getElementById('displayValor').innerText = 'R$ 0,00';
+    document.getElementById('displayCategoria').innerText = 'Estabelecimento';
+
+    let container = document.getElementById('ccContainer');
+    container.querySelectorAll('.cc-row:not(#ccRow0)').forEach(r => r.remove());
+    let v0 = document.getElementById('fCCValor_0');
+    if (v0) { v0.style.display = 'none'; v0.value = ''; }
+    const somaBar = document.getElementById('ccSomaBar');
+    if (somaBar) somaBar.style.display = 'none';
+    const toggle = document.getElementById('ccRateioToggle');
+    const hint = document.getElementById('ccRateioHint');
+    if (toggle) toggle.style.display = 'none';
+    if (hint) hint.style.display = 'none';
+    setRateioMode('valor');
+  }
+
+  function setBotoesReembolsoDisabled(disabled) {
+    ['btnSolicitarReembolso', 'btnSalvarSolicitarOutro', 'btnSalvarRascunhoDespesa'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = disabled;
+    });
+  }
+
+  function restaurarBotaoReembolso(btn, originalHtml) {
+    if (btn) {
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+      btn.classList.remove('bg-success');
+    }
+    setBotoesReembolsoDisabled(false);
+  }
+
+  function salvarRascunhoDespesa() {
+    return enviarReembolso({
+      buttonId: 'btnSalvarRascunhoDespesa',
+      status: 'RASCUNHO',
+      loadingText: '<i class="bi bi-hourglass-split"></i> Salvando...',
+      successTitle: 'Rascunho salvo!',
+      successHtml: 'A despesa foi salva como rascunho para voce continuar depois.',
+      successButton: 'Fechar',
+      closeOnSuccess: true,
+      resetOnSuccess: true
+    });
+  }
+
+  function salvarESolicitarOutro() {
+    return enviarReembolso({
+      buttonId: 'btnSalvarSolicitarOutro',
+      loadingText: '<i class="bi bi-hourglass-split"></i> Salvando...',
+      successTitle: 'Reembolso solicitado!',
+      successHtml: 'Sua despesa foi registrada com sucesso. O formulario ficara pronto para outra solicitacao.',
+      successButton: 'Solicitar outro',
+      closeOnSuccess: false,
+      resetOnSuccess: true
+    });
+  }
+
+  async function enviarReembolso(options = {}) {
+    let btn = document.getElementById(options.buttonId || 'btnSolicitarReembolso');
     let originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Enviando...';
-    btn.disabled = true;
+    btn.innerHTML = options.loadingText || '<i class="bi bi-hourglass-split"></i> Enviando...';
+    setBotoesReembolsoDisabled(true);
 
     try {
       // Coletar centros de custo e valores individuais
@@ -2091,13 +2565,13 @@ $paginaAtual = 'despesas';
 
       if (centroDuplicado) {
         Swal.fire({ icon: 'warning', title: 'Centro de Custo duplicado', text: `O centro de custo ${centroDuplicado} foi selecionado mais de uma vez no rateio.` });
-        btn.innerHTML = originalHtml; btn.disabled = false;
+        restaurarBotaoReembolso(btn, originalHtml);
         return;
       }
 
       if (centrosCusto.length === 0) {
         Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Selecione pelo menos um Centro de Custo.' });
-        btn.innerHTML = originalHtml; btn.disabled = false;
+        restaurarBotaoReembolso(btn, originalHtml);
         return;
       }
 
@@ -2115,7 +2589,7 @@ $paginaAtual = 'despesas';
             confirmButtonColor: '#6366f1',
             confirmButtonText: 'Corrigir'
           });
-          btn.innerHTML = originalHtml; btn.disabled = false;
+          restaurarBotaoReembolso(btn, originalHtml);
           return;
         }
       }
@@ -2127,8 +2601,7 @@ $paginaAtual = 'despesas';
 
       if (!fornecedor || !fornecedor.trim()) {
         Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Selecione um estabelecimento/fornecedor.' });
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
+        restaurarBotaoReembolso(btn, originalHtml);
         return;
       }
 
@@ -2139,13 +2612,13 @@ $paginaAtual = 'despesas';
 
       if (!politica || !String(politica).trim()) {
         Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Selecione a política da despesa.' });
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
+        restaurarBotaoReembolso(btn, originalHtml);
         return;
       }
 
       let formData = new FormData();
       formData.append('action', 'create');
+      formData.append('status', options.status || 'LANCADO');
       formData.append('valor', document.getElementById('fValor').value);
       formData.append('estabelecimento', fornecedor);
       formData.append('data_despesa', document.getElementById('fData').value);
@@ -2181,40 +2654,26 @@ $paginaAtual = 'despesas';
 
         Swal.fire({
           icon: 'success',
-          title: 'Reembolso Solicitado!',
-          html: 'Sua despesa foi registrada com sucesso e já está aparecendo no painel do seu gestor para aprovação.<br><br><b>Aguarde a Análise.</b>',
+          title: options.successTitle || 'Reembolso Solicitado!',
           confirmButtonColor: '#0d6efd',
-          confirmButtonText: 'Entendi, fechar',
+          confirmButtonText: options.successButton || 'Entendi, fechar',
+          html: options.successHtml || 'Sua despesa foi registrada com sucesso e ja esta aparecendo no painel do seu gestor para aprovacao.<br><br><b>Aguarde a Analise.</b>',
           customClass: { popup: 'rounded-4' }
         }).then(() => {
-          bootstrap.Modal.getInstance(document.getElementById('modalNovaDespesa')).hide();
-          document.getElementById('formReembolso').reset();
-          if (document.getElementById('fEstabelecimento').tomselect) {
-            document.getElementById('fEstabelecimento').tomselect.clear();
+          if (options.closeOnSuccess !== false) {
+            bootstrap.Modal.getInstance(document.getElementById('modalNovaDespesa')).hide();
           }
-          if (document.getElementById('fPolitica')?.tomselect) {
-            document.getElementById('fPolitica').tomselect.clear();
+          if (options.resetOnSuccess !== false) {
+            limparFormularioReembolso();
           }
-          document.getElementById('fArquivo').value = '';
-          document.getElementById('fileDisplayName').innerHTML = '';
-          document.getElementById('displayValor').innerText = 'R$ 0,00';
-          // Remover CCs extras e limpar inputs de valor
-          let container = document.getElementById('ccContainer');
-          container.querySelectorAll('.cc-row:not(#ccRow0)').forEach(r => r.remove());
-          let v0 = document.getElementById('fCCValor_0');
-          if (v0) { v0.style.display = 'none'; v0.value = ''; }
-          document.getElementById('ccSomaBar').style.display = 'none';
-          btn.innerHTML = originalHtml;
-          btn.disabled = false;
-          btn.classList.remove('bg-success');
+          restaurarBotaoReembolso(btn, originalHtml);
           loadList();
         });
 
       } else {
         fecharLoadingReembolso();
         Swal.fire({ icon: 'error', title: 'Oops...', text: 'Erro: ' + json.erro });
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
+        restaurarBotaoReembolso(btn, originalHtml);
       }
 
     } catch (err) {
@@ -2228,17 +2687,14 @@ $paginaAtual = 'despesas';
         html: `Seu clique foi recebido e a lista foi atualizada para conferencia.<br><br>Se o reembolso apareceu abaixo, nao envie novamente.<br><br><small>${msg}</small>`,
         confirmButtonText: 'Entendi'
       });
-      btn.innerHTML = originalHtml;
-      btn.disabled = false;
+      restaurarBotaoReembolso(btn, originalHtml);
       return;
-      Swal.fire({ icon: 'error', title: 'Erro', text: 'Falha de conexão com a API.' });
-      btn.innerHTML = originalHtml;
-      btn.disabled = false;
     }
   }
 
   function parseStatusChip(status) {
     status = (status || 'LANCADO').toUpperCase();
+    if (status === 'RASCUNHO') return '<span class="chip chip-gray">â€¢ Rascunho</span>';
     if (status === 'LANCADO' || status === 'EM_APROVACAO' || status === 'APROVACAO') return '<span class="chip chip-primary">• Em aprovação</span>';
     if (status === 'APROVADO' || status === 'REEMBOLSADO') return '<span class="chip chip-green">• Reembolsado</span>';
     if (status === 'REJEITADO' || status === 'REPROVADO') return '<span class="chip" style="background: rgba(220,53,69,.1); color: #dc3545;">• Reprovado</span>';
@@ -2251,6 +2707,26 @@ $paginaAtual = 'despesas';
     let parts = normalized.split('-');
     if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
     return String(dateStr).trim();
+  }
+
+  function renderPoliticaDespesa(d) {
+    const nome = String(d.DESC_POLITICA || '').trim();
+    const codigo = String(d.CODPOLITICA || '').trim();
+    const texto = nome || (codigo ? `Politica ${codigo}` : 'Sem politica');
+    const title = codigo && nome ? `${codigo} | ${nome}` : texto;
+    return `<span class="chip chip-green" title="${escapeHtml(title)}"><i class="bi bi-check-circle" style="font-size:11px;"></i> ${escapeHtml(texto)}</span>`;
+  }
+
+  function renderDescricaoDespesa(d) {
+    const codDesp = d.CODDESPESA ? `Cod. Desp. EXP-${escapeHtml(d.CODDESPESA)}` : 'Cod. Desp. --';
+    const fornecedor = escapeHtml(d.FORNECEDOR || 'Despesa');
+    const observacao = escapeHtml(d.OBSERVACAO || '');
+
+    return `
+      <div class="fw-bold" style="font-size:13px; letter-spacing: -0.01em; color: var(--saas-text);">${fornecedor}</div>
+      <div class="text-muted" style="font-size:11.5px; margin-top: 2px;">${observacao}</div>
+      <div class="text-muted" style="font-size:11px; margin-top: 3px; font-weight:800;">${codDesp}</div>
+    `;
   }
 
   async function loadList() {
@@ -2298,17 +2774,13 @@ $paginaAtual = 'despesas';
 
             let valFormat = parseFloat(d.VLRRATDESPESA || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-            // Exemplo verificacao de fora da politica. Se N, ok, senao badge
-            let fpHtml = '<span class="chip chip-green"><i class="bi bi-check-circle" style="font-size:11px;"></i> Dentro da regra</span>';
+            let fpHtml = renderPoliticaDespesa(d);
 
             html += `
                 <tr>
                   <td class="text-center"><input type="checkbox" class="form-check-input" style="width:20px;height:20px;border-radius:6px;border-color:var(--saas-border);"></td>
                   <td class="text-muted fw-bold">${dataStr}</td>
-                  <td>
-                    <div class="fw-bold" style="font-size:13px; letter-spacing: -0.01em; color: var(--saas-text);">${d.FORNECEDOR || 'Despesa'}</div>
-                    <div class="text-muted" style="font-size:11.5px; margin-top: 2px;">${d.OBSERVACAO || ''}</div>
-                  </td>
+                  <td>${renderDescricaoDespesa(d)}</td>
                   <td class="text-end fw-bold" style="font-size: 13.5px;">${valFormat}</td>
                     <td class="text-center">
                      <button class="btn-receipt ms-auto" title="${d.QTD_ARQUIVOS > 0 ? `${d.QTD_ARQUIVOS} arquivo(s)` : (d.NOMEARQUIVO || 'Sem arquivo')}"><i class="bi bi-file-earmark-text"></i> ${parseInt(d.QTD_ARQUIVOS || 0) > 0 ? `<span class="badge-count text-white bg-primary">${d.QTD_ARQUIVOS}</span>` : ''}</button>
@@ -2639,6 +3111,10 @@ $paginaAtual = 'despesas';
       .trim();
   }
 
+  function compactarTextoFiltro(value) {
+    return normalizarTextoFiltro(value).replace(/[^a-z0-9]+/g, '');
+  }
+
   function obterDataFiltroDespesa(row) {
     const raw = row.DTADESPESA_FORMAT || row.DTADESPESA || row.DTAINCLUSAO_FORMAT || row.DTAINCLUSAO || '';
     if (!raw) return null;
@@ -2683,14 +3159,20 @@ $paginaAtual = 'despesas';
       if (termoBusca) {
         const texto = normalizarTextoFiltro([
           d.CODDESPESA,
+          `EXP-${d.CODDESPESA || ''}`,
+          `COD DESP ${d.CODDESPESA || ''}`,
+          `CODIGO DESPESA ${d.CODDESPESA || ''}`,
           d.FORNECEDOR,
           d.OBSERVACAO,
           d.DESC_TIPO,
+          d.CODTIPODESPESA,
+          d.CODPOLITICA,
+          d.DESC_POLITICA,
           d.CODIGO_CC,
           d.DESC_CC,
           d.STATUS
         ].join(' '));
-        if (!texto.includes(termoBusca)) return false;
+        if (!texto.includes(termoBusca) && !compactarTextoFiltro(texto).includes(compactarTextoFiltro(termoBusca))) return false;
       }
 
       if (filtrosDespesas.anexo === 'com' && qtdArquivos <= 0) return false;
@@ -2724,16 +3206,13 @@ $paginaAtual = 'despesas';
     rows.forEach(d => {
       const dataStr = formatDateBr(d.DTADESPESA_FORMAT || d.DTAINCLUSAO_FORMAT || d.DTADESPESA || d.DTAINCLUSAO);
       const valFormat = parseFloat(d.VLRRATDESPESA || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-      const fpHtml = '<span class="chip chip-green"><i class="bi bi-check-circle" style="font-size:11px;"></i> Dentro da regra</span>';
+      const fpHtml = renderPoliticaDespesa(d);
 
       html += `
         <tr>
           <td class="text-center"><input type="checkbox" class="form-check-input" style="width:20px;height:20px;border-radius:6px;border-color:var(--saas-border);"></td>
           <td class="text-muted fw-bold">${dataStr}</td>
-          <td>
-            <div class="fw-bold" style="font-size:13px; letter-spacing: -0.01em; color: var(--saas-text);">${d.FORNECEDOR || 'Despesa'}</div>
-            <div class="text-muted" style="font-size:11.5px; margin-top: 2px;">${d.OBSERVACAO || ''}</div>
-          </td>
+          <td>${renderDescricaoDespesa(d)}</td>
           <td class="text-end fw-bold" style="font-size: 13.5px;">${valFormat}</td>
           <td class="text-center">
             <button class="btn-receipt ms-auto" title="${d.QTD_ARQUIVOS > 0 ? `${d.QTD_ARQUIVOS} arquivo(s)` : (d.NOMEARQUIVO || 'Sem arquivo')}"><i class="bi bi-file-earmark-text"></i> ${parseInt(d.QTD_ARQUIVOS || 0, 10) > 0 ? `<span class="badge-count text-white bg-primary">${d.QTD_ARQUIVOS}</span>` : ''}</button>
